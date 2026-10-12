@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.2"><img alt="버전 1.4.2" src="https://img.shields.io/badge/version-1.4.2-a5e4ce?labelColor=101617"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.3"><img alt="버전 1.4.3" src="https://img.shields.io/badge/version-1.4.3-a5e4ce?labelColor=101617"></a>
   <img alt="Windows 실제 실행 검증" src="https://img.shields.io/badge/Windows-tested-a5e4ce?labelColor=101617">
   <img alt="macOS 실기기 미검증 preview" src="https://img.shields.io/badge/macOS-preview-f1d77f?labelColor=101617">
   <a href="day-001-codex-usage-scripts/LICENSE"><img alt="코드 라이선스 MIT" src="https://img.shields.io/badge/code-MIT-a5e4ce?labelColor=101617"></a>
@@ -35,12 +35,12 @@ Day 001 of [daily_odd_builds](https://daily-odd-builds.web.app/) · OS 기본 �
 
 | 환경 | 다운로드 | 압축 해제 후 실행 | 상태 |
 | --- | --- | --- | --- |
-| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.2/CodexUsageMonitorScripts-1.4.2-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
-| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.2/CodexUsageMonitorScripts-1.4.2-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
-| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.2/CodexUsageMonitorScripts-1.4.2-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
-| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.2/CodexUsageMonitorScripts-1.4.2-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
+| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.3/CodexUsageMonitorScripts-1.4.3-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
+| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.3/CodexUsageMonitorScripts-1.4.3-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
+| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.3/CodexUsageMonitorScripts-1.4.3-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
+| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.3/CodexUsageMonitorScripts-1.4.3-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
 
-[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.2) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.2/SHA256SUMS.txt)
+[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.3) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.3/SHA256SUMS.txt)
 
 **Mac은 아직 실제 Mac에서 실행해보지 못했습니다.** 화면·권한·Pet 추적·로그인 자동 실행·실제 자동 업데이트가 장치 검증 전입니다. 아래 이미지도 모두 Windows 화면입니다. [미검증 목록](day-001-codex-usage-scripts/docs/MAC-QA.md)을 확인하고 preview 테스트 용도로 사용해주세요.
 
@@ -51,6 +51,8 @@ Day 001 of [daily_odd_builds](https://daily-odd-builds.web.app/) · OS 기본 �
 1. ZIP을 **전부 압축 해제**합니다. ZIP 안에서 바로 실행하지 않습니다.
 2. 설치형은 `Install.cmd`, 포터블은 `Start.cmd`를 실행합니다.
 3. Codex와 Pet을 켭니다. 패널의 `···`로 설정을 열어 표시 항목과 위치를 고릅니다.
+
+포터블의 `Start.cmd` 실행 창은 자동으로 닫힙니다. 모니터는 백그라운드에서 계속 실행됩니다.
 
 설치형은 `%LOCALAPPDATA%\Programs\CodexUsageMonitorScripts`에 설치됩니다. **설치가 끝나면 다운로드 ZIP과 압축 해제 폴더를 지워도 됩니다.** 포터블은 실행 폴더 전체를 유지해야 합니다. 포터블은 다운로드 폴더를 졸업시켜주는 기능이 아닙니다.
 
@@ -180,7 +182,7 @@ AI 슬롭 같다구요? 으쩌라구요
 
 ## 소스와 라이선스
 
-이 폴더는 **1.4.2 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
+이 폴더는 **1.4.3 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
 
 코드는 [MIT](day-001-codex-usage-scripts/LICENSE)입니다. 한국어·중국어·일본어 참고 번역과 영어 원문을 제공합니다. 지피쨩 캐릭터 아트의 출처와 적용 범위는 [ARTWORK.md](day-001-codex-usage-scripts/docs/ARTWORK.md), 화면 예시의 제작 방식은 [README-MEDIA.md](day-001-codex-usage-scripts/docs/README-MEDIA.md)를 참고하세요. OpenAI 공식 제품이 아닙니다.
 

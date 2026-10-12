@@ -1,13 +1,17 @@
-# Codex Usage Monitor Scripts 1.4.2 — 배포 안내
+# Codex Usage Monitor Scripts 1.4.3 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. Windows는 실제 실행을 검증했고, Mac은 **실기기 미검증 preview**입니다. 현재는 공개 전 준비본입니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. Windows는 실제 실행을 검증했고, Mac은 **실기기 미검증 preview**입니다. 1.4.3은 Windows 포터블 실행기의 백그라운드 실행 문제를 수정합니다.
+
+## 1.4.3 변경 사항
+
+Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘솔 창 없는 별도 프로세스로 실행합니다. 시작·새로고침·설정 실행기가 같은 백그라운드 실행 방식을 사용합니다. 기존 CMD를 닫아도 모니터가 종료되지 않습니다.
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.2-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.4.2-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.2-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.2-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.3-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.4.3-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.3-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.3-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 

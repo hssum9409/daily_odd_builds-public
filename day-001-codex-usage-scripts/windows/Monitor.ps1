@@ -5,7 +5,7 @@
     [string]$TracePath = $env:CODEX_USAGE_SCRIPTS_TRACE
 )
 $ErrorActionPreference = 'Stop'
-[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
+if ($Once) { [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false) }
 $root = Split-Path $PSScriptRoot -Parent
 . "$PSScriptRoot\Core.ps1"
 $defaults = Get-Content -LiteralPath "$root\defaults.json" -Raw -Encoding UTF8 | ConvertFrom-Json
