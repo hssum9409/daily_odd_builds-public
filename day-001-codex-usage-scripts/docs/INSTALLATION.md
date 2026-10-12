@@ -1,0 +1,30 @@
+# 고정 폴더 설치
+
+Windows 설치형 ZIP을 풀고 최상위 `Install.cmd`를 실행합니다. 관리자 권한은 필요 없습니다.
+설치 위치는 `%LOCALAPPDATA%\Programs\CodexUsageMonitorScripts`입니다.
+시작 메뉴에 실행·설정·제거 바로가기가 생깁니다. 설치 후 다운로드 ZIP과 압축 해제 폴더는 지워도 됩니다.
+초반에 시스템 언어를 따라 한국어/영어/중국어/일본어를 선택하며 지원하지 않는 언어는 한국어를 기본으로 합니다. MIT 참고 번역에는 영어 원문을 함께 보존합니다. 라이선스 동의와 선택형 시작 프로그램 등록 체크박스를 제공합니다. 시작 등록에 동의하면 앱의 권장 팝업을 다시 띄우지 않습니다.
+
+macOS preview 설치형은 ZIP을 풀고 최상위 `Install.command`를 실행합니다. 언어 및 MIT 라이선스·시작 등록 선택 화면 뒤에 설치합니다.
+파일은 `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 설치합니다.
+해당 폴더의 `macos/run.command` / `settings.command`로 실행하며, 로그인 자동 실행은 설정에서 선택하거나 `install.command --startup`으로 선택합니다.
+실제 Mac의 실행 권한·보안 안내·접근성 권한·로그인 동작은 아직 검증하지 않았습니다. `MAC-QA.md`를 먼저 확인하세요.
+
+## 업데이트와 제거
+
+설치형은 새 설치 ZIP의 Install 진입점을 실행하면 전체 파일의 SHA-256을 확인한 후 교체합니다. 내부 `windows/update.cmd` / `macos/update.command`도 설치형 갱신용입니다. 포터블은 설정에서 자동 업데이트하거나 종료 후 새 포터블 ZIP으로 교체하세요. 자동 업데이트는 설치형·포터블 모두 현재 실행 위치를 갱신합니다.
+다운로드 폴더에서 실행 중인 이전 무설치 복사본은 먼저 종료하세요. 설치된 복사본은 업데이트가 종료 요청을 보내고, 교체 후 다시 실행합니다.
+설정과 알림 기록은 설치 파일과 별도 보관하여 업데이트·제거 시 보존합니다.
+Windows는 설치된 `windows/uninstall.cmd` 또는 Windows 설치된 앱 목록에서 제거할 수 있습니다.
+Mac은 설치된 `macos/uninstall.command`로 제거합니다. 이 버전의 로그인 등록만 함께 지웁니다.
+
+Windows 프로필: `%LOCALAPPDATA%\DailyOddBuilds\CodexUsageMonitorScripts`
+Mac 프로필: `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts`
+기존 EXE의 `CodexUsageMonitor` 설치·설정에는 접근하지 않습니다.
+
+## 파일 검증의 범위
+
+`payload.sha256`은 손상·누락된 파일을 거부합니다. 배포자 인증용 전자서명은 아닙니다.
+별도 업데이트 서버는 없습니다. 향후 승인된 GitHub 공개 Release를 에디션/OS별로 조회하는 자동 업데이트와 수동 ZIP 업데이트를 지원합니다. 자동 업데이트는 기본 OFF(설치 전 확인)이며 ON이면 확인 없이 진행합니다. Codex 비활성 시 조회하지 않고 활성 중 6시간 주기로 확인합니다. 아직 공개 배포하지 않았으므로 새 버전이 없으면 현재 파일을 계속 실행합니다. 자세한 자산 목록은 [RELEASE.md](RELEASE.md)를 확인하세요.
+
+제거 CMD 실행기는 자신이 삭제된 뒤 정상 종료하도록 해당 CMD 프로세스를 종료합니다. 열려 있는 명령 프롬프트를 유지하려면 `cmd /c "설치 경로\windows\uninstall.cmd"`로 실행하거나 설치된 앱 목록/제거 바로가기를 사용하세요.

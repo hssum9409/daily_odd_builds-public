@@ -1,0 +1,55 @@
+{
+  "version": "1.4.2",
+  "autoUpdate": false,
+  "trayIcon": true,
+  "language": "ko",
+  "timezone": "system",
+  "usageDisplay": "used",
+  "placement": "above",
+  "attachedPlacement": "above",
+  "short": true,
+  "shortReset": true,
+  "weekly": true,
+  "weeklyReset": true,
+  "tickets": true,
+  "expiry": true,
+  "balance": true,
+  "resetNotice": true,
+  "resetSound": true,
+  "creditNotice": true,
+  "creditSound": true,
+  "resetMinutes": 60,
+  "creditStep": 5000,
+  "pollSeconds": 10,
+  "gapAbove": 6,
+  "gapBelow": 12,
+  "noticeGap": 10,
+  "dragMs": 50,
+  "idleMs": 250,
+  "chromeMs": 750,
+  "motionMs": 160,
+  "codexPath": "",
+  "x": null,
+  "y": null,
+  "styles": {
+    "main": {
+      "color": "#202020",
+      "text": "#F8F8F8",
+      "opacity": 0.85,
+      "autoText": true
+    },
+    "reset": {
+      "color": "#FAE297",
+      "text": "#372C16",
+      "opacity": 0.85,
+      "autoText": true
+    },
+    "credit": {
+      "color": "#802B31",
+      "text": "#F8F8F8",
+      "opacity": 0.85,
+      "autoText": true
+    }
+  },
+  "startupPromptDismissed": false
+}

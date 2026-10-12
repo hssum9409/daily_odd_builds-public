@@ -1,0 +1,53 @@
+﻿MIT 라이선스 — 한국어 참고 번역
+
+아래 번역은 이해를 돕기 위한 참고 자료입니다. 영어 원문을 함께 제공합니다.
+번역과 원문 사이에 차이가 있는 경우 영어 원문을 기준으로 합니다.
+
+저작권 (c) 2026 hssum9409
+
+본 소프트웨어 및 관련 문서 파일(이하 “소프트웨어”)의 사본을 취득하는 모든 사람에게,
+소프트웨어를 제한 없이 취급할 수 있는 권한을 무료로 부여합니다. 여기에는 소프트웨어의
+사용, 복사, 수정, 병합, 게시, 배포, 재실시권 부여 및/또는 판매 권한과, 소프트웨어를
+제공받는 사람에게 이러한 권한을 허용하는 권한이 포함되며, 다음 조건을 따릅니다.
+
+위의 저작권 고지와 이 허가 고지를 소프트웨어의 모든 사본 또는 상당 부분에 포함해야 합니다.
+
+소프트웨어는 “있는 그대로” 제공되며, 상품성, 특정 목적에 대한 적합성 및 비침해성에 관한
+보증을 포함하되 이에 한정되지 않는 어떠한 명시적 또는 묵시적 보증도 제공하지 않습니다.
+저작자 또는 저작권자는 계약, 불법행위 또는 그 밖의 사유를 불문하고, 소프트웨어나 그 사용
+또는 기타 취급으로부터 발생하거나 이와 관련된 어떠한 청구, 손해 또는 기타 책임도 부담하지
+않습니다.
+
+제3자 라이브러리에는 각자의 라이선스가 적용됩니다. 이 라이선스는 제3자의 상표나 제공된
+캐릭터 참고 자료에 대한 권리를 부여하지 않습니다. 아트의 출처는 docs/branding/README.md를
+참조하세요.
+
+────────────────────────────────────────
+영어 원문 / Original English license
+────────────────────────────────────────
+
+MIT License
+
+Copyright (c) 2026 hssum9409
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Third-party libraries retain their own licenses. This license does not grant
+rights to third-party trademarks or to the supplied character reference.
+See docs/branding/README.md for artwork provenance.

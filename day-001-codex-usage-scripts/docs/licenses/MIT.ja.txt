@@ -1,0 +1,54 @@
+﻿MITライセンス — 日本語参考訳
+
+以下の翻訳は理解を助けるための参考資料です。英語原文も併記しています。
+翻訳と原文に相違がある場合は、英語原文を基準とします。
+
+Copyright (c) 2026 hssum9409
+
+本ソフトウェアおよび関連文書ファイル（以下「ソフトウェア」）の複製を取得するすべての
+人に対し、ソフトウェアを制限なく取り扱う権限を無償で付与します。これには、使用、複製、
+変更、統合、公表、配布、再許諾および／または販売の権利、ならびにソフトウェアの提供を
+受ける人にこれらの権利を許可する権利を含みます。ただし、以下の条件に従うものとします。
+
+上記の著作権表示および本許諾表示を、ソフトウェアのすべての複製または重要な部分に
+含めなければなりません。
+
+ソフトウェアは「現状のまま」提供され、商品性、特定目的への適合性および非侵害性の
+保証を含むがこれらに限定されない、明示または黙示のいかなる保証も行いません。
+著作者または著作権者は、契約、不法行為その他の原因を問わず、ソフトウェアまたは
+その使用もしくはその他の取り扱いから生じる、またはこれらに関連するいかなる請求、
+損害その他の責任についても責任を負いません。
+
+第三者のライブラリには、それぞれのライセンスが適用されます。本ライセンスは第三者の
+商標または提供されたキャラクター参考資料に関する権利を付与しません。
+アートの出典については docs/branding/README.md を参照してください。
+
+────────────────────────────────────────
+英語原文 / Original English license
+────────────────────────────────────────
+
+MIT License
+
+Copyright (c) 2026 hssum9409
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Third-party libraries retain their own licenses. This license does not grant
+rights to third-party trademarks or to the supplied character reference.
+See docs/branding/README.md for artwork provenance.
