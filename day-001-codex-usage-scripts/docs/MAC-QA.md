@@ -1,3 +1,13 @@
+## 1.4.3 포터블 터미널 연결 점검
+
+Mac 포터블 실행기는 기존 `nohup`과 `</dev/null >/dev/null 2>&1 &`를 유지한다. 일반 실행은 부모 셸을 기다리지 않고, 단발 조회·명시적인 `--foreground`는 의도적으로 동기 실행한다.
+
+2026-10-12, 실제 배포 ZIP의 최상위 `Start.command`와 `run.command`를 Git Bash에서 검사했다. `osascript`만 가짜 자식 셸로 바꾸고 기본 실행/설정 실행/foreground/단발 조회 네 경우의 인수 전달, 입력 EOF, 출력 분리, 부모 셸 종료와 SIGHUP 이후 자식 진행을 확인했다. 기본 실행은 약 0.2초에 반환했다. **POSIX 에뮬레이션 검사이며 실제 macOS의 osascript/JXA/AppKit/Terminal.app 검증은 아니다.**
+
+Terminal은 셸 종료 후 창을 유지할 수 있다. [Apple의 Shell 설정 안내](https://support.apple.com/en-gb/guide/terminal/trmlshll)에 따르면 창 닫기 동작은 프로필의 `When the shell exits` 설정에 따른다. 실행이 끝난 창이 남는 현상과 모니터가 터미널 종료에 종속되는 문제를 구분해야 한다. 실제 Mac에서는 Finder 실행 → 창 종료 → 패널 유지와 Terminal 앱 종료까지 추가 검사한다. 사용자 Terminal 설정이나 다른 창은 자동으로 변경/종료하지 않는다.
+
+재현: `python tests/mac_portable_background.py`. 실제 Mac이 생기기 전까지 preview 표시를 유지한다.
+
 ## 1.4.1 공개 후보의 설치형·포터블 업데이트
 
 두 Mac 다운로드 형식 모두 preview입니다. 두 형식은 같은 `CodexUsageMonitorScripts-macos-update-preview.zip`을 받습니다. 설치형은 설치 영수증의 경로를, 포터블은 현재 실행 폴더를 갱신합니다. 사용자 지정 프로필과 설치 경로를 자식 도우미에 명시적으로 전달합니다.

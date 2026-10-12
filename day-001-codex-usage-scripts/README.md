@@ -60,6 +60,8 @@ Day 001 of [daily_odd_builds](https://daily-odd-builds.web.app/) · OS 기본 �
 
 ZIP을 전부 푼 뒤 설치형은 `Install.command`, 포터블은 `Start.command`를 실행합니다. 실행 권한 문제라면 해당 폴더의 터미널에서 `sh ./Install.command` 또는 `sh ./Start.command`로 실행할 수 있습니다.
 
+일반 실행기는 `nohup`과 입출력 분리로 백그라운드 실행합니다. 실행이 끝난 터미널 창이 남는지는 [Terminal 프로필 설정](https://support.apple.com/en-gb/guide/terminal/trmlshll)에 따라 달라집니다. 셸 종료·SIGHUP 동작은 Git Bash의 모의 자식으로 확인했으며, 실제 Mac에서 창을 닫은 뒤 모니터가 유지되는지는 아직 미검증입니다.
+
 설치형 경로는 `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`입니다. 설치가 끝난 뒤 다운로드 원본을 지울 수 있습니다. 포터블 실행 폴더는 유지합니다.
 
 Pet 추적에는 접근성 권한이 필요할 수 있습니다. 실제 권한 주체와 Finder/quarantine 동작은 실기기 미검증입니다. 보안 정책을 강제로 변경하지 않습니다. [설치 안내](docs/INSTALLATION.md)와 [Mac QA](docs/MAC-QA.md)를 참고하세요.
