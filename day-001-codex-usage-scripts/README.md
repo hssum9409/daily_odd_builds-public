@@ -1,3 +1,5 @@
+<p align="right"><sub>AI로 작성되었습니다. 슬롭 같으면 님 말이 맞음.</sub></p>
+
 <p align="center">
   <img src="assets/gp-chan-face.png" width="88" alt="지피쨩 얼굴 아이콘">
 </p>
