@@ -18,7 +18,7 @@
   <a href="LICENSE"><img alt="코드 라이선스 MIT" src="https://img.shields.io/badge/code-MIT-a5e4ce?labelColor=101617"></a>
 </p>
 
-![Codex Usage Monitor — 실제 Windows UI 렌더러와 지피쨩 아트로 구성한 소개 이미지](docs/images/hero.png)
+![Codex Usage Monitor — 실제 Windows UI 렌더러와 지피쨩 아트로 구성한 소개 이미지](docs/images/hero.webp)
 
 **Codex Pet 옆에 사용량·초기화권·잔여 크레딧·리셋 예고를 붙여두는 작은 모니터입니다.**
 

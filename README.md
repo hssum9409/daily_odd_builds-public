@@ -19,7 +19,7 @@
 <!-- day001:start -->
 ## Day 001 — Codex Usage Monitor 1.4.2
 
-![언제나, 코덱스와 함께 — Codex Usage Monitor](day-001-codex-usage-scripts/docs/images/hero.png)
+![언제나, 코덱스와 함께 — Codex Usage Monitor](day-001-codex-usage-scripts/docs/images/hero.webp)
 
 **펫은 귀엽고, 한도는 현실입니다.** Codex Pet 옆에서 사용량·초기화권·잔여 크레딧·리셋 예고를 확인합니다.
 Windows/Mac 스크립트 에디션입니다. 별도 개발 환경이나 업데이트 서버는 필요 없습니다.
