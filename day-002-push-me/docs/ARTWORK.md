@@ -134,3 +134,47 @@ Small service URL: "dingdong-to-me.web.app".
 Readable footer exactly: "화면·알림은 기능 설명용 연출입니다."
 Do not show invented calendar dates, device time, OS branding, actual ticketing branding, QR codes, user credentials or source code. No guarantee of ticket purchase, queue skipping, exact-time delivery or physical iPhone receipt. This is an explanatory promotional illustration, not an actual OS notification or ticketing screenshot. All Korean must be accurately spelled and legible. Do not add other slogans or examples.
 ```
+
+## 대표 배너 손글씨 주석 — 실제 사용 프롬프트
+
+사용자가 첨부한 대표 배너에 좌측 하단 손그림 화살표와 반응을 추가한 최초 시안입니다. 이후 사용자 수정에 따라 공개 이미지의 최종 반응은 **와 이거 슬롭 느낌 지린다...**로 바꿨습니다. 내장 imagegen을 사용했으며 아래 프롬프트의 원본 크기는 편집 입력 크기입니다.
+
+```text
+Edit the attached existing Korean landscape marketing banner. Make ONLY one small annotation change in the lower-left area. Preserve the entire banner's dimensions (1672x941), layout, phone/app display, title, coral headline, service address, foreground notification, existing text, gray handwritten slogan, underline, props, colors and footer. Do not redesign, reflow, crop, recolor or rewrite anything else.
+The existing pale gray handwritten slogan at the lower left reads "작은 알림이 더 나은 하루를 만들어요." Keep it intact as the target.
+To the RIGHT of this slogan, in the empty space below the notification card and left of the phone, add exactly this Korean reaction in a natural, casual handwritten dark-charcoal pen/marker style:
+"와 이 문구"
+"슬롭냄새 지린다..."
+The line break is for fit; preserve all characters and the three dots. It should look scribbled by a person reacting to the slogan: slightly irregular baseline and varied strokes, clear and readable, not a computer/typeset font. Keep it smaller than the feature subheading but legible, approximately 35-42px handwriting at the original image size.
+Draw one thin, loosely curved HAND-DRAWN dark-charcoal arrow from beside the reaction pointing BACK LEFT to the original pale gray slogan. The arrowhead must clearly target the original "작은 알림이 더 나은 하루를 만들어요." wording, not the service address or phone. Fit the new arrow and reaction into the existing whitespace; avoid overlaps with the original slogan, URL pill, notification card, phone and footer. No speech bubble, no new icon, no other words. Everything outside this local annotation must remain as close to the source as possible.
+```
+
+## 손글씨 주석 — 최종 문구 수정 프롬프트
+
+최초 시안의 화살표와 손글씨 배치는 유지하고 아래 최종 문구를 적용했습니다. 최초 시안 이미지는 공개하지 않았습니다.
+
+```text
+Edit the attached banner with ONLY a wording change to the dark handwritten annotation near the lower left. Preserve the image dimensions (1672x941) and every other element: all banner content, phone display, title, headline, service address, notification card, pale gray original slogan, underline, and the curved hand-drawn arrow. Keep the annotation in the same position, size, dark charcoal color, natural casual handwriting, slight tilt and two-line layout.
+Replace the annotation's current first line "와 이 문구" and second line "슬롭냄새 지린다..." with EXACTLY:
+"와 이거"
+"슬롭 느낌 지린다..."
+Keep a visible space between "슬롭" and "느낌", and exactly three dots at the end. The whole phrase is "와 이거 슬롭 느낌 지린다...". Do not use "문구" or "냄새" anywhere in the annotation. Handwritten pen/marker style, not a typed font. Keep the original gray slogan "작은 알림이 더 나은 하루를 만들어요." unchanged and keep the existing curved arrow pointing at it. Do not redraw, reflow, crop, recolor or change any other part of the banner.
+```
+
+## 손글씨·화살표 크기/농도 조정 — 최종 프롬프트
+
+사용자 요청에 따라 위 문구를 유지한 채 연한 회색, 작은 손글씨, 더 짧고 가는 화살표로 조정했습니다. 공개 대표 이미지에는 이 마지막 결과를 사용합니다.
+
+```text
+Edit the attached banner ONLY within the lower-left handwritten reaction and its curved arrow. Keep the entire rest of the image exactly as it is, including dimensions 1672x941, phone/app display, all headlines, URL, notification card, original pale gray slogan and coral underline, background and footer.
+The current annotation already has the correct text. Preserve it VERBATIM, two lines:
+"와 이거"
+"슬롭 느낌 지린다..."
+Make both the annotation and its hand-drawn arrow softer and smaller:
+- Change their dark charcoal ink to a faded LIGHT GRAY around #A6A8AB, close to the tone of the original gray slogan. It should feel like a quiet pencil note, still legible.
+- Reduce the handwritten text size to approximately 75% of its current size, preserving its natural irregular handwritten strokes and slight tilt.
+- Reduce the arrow stroke weight and arrowhead size to about 75% of current.
+- Shorten the curved arrow to around 60% of its current length, with a gentle shallow curve.
+- Move the smaller annotation slightly left if needed, so it sits just beside the original slogan and the shorter arrow fits in the gap. The arrowhead still clearly points LEFT at "작은 알림이 더 나은 하루를 만들어요.", with no overlaps.
+Do not change the original slogan or its underline. Do not change the final reaction wording, spacing between "슬롭" and "느낌", or the three dots. No dark bold lettering, no bubble, no extra text. Everything outside this small annotation region remains unchanged.
+```
