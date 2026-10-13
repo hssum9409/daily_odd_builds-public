@@ -150,10 +150,17 @@ Safari/Chrome 일반 탭에서는 설치 안내가 먼저 나옵니다. 홈 화�
 
 ## 만든놈
 
+웹앱에서도 **만든놈**을 열 수 있습니다. 세로 화면은 오른쪽 위 계정 메뉴, 넓은 화면은 사이드바 아래에 있습니다. 로그인 전에는 시작 화면 아래 버튼으로 들어갑니다.
+
 ### [hssum9409](https://github.com/hssum9409)
 
 매일 한개씩 잡동사니 만드는 사람.<br>
-그 외 잡동사니는 [여기](https://daily-odd-builds-portal.web.app/)로. 버그는 [공개 저장소 Issues](https://github.com/hssum9409/daily_odd_builds-public/issues)에 브라우저/OS와 재현 순서를 남겨주세요.
+요청사항은 [GitHub](https://github.com/hssum9409/daily_odd_builds-public/issues)에 보내면 수정할지도 안할지도. 버그는 가능한 빠르게 수정함.
+
+그 외 잡동사니가 보고싶은 사람은 [여기](https://daily-odd-builds-portal.web.app/)로.<br>
+AI 슬롭 같다구요? 으쩌라구요
+
+버그 제보에는 브라우저/OS와 재현 순서를 남겨주세요.
 
 **계정 이메일·UID·기기 토큰·개인 예약 내용은 공개 이슈에 올리지 마세요.**
 
