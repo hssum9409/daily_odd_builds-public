@@ -31,7 +31,7 @@ Windows 설치형·포터블을 제공합니다. Mac 설치형·포터블은 실
 
 원하는 시간에 나와 그룹에게 보내는 예약 Push. 매일 반복도 예약 1개로, 사이트를 닫아도 받아보세요.
 
-[서비스 열기](https://dingdong-to-me.web.app/) · [소개와 사용 방법](day-002-push-me/README.md) · [구조 설명](day-002-push-me/docs/ARCHITECTURE.md)
+[서비스 열기](https://dingdong-to-me.web.app/) · [소개와 사용 방법](day-002-push-me/README.md) · [웹서비스 릴리즈 · v1.0.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day002-web-v1.0.0) · [구조 설명](day-002-push-me/docs/ARCHITECTURE.md)
 
 Web / PWA · Google 로그인 · 개인 Chrome Push 실제 수신/클릭 확인. iPhone은 홈 화면 설치가 필요하며 실기기 수신은 미검증입니다. 원본 소스는 비공개입니다.
 <!-- day002:end -->

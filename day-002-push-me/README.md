@@ -11,7 +11,7 @@
   <img alt="원본 소스 비공개" src="https://img.shields.io/badge/source-private-808080?labelColor=242424">
 </p>
 
-<p align="center"><b><a href="https://dingdong-to-me.web.app/">서비스 열기 →</a></b></p>
+<p align="center"><b><a href="https://dingdong-to-me.web.app/">서비스 열기 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day002-web-v1.0.0">웹서비스 릴리즈</a></p>
 
 ![사이트를 닫아도, 알림은 와요. 실제 앱 UI를 참고한 설명용 홍보 연출](https://raw.githubusercontent.com/hssum9409/daily_odd_builds-public/83edd9ea67ce8bcf385ca680b687a92dcbfb0277/day-002-push-me/docs/images/hero.webp)
 
@@ -19,13 +19,15 @@
 
 “나중에 해야지”의 나중을 입력하는 사이트입니다. 기억력이 좋아지진 않습니다. 미래의 나한테 벨을 맡겨두는 쪽입니다.
 
-Day 002 of [daily_odd_builds](https://daily-odd-builds.web.app/) · **서비스와 사용 안내·구조 설명을 공개합니다. 원본 앱/서버 소스는 비공개입니다.**
+Day 002 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · **서비스와 사용 안내·구조 설명을 공개합니다. 원본 앱/서버 소스는 비공개입니다.**
 
 ## 서비스 열기
 
 ### [딩동하러 가기 → dingdong-to-me.web.app](https://dingdong-to-me.web.app/)
 
 Chrome/Edge 등 Web Push 지원 브라우저와 Google 계정으로 시작하세요. iPhone/iPad는 **홈 화면에 추가한 앱에서 로그인·알림 허용**이 필요합니다. 실제 iPhone 수신은 아직 검증하지 않았습니다.
+
+카카오톡 안에서 열었다면 **외부 브라우저로 열기** 안내를 따라 주세요. 이동하지 않으면 버튼·주소 복사·카카오톡 메뉴를 사용할 수 있습니다. 처음 로딩할 때는 시작 화면을 표시하고, 연결 오류나 지연에는 다시 불러오기를 제공합니다.
 
 ## 2분이면 시험할 수 있어요
 
@@ -135,22 +137,23 @@ Safari/Chrome 일반 탭에서는 설치 안내가 먼저 나옵니다. 홈 화�
 
 ## 확인한 것과 아직 확인하지 못한 것
 
-2026-10-13 서비스 스냅샷 기준입니다.
+2026-10-14 웹서비스 릴리즈 기준입니다. [릴리즈 기록](docs/RELEASE.md)
 
 | 확인 | 범위 |
 | --- | --- |
 | 실제 개인 Push | Chrome에서 예약 → 서비스 탭 전부 닫기 → 실제 알림 도착 → 클릭 시 example.com 이동을 사용자와 확인 |
 | 예약 서버 | Scheduler/Functions 정상 실행, FCM 접수/발송 결과 기록 확인 |
 | 화면 | 데스크톱·모바일 viewport·가로, 작성/목록/그룹 UI 검사. 예시 데이터 사용 |
-| 코드 검사 | Flutter analyze, Flutter 18개·backend 25개 검사, production web build 통과 |
-| 미검증 | 실제 iPhone/iPad, 그룹의 복수 사용자 실기기 수신, 다음 날 실제 매일 반복 수신 |
+| 코드 검사 | Flutter analyze, Flutter 18개·JS/backend 33개·Rules/통합 15개 검사, production web build 통과 |
+| 시작 화면 | 데스크톱·모바일 로딩/재시도, 이전 진입 HTML 캐시 복구, root URL 캐시 갱신 확인 |
+| 미검증 | 실제 iPhone/iPad, 그룹의 복수 사용자 실기기 수신, 다음 날 실제 매일 반복 수신, 실제 카카오톡 앱에서 외부 브라우저 전환 |
 
 ## 만든놈
 
 ### [hssum9409](https://github.com/hssum9409)
 
 매일 한개씩 잡동사니 만드는 사람.<br>
-그 외 잡동사니는 [여기](https://daily-odd-builds.web.app/)로. 버그는 [공개 저장소 Issues](https://github.com/hssum9409/daily_odd_builds-public/issues)에 브라우저/OS와 재현 순서를 남겨주세요.
+그 외 잡동사니는 [여기](https://daily-odd-builds-portal.web.app/)로. 버그는 [공개 저장소 Issues](https://github.com/hssum9409/daily_odd_builds-public/issues)에 브라우저/OS와 재현 순서를 남겨주세요.
 
 **계정 이메일·UID·기기 토큰·개인 예약 내용은 공개 이슈에 올리지 마세요.**
 
