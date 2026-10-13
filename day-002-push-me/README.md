@@ -13,7 +13,7 @@
 
 <p align="center"><b><a href="https://dingdong-to-me.web.app/">서비스 열기 →</a></b></p>
 
-![사이트를 닫아도, 알림은 와요. 실제 앱 UI를 참고한 설명용 홍보 연출](docs/images/hero.webp)
+![사이트를 닫아도, 알림은 와요. 실제 앱 UI를 참고한 설명용 홍보 연출](https://raw.githubusercontent.com/hssum9409/daily_odd_builds-public/83edd9ea67ce8bcf385ca680b687a92dcbfb0277/day-002-push-me/docs/images/hero.webp)
 
 **원하는 시간과 내용을 예약하면, 사이트를 닫아도 내 휴대폰이나 브라우저로 Push 알림을 보내는 웹서비스입니다.**
 
