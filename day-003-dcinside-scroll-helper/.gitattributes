@@ -1,0 +1,2 @@
+# Preserve the exact release runtime bytes on every checkout.
+extension/** -text whitespace=cr-at-eol
