@@ -1,0 +1,32 @@
+{
+  "version": "1.4.0",
+  "runtimeSha256": "67eb0aeff75881871722cf28b0c7f68bb8da06ba814b3ce6d0b89ca02b82fda6",
+  "files": {
+    "assets/logo.png": "1a9c13c8e45c234c7bd6b7c2d45f3bc3cfd6ccec3acd3d4e0a6fe01e0e2e8956",
+    "docs/ARCHITECTURE.md": "50663ff1b974ece9c3076c079328b16482b91a6de10c8174a86bd304421dcea8",
+    "docs/ARTWORK.md": "2e922d1bb98a4c39ed56f5b7fb787c74bf7a992f008767d6c163c03129b76619",
+    "docs/images/feature-poster1280x800.png": "ccc4a5e2e732fcfbfb9e20c09724becdbb470e7e17a1f761d7809b4bc4a09a31",
+    "docs/images/marquee1400x560.png": "2794e692a74c0803d7d0600db5b727d2224cbe70aa244b79658e12e77783b0cf",
+    "docs/images/promo440x280.png": "6460c642f3f78462e6af33510703fdd022fe4e2abf2549ac830b641fd1e7c80a",
+    "docs/RELEASE.md": "035d9cf0510bd8ee0667f1987b3c2b2bbd71443c27f6b5fc60bde4f7783ddbe5",
+    "extension/background.js": "e827217c62cf59de552aeeba32dffdd469048b130f038da9d9c44348d5d0f850",
+    "extension/content_script.js": "41fac3d91e86878b79c548bda133a6ae8c1bac4aa9ca197dfe229a44390187f8",
+    "extension/icons/brand128.png": "1a9c13c8e45c234c7bd6b7c2d45f3bc3cfd6ccec3acd3d4e0a6fe01e0e2e8956",
+    "extension/icons/brand16.png": "47b11b76b4353509757aeb81116dee0dd14a99e0dcc62af10e151748c473d81f",
+    "extension/icons/brand32.png": "d347e825defbc3d2601c43c05d78d4d0e079e4c1c0e5ffb64b6806e1967fe9fa",
+    "extension/icons/brand48.png": "8ef7590a38057793b651a082657d7f3adf76e50884f7ebbdcba0a128bf4e5090",
+    "extension/icons/custom-atlas.png": "53821ecee4bff2a362039fef1815031bc04f945f46568ee55775088dc92c36dd",
+    "extension/icons/directory-g.png": "5d6e15207377c5d303d6a1509756fe83d235051d0e5388f2b80da8e2a1f7d9cd",
+    "extension/icons/directory-m.png": "59d574dfdb792a9c21242e3d86e9faba15c9522ca41b0be6cc73cf5572a5f9f4",
+    "extension/icons/toolbar-atlas.png": "f46d723331c2b0a789dae71d1edde3ad7128a24179943b3b5bd37c27a61ee109",
+    "extension/manifest.json": "e15cfba72c894f7daeb864a0006b6b5701972c85637e930df68c14af1ebd22ad",
+    "extension/navigation.js": "8a687f9fa2844f4fce0a83682e4953d5370f4b2829d48f5bfc2d2faac252291a",
+    "extension/page-context.js": "74364202c1a441d04d688ee27ddb989708c5ad7865ad75c87a3801ad97053ee0",
+    "extension/settings.js": "b0e8232aa3e1689ba9816b0004b6c0a49cf1c2df92962513821c0904410e4113",
+    "extension/style.css": "1146a35b8897b63120013dcd80066dda0c6f249a9a943c6b682d312e6d65fd9c",
+    "extension/ui.js": "e000181914eb4b8ed11b36366e0c9c6ef768ea50e615c89a165f8cab36553748",
+    "LICENSE": "ab659643452cdeced5f6c3d1095124ba917ad242bd118444bfc6c0ffdada5f3b",
+    "metadata.json": "d3097c4a697f24eb84ad1991ad6bf9f4245de964bbfa0d0058de932a92943148",
+    "README.md": "2f48adda4fb9e754a04a652978c522ed3cfca7473fdcc7c2b8053d0fd3b7ab12"
+  }
+}

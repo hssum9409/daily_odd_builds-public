@@ -1,0 +1,23 @@
+{
+  "day": 3,
+  "date": "2026-10-15",
+  "created_at": "2026-10-07",
+  "updated_at": "2026-10-15",
+  "published_at": "2026-10-15",
+  "name": "디시 스크롤 도우미",
+  "slug": "dcinside_scroll_helper",
+  "one_line_description": "긴 글과 동적 로딩에서도 목적지를 추적하는 DCInside 오버레이 탐색 확장",
+  "status": "live",
+  "technologies": [
+    "JavaScript",
+    "CSS",
+    "Chrome Extension Manifest V3"
+  ],
+  "live_url": "https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff",
+  "download_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/download/day003-v1.4.0/dcinside-scroll-helper-1.4.0.zip",
+  "platform": "Chrome Extension",
+  "public_source_url": "https://github.com/hssum9409/daily_odd_builds-public/tree/main/day-003-dcinside-scroll-helper",
+  "release_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.4.0",
+  "version": "1.4.0",
+  "source_path": "day-003-dcinside-scroll-helper/extension"
+}
