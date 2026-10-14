@@ -158,4 +158,4 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 
 코드는 [MIT](LICENSE)입니다. 포함된 로고·아이콘·홍보 이미지의 출처와 사용 범위는 [ARTWORK.md](docs/ARTWORK.md)에 기록했습니다. [구조 설명](docs/ARCHITECTURE.md)
 
-README의 구성과 말투는 Day 001의 소개·설치·기능 예시 흐름을 이어갑니다. 이 프로그램은 DCInside 공식 제품이 아닙니다.
+이 프로그램은 DCInside 공식 제품이 아닙니다.
