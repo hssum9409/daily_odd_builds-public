@@ -2,7 +2,7 @@
   "version": "1.4.0",
   "runtimeSha256": "67eb0aeff75881871722cf28b0c7f68bb8da06ba814b3ce6d0b89ca02b82fda6",
   "files": {
-    ".gitattributes": "4a02d21a22ff05aec8f1d6e0cdd5e466702d3e81a93d6a694d15baa4d95b6016",
+    ".gitattributes": "94909c7c52f5c18745030af8c588649d62611e6403ecedb4b752cfc9dd10854c",
     "assets/logo.png": "1a9c13c8e45c234c7bd6b7c2d45f3bc3cfd6ccec3acd3d4e0a6fe01e0e2e8956",
     "docs/ARCHITECTURE.md": "50663ff1b974ece9c3076c079328b16482b91a6de10c8174a86bd304421dcea8",
     "docs/ARTWORK.md": "2e922d1bb98a4c39ed56f5b7fb787c74bf7a992f008767d6c163c03129b76619",
@@ -26,8 +26,8 @@
     "extension/settings.js": "b0e8232aa3e1689ba9816b0004b6c0a49cf1c2df92962513821c0904410e4113",
     "extension/style.css": "1146a35b8897b63120013dcd80066dda0c6f249a9a943c6b682d312e6d65fd9c",
     "extension/ui.js": "e000181914eb4b8ed11b36366e0c9c6ef768ea50e615c89a165f8cab36553748",
-    "LICENSE": "ab659643452cdeced5f6c3d1095124ba917ad242bd118444bfc6c0ffdada5f3b",
-    "metadata.json": "d3097c4a697f24eb84ad1991ad6bf9f4245de964bbfa0d0058de932a92943148",
-    "README.md": "2f48adda4fb9e754a04a652978c522ed3cfca7473fdcc7c2b8053d0fd3b7ab12"
+    "LICENSE": "5f86afa3a336dea283e0f8af69ba8a4dcc4b418c50f298671a02801561453071",
+    "metadata.json": "d60a4483189d904910d62ff694aabc2dd779c38b2ea5a0b8bfc14d1f3ddea1dc",
+    "README.md": "881235daa40f2be7a1e0de88373b4a536eb3a372b0764d52ae67f78fdd117718"
   }
 }
