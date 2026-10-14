@@ -11,7 +11,8 @@ $root = Split-Path $PSScriptRoot -Parent
 $defaults = Get-Content -LiteralPath "$root\defaults.json" -Raw -Encoding UTF8 | ConvertFrom-Json
 $uiSpec = Get-Content -LiteralPath "$root\ui.json" -Raw -Encoding UTF8 | ConvertFrom-Json
 $allWords = Get-Content -LiteralPath "$root\strings.json" -Raw -Encoding UTF8 | ConvertFrom-Json
-$profile = if ($env:CODEX_USAGE_SCRIPTS_HOME) { $env:CODEX_USAGE_SCRIPTS_HOME } else { Join-Path $env:LOCALAPPDATA 'DailyOddBuilds\CodexUsageMonitorScripts' }
+$receipt=try {Get-Content -LiteralPath (Join-Path $root 'installed.json') -Raw -Encoding UTF8|ConvertFrom-Json} catch {$null}
+$profile = if ($env:CODEX_USAGE_SCRIPTS_HOME) { $env:CODEX_USAGE_SCRIPTS_HOME } elseif ($receipt.product -eq 'CodexUsageMonitorScripts' -and $receipt.profile) { [string]$receipt.profile } else { Join-Path $env:LOCALAPPDATA 'DailyOddBuilds\CodexUsageMonitorScripts' }
 $null = New-Item -ItemType Directory -Path $profile -Force
 $settingsFile = Join-Path $profile 'settings.json'; $stateFile = Join-Path $profile 'notices.json'; $commandFolder = Join-Path $profile 'commands'
 $null=New-Item -ItemType Directory -Path $commandFolder -Force
@@ -33,7 +34,7 @@ if($env:CODEX_USAGE_SCRIPTS_REGISTRY_NAMESPACE){
 function Set-Startup([bool]$Enabled) {
     if ($Enabled) {
         $exe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-        $value = '"' + $exe + '" -NoLogo -NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $PSCommandPath + '"'
+        $value = '"' + $exe + '" -NoLogo -NoProfile -NonInteractive -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + (Join-Path $PSScriptRoot 'Launch.ps1') + '"'
         if (-not (Test-Path $runKey)) {$null = New-Item -Path $runKey}
         $null = New-ItemProperty -Path $runKey -Name $runName -Value $value -PropertyType String -Force
     } else { Remove-ItemProperty -Path $runKey -Name $runName -ErrorAction SilentlyContinue }
@@ -52,6 +53,10 @@ if (-not $owns) {
 }
 if ($Stop -or $Toggle) { $mutex.ReleaseMutex(); $mutex.Dispose(); exit 0 }
 if (-not $Once) {Write-Json (Join-Path $profile 'instance.json') @{pid=$PID;version=$defaults.version}}
+if (-not $Once) {
+    . (Join-Path $PSScriptRoot 'Launch.ps1') -LoadOnly
+    Disconnect-MonitorConsole
+}
 Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes,System.Web.Extensions,WindowsBase
 Add-Type -Path "$PSScriptRoot\Native.cs" -ReferencedAssemblies @('System.dll','System.Core.dll',[Web.Script.Serialization.JavaScriptSerializer].Assembly.Location,[Windows.Automation.AutomationElement].Assembly.Location,[Windows.Automation.ControlType].Assembly.Location,[Windows.Rect].Assembly.Location)
 $rpc = $null; $feed = New-Object UsageScripts.Feed
@@ -69,9 +74,9 @@ function Check-ScriptUpdate([bool]$Force=$false) {
     $cache=Read-Json (Join-Path $profile 'updates.json')
     if(-not $Force -and $cache -and (Test-Number $cache.nextCheck) -and $cache.nextCheck -gt (Now) -and $cache.nextCheck -le (Now)+86400){$script:nextUpdate=$cache.nextCheck;return}
     $script:nextUpdate=(Now)+21600
-    $args='-NoLogo -NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "'+(Join-Path $root 'windows\Update.ps1')+'" -TargetRoot "'+$root+'" -Profile "'+$profile+'"'
-    if($Force){$args+=' -Force'}
-    $script:updateProcess=Start-Process powershell.exe -ArgumentList $args -WorkingDirectory $env:TEMP -WindowStyle Hidden -PassThru
+    $parameters=@('-TargetRoot',$root,'-Profile',$profile)
+    if($Force){$parameters+='-Force'}
+    $script:updateProcess=Start-BackgroundPowerShell (Join-Path $root 'windows\Update.ps1') $parameters
 }
 function Stop-UpdateCheck {
     if($script:updateProcess -and -not $script:updateProcess.HasExited){

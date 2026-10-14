@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.3"><img alt="버전 1.4.3" src="https://img.shields.io/badge/version-1.4.3-a5e4ce?labelColor=101617"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.4"><img alt="버전 1.4.4" src="https://img.shields.io/badge/version-1.4.4-a5e4ce?labelColor=101617"></a>
   <img alt="Windows 실제 실행 검증" src="https://img.shields.io/badge/Windows-tested-a5e4ce?labelColor=101617">
   <img alt="macOS 실기기 미검증 preview" src="https://img.shields.io/badge/macOS-preview-f1d77f?labelColor=101617">
   <a href="LICENSE"><img alt="코드 라이선스 MIT" src="https://img.shields.io/badge/code-MIT-a5e4ce?labelColor=101617"></a>
@@ -32,12 +32,12 @@ Day 001 of [daily_odd_builds](https://daily-odd-builds.web.app/) · OS 기본 �
 
 | 환경 | 다운로드 | 압축 해제 후 실행 | 상태 |
 | --- | --- | --- | --- |
-| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.3/CodexUsageMonitorScripts-1.4.3-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
-| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.3/CodexUsageMonitorScripts-1.4.3-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
-| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.3/CodexUsageMonitorScripts-1.4.3-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
-| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.3/CodexUsageMonitorScripts-1.4.3-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
+| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.4/CodexUsageMonitorScripts-1.4.4-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
+| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.4/CodexUsageMonitorScripts-1.4.4-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
+| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.4/CodexUsageMonitorScripts-1.4.4-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
+| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.4/CodexUsageMonitorScripts-1.4.4-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
 
-[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.3) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.3/SHA256SUMS.txt)
+[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.4) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.4/SHA256SUMS.txt)
 
 **Mac은 아직 실제 Mac에서 실행해보지 못했습니다.** 화면·권한·Pet 추적·로그인 자동 실행·실제 자동 업데이트가 장치 검증 전입니다. 아래 이미지도 모두 Windows 화면입니다. [미검증 목록](docs/MAC-QA.md)을 확인하고 preview 테스트 용도로 사용해주세요.
 
@@ -167,21 +167,41 @@ Windows 실제 WPF·계정/Pet 연결, 설치·업데이트·롤백·제거를 �
 
 </details>
 
+## 업데이트 로그
+
+### 1.4.4 · 2026-10-15
+
+- **Windows 설치본을 다시 켰을 때 빈 PowerShell 창이 남고, 그 창을 닫으면 모니터도 꺼지던 문제를 수정했습니다.**
+- 시작 메뉴·설정 바로가기·시작 프로그램·설치 직후·업데이트 후 실행이 같은 백그라운드 실행기를 사용합니다.
+- 구버전 바로가기와 업데이터의 직접 실행도 지원하며, 기존 시작 프로그램 등록은 새 실행 방식으로 이행합니다. 설치 경로와 사용자 설정은 유지합니다.
+- Windows 설치형·포터블과 OS별 자동 업데이트 파일을 함께 갱신했습니다. Mac은 **실기기 미검증 preview**를 유지합니다.
+
+### 1.4.3 · 2026-10-12
+
+- Windows 포터블의 실행용 CMD 창이 자동으로 닫히도록 수정했습니다. 부모 CMD를 닫아도 모니터가 계속 실행됩니다.
+- 시작·새로고침·설정 실행기에 같은 백그라운드 실행 방식을 적용했습니다.
+
+### 1.4.2 · 2026-10-12
+
+- Windows/Mac 설치형·포터블 스크립트 에디션과 자동 업데이트 파일을 공개했습니다. Mac은 preview입니다.
+
+[전체 릴리즈 이력](https://github.com/hssum9409/daily_odd_builds-public/releases?q=day001-v)
+
 ## 만든놈
 
 ### [hssum9409](https://github.com/hssum9409)
 
-매일 한개씩 잡동사니 만드는 사람  
+매일 한개씩 잡동사니 만드는 사람<br>
 요청사항은 [github](https://github.com/hssum9409/daily_odd_builds-public/issues) 에 보내면 수정할지도 안할지도. 버그는 가능한 빠르게 수정함.
 
-그 외 잡동사니가 보고싶은 사람은 [여기](https://daily-odd-builds.web.app/)로.  
+그 외 잡동사니가 보고싶은 사람은 [여기](https://daily-odd-builds.web.app/)로.<br>
 AI 슬롭 같다구요? 으쩌라구요
 
 버그 제보에는 OS, 버전, 설치형/포터블 여부와 재현 순서를 적어주세요. 계정 토큰이나 인증 파일은 올리지 마세요.
 
 ## 소스와 라이선스
 
-이 폴더는 **1.4.3 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
+이 폴더는 **1.4.4 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
 
 코드는 [MIT](LICENSE)입니다. 한국어·중국어·일본어 참고 번역과 영어 원문을 제공합니다. 지피쨩 캐릭터 아트의 출처와 적용 범위는 [ARTWORK.md](docs/ARTWORK.md), 화면 예시의 제작 방식은 [README-MEDIA.md](docs/README-MEDIA.md)를 참고하세요. OpenAI 공식 제품이 아닙니다.
 

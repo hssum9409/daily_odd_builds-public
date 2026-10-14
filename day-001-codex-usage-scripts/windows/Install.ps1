@@ -8,7 +8,9 @@ $source = Split-Path $PSScriptRoot -Parent
 if (-not $InstallBase) { $InstallBase = Join-Path $env:LOCALAPPDATA 'Programs' }
 $base = [IO.Path]::GetFullPath($InstallBase).TrimEnd('\')
 $target = Join-Path $base $product
-$profile = if ($env:CODEX_USAGE_SCRIPTS_HOME) { $env:CODEX_USAGE_SCRIPTS_HOME } else { Join-Path $env:LOCALAPPDATA "DailyOddBuilds\$product" }
+# Explorer/자동 시작과 Codex 실행 환경의 LOCALAPPDATA가 달라도 설정 위치를 유지한다.
+$previousReceipt=try {Get-Content -LiteralPath (Join-Path $target 'installed.json') -Raw -Encoding UTF8|ConvertFrom-Json} catch {$null}
+$profile = if ($env:CODEX_USAGE_SCRIPTS_HOME) { $env:CODEX_USAGE_SCRIPTS_HOME } elseif ($previousReceipt.product -eq $product -and $previousReceipt.profile) { [string]$previousReceipt.profile } else { Join-Path $env:LOCALAPPDATA "DailyOddBuilds\$product" }
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 # 격리 QA에서도 사용 중인 설치/시작 등록을 덮어쓰지 않도록 별도 이름을 허용한다.
 $registryName=if($env:CODEX_USAGE_SCRIPTS_REGISTRY_NAMESPACE){$env:CODEX_USAGE_SCRIPTS_REGISTRY_NAMESPACE}else{$product}
@@ -17,6 +19,7 @@ $uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$regi
 $menu = Join-Path ([Environment]::GetFolderPath('Programs')) $product
 if ($env:CODEX_USAGE_SCRIPTS_INSTALL_BASE) { $menu = Join-Path $base '.shortcuts' }
 $ps = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+. (Join-Path $PSScriptRoot 'Launch.ps1') -LoadOnly
 $lockHash = [BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes($target.ToLowerInvariant()))).Replace('-','').Substring(0,16)
 $lock = New-Object Threading.Mutex($false, "Local\UsageScriptsInstall-$lockHash")
 $owned = $false
@@ -54,7 +57,7 @@ function Stop-OwnedMonitor {
     return $true
 }
 function Start-InstalledMonitor {
-    Start-Process -FilePath $ps -ArgumentList ('-NoLogo -NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "'+(Join-Path $target 'windows\Monitor.ps1')+'"') -WorkingDirectory $target -WindowStyle Hidden
+    $null=Start-BackgroundPowerShell (Join-Path $target 'windows\Monitor.ps1')
 }
 $stage=$null;$backup=$null;$wasRunning=$false;$committed=$false
 try {
@@ -64,7 +67,7 @@ try {
         if ($receipt.product -ne $product) {throw 'Installation receipt mismatch.'}
         $null=Stop-OwnedMonitor
         $run=(Get-ItemProperty -Path $runKey -Name $registryName -ErrorAction SilentlyContinue).$registryName
-        if ($run -and $run.Contains((Join-Path $target 'windows\Monitor.ps1'))) {Remove-ItemProperty -Path $runKey -Name $registryName}
+        if (Test-OwnedStartupCommand $run $target) {Remove-ItemProperty -Path $runKey -Name $registryName}
         foreach ($name in @('Codex Usage Monitor Scripts.lnk','Settings.lnk','Uninstall.lnk')) {Remove-Item -LiteralPath (Join-Path $menu $name) -Force -ErrorAction SilentlyContinue}
         if ((Test-Path -LiteralPath $menu) -and -not (Get-ChildItem -LiteralPath $menu)) {Remove-Item -LiteralPath $menu}
         Remove-Item -LiteralPath $uninstallKey -Recurse -ErrorAction SilentlyContinue
@@ -87,7 +90,7 @@ try {
         if ((Payload-Digest $file) -ne $digest) {throw "Checksum mismatch: $relative"}
         $files+=$relative
     }
-    foreach ($required in @('windows/Monitor.ps1','windows/Install.ps1','assets/gp-chan-face.png','assets/gp-chan-monitor.png','defaults.json')) {if ($files -notcontains $required) {throw "Incomplete payload: $required"}}
+    foreach ($required in @('windows/Monitor.ps1','windows/Install.ps1','windows/Launch.ps1','assets/gp-chan-face.png','assets/gp-chan-monitor.png','defaults.json')) {if ($files -notcontains $required) {throw "Incomplete payload: $required"}}
     $version=(Get-Content -LiteralPath (Join-Path $source 'defaults.json') -Raw -Encoding UTF8 | ConvertFrom-Json).version
     if (Test-Path -LiteralPath $target) {
         if ((Get-Item -LiteralPath $target).Attributes -band [IO.FileAttributes]::ReparsePoint) {throw 'Linked installation directories are not supported.'}
@@ -101,12 +104,12 @@ try {
         $destination=Join-Path $stage $relative;$null=New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force
         Copy-Item -LiteralPath (Join-Path $source $relative) -Destination $destination
     }
-    @{product=$product;version=$version;root=$target;installedAt=[DateTimeOffset]::UtcNow.ToString('o')} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $stage 'installed.json') -Encoding UTF8
+    @{product=$product;version=$version;root=$target;profile=$profile;installedAt=[DateTimeOffset]::UtcNow.ToString('o')} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $stage 'installed.json') -Encoding UTF8
     $wasRunning=Stop-OwnedMonitor
     if (Test-Path -LiteralPath $target) {$backup=Join-Path $base ($product+'.backup-'+[Guid]::NewGuid().ToString('N'));Move-Item -LiteralPath $target -Destination $backup}
     Move-Item -LiteralPath $stage -Destination $target;$stage=$null
     $shell=New-Object -ComObject WScript.Shell;$null=New-Item -ItemType Directory -Path $menu -Force
-    foreach ($entry in @(@('Codex Usage Monitor Scripts','Monitor.ps1',''),@('Settings','Monitor.ps1',' -Settings'),@('Uninstall','Install.ps1',' -Uninstall'))) {
+    foreach ($entry in @(@('Codex Usage Monitor Scripts','Launch.ps1',''),@('Settings','Launch.ps1',' -Settings'),@('Uninstall','Install.ps1',' -Uninstall'))) {
         $shortcut=$shell.CreateShortcut((Join-Path $menu ($entry[0]+'.lnk')));$shortcut.TargetPath=$ps
         $shortcut.Arguments='-NoLogo -NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "'+(Join-Path $target ('windows\'+$entry[1]))+'"'+$entry[2]
         $shortcut.WorkingDirectory=$target;$shortcut.IconLocation=Join-Path $target 'assets\gp-chan.ico';$shortcut.Save()
@@ -115,7 +118,7 @@ try {
     $values=@{DisplayName='Codex Usage Monitor Scripts';DisplayVersion=$version;Publisher='hssum9409';InstallLocation=$target;DisplayIcon=(Join-Path $target 'assets\gp-chan.ico');UninstallString=('"'+$ps+'" -NoProfile -ExecutionPolicy Bypass -File "'+(Join-Path $target 'windows\Install.ps1')+'" -Uninstall');NoModify=1;NoRepair=1}
     foreach ($key in $values.Keys) {$type=if ($values[$key] -is [int]) {'DWord'} else {'String'};$null=New-ItemProperty -Path $uninstallKey -Name $key -Value $values[$key] -PropertyType $type -Force}
     $run=(Get-ItemProperty -Path $runKey -Name $registryName -ErrorAction SilentlyContinue).$registryName
-    if ($Startup -or ($run -and $run.Contains((Join-Path $target 'windows\Monitor.ps1')))) {& $ps -NoProfile -ExecutionPolicy Bypass -File (Join-Path $target 'windows\Monitor.ps1') -RegisterStartup;if ($LASTEXITCODE) {throw 'Startup registration failed.'}}
+    if ($Startup -or (Test-OwnedStartupCommand $run $target)) {& $ps -NoProfile -ExecutionPolicy Bypass -File (Join-Path $target 'windows\Monitor.ps1') -RegisterStartup;if ($LASTEXITCODE) {throw 'Startup registration failed.'}}
     $committed=$true
     if($Language -in @('ko','en','zh','ja') -or $Startup){
         $null=New-Item -ItemType Directory -Path $profile -Force;$settingsPath=Join-Path $profile 'settings.json'

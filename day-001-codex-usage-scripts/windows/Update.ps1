@@ -2,9 +2,14 @@
 param([string]$TargetRoot=(Split-Path $PSScriptRoot -Parent),[string]$Profile=$env:CODEX_USAGE_SCRIPTS_HOME,
     [switch]$Force,[string]$PackagePath='',[string]$Digest='',[string]$ExpectedVersion='',[switch]$NoRelaunch)
 $ErrorActionPreference='Stop'
+# 테스트 사본도 제품과 같은 실행기를 사용하며 모니터 PID를 직접 추적한다.
+. (Join-Path $PSScriptRoot 'Launch.ps1') -LoadOnly
 [Environment]::CurrentDirectory=$env:TEMP
 $TargetRoot=[IO.Path]::GetFullPath($TargetRoot)
-if (-not $Profile) {$Profile=Join-Path $env:LOCALAPPDATA 'DailyOddBuilds\CodexUsageMonitorScripts'}
+if (-not $Profile) {
+    $receipt=try {Get-Content -LiteralPath (Join-Path $TargetRoot 'installed.json') -Raw -Encoding UTF8|ConvertFrom-Json} catch {$null}
+    $Profile=if($receipt.product -eq 'CodexUsageMonitorScripts' -and $receipt.profile){[string]$receipt.profile}else{Join-Path $env:LOCALAPPDATA 'DailyOddBuilds\CodexUsageMonitorScripts'}
+}
 $null=New-Item -ItemType Directory -Path $Profile -Force
 $cachePath=Join-Path $Profile 'updates.json';$cache=@{nextCheck=0;blockedUntil=0;status='update_checking';failedVersion=''}
 function Json([string]$Path) {try {return Get-Content -LiteralPath $Path -Raw -Encoding UTF8|ConvertFrom-Json} catch {return $null}}
@@ -84,8 +89,7 @@ function Copy-Payload([string]$From,[string]$To,$Files) {
     foreach($name in $Files+@('payload.sha256')){$path=Safe-Path $To $name;$null=New-Item -ItemType Directory -Path (Split-Path $path -Parent) -Force;Copy-Item -LiteralPath (Safe-Path $From $name) -Destination $path -Force}
 }
 function Launch-Monitor {
-    $args='-NoLogo -NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "'+(Join-Path $TargetRoot 'windows\Monitor.ps1')+'"'
-    return Start-Process powershell.exe -ArgumentList $args -WorkingDirectory $env:TEMP -WindowStyle Hidden -PassThru
+    return Start-BackgroundPowerShell (Join-Path $TargetRoot 'windows\Monitor.ps1')
 }
 function Confirm-Update($Words,[string]$Old,[string]$New) {
     Add-Type -AssemblyName PresentationFramework
