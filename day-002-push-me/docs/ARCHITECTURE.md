@@ -8,6 +8,7 @@
 flowchart TD
     U[사용자 / Flutter Web PWA] -->|Google 로그인| A[Firebase Authentication]
     U -->|예약 / 취소 / 내역| D[Cloud Firestore]
+    U -->|즉시 전송 / 인증 및 권한 검사| F
     U -->|클릭해서 권한 허용 / 기기 등록| M[Firebase Cloud Messaging]
     H[Firebase Hosting / HTTPS] --> U
     C[GCP Cloud Scheduler / 매분] --> F[Firebase Functions]
@@ -72,3 +73,7 @@ iOS/iPadOS는 16.4+ Home Screen Web App에서 진행합니다. 표준 기능 검
 Chrome 개인 예약의 실제 백그라운드 수신/클릭과 production 예약 서버를 확인했습니다. 그룹/매일 반복의 로직·권한·UI는 자동 검사와 격리 환경에서 확인했으며, 복수 실계정 수신 및 다음 날 실제 반복 수신은 별도 검증 대상입니다.
 
 공개 채널/페이지 구독, 계정 삭제 UI, 대규모 발송 최적화는 이번 서비스의 완성 범위에 포함하지 않습니다. 긴급·정각 보장용 알람이 아닌 작은 예약 Push 서비스입니다.
+
+## 즉시 전송
+
+인증된 API가 개인 또는 그룹장/관리자의 그룹 대상만 허용하고, 활성 한도와 발송 시작 상태를 하나의 transaction으로 확정합니다. 분 단위 예약 실행을 기다리지 않고 기존 FCM 전달 처리기를 호출합니다. 같은 요청의 재전송은 저장된 결과만 돌려주며, 불명확한 전송을 자동 재발송하지 않습니다. 완료 후 활성 슬롯을 반환하고 변경 버전과 최근 내역을 갱신합니다. 그룹은 제한 시간까지 수신자를 나누어 처리하고 남은 작업은 기존 예약 서버가 이어갑니다.
