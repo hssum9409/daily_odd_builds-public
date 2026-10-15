@@ -15,7 +15,7 @@ function run(argv) {
             else environment.removeObjectForKey($('CODEX_USAGE_SCRIPTS_INSTALL_BASE'));
         }
         p.environment=environment;p.launchPath=$(path);p.arguments=$(args);p.standardOutput=out;p.standardError=$.NSFileHandle.fileHandleForWritingAtPath($('/dev/null'));
-        p.launch();var bytes=out.fileHandleForReading.readDataToEndOfFile;p.waitUntilExit();if(Number(p.terminationStatus)!==0)throw new Error('update_download');
+        p.launch;var bytes=out.fileHandleForReading.readDataToEndOfFile;p.waitUntilExit;if(Number(p.terminationStatus)!==0)throw new Error('update_download');
         return ObjC.unwrap($.NSString.alloc.initWithDataEncoding(bytes,$.NSUTF8StringEncoding))||'';
     }
     eval(read(root+'/common/updates.js'));
@@ -23,13 +23,13 @@ function run(argv) {
     if(cache.blockedUntil>now && cache.blockedUntil<=now+86400)return 'rate limited';
     if(!force && cache.nextCheck>now && cache.nextCheck<=now+86400)return 'cached';
     var lock=$.NSDistributedLock.lockWithPath($(home+'/update.lock'));
-    if(!lock.tryLock()){
+    if(!lock.tryLock){
         // 조회/교체는 수분 안에 끝난다. 비정상 종료 후의 오래된 잠금만 복구한다.
         var date=lock.lockDate,age=date?-Number(date.timeIntervalSinceNow):0;
         var owner=json(home+'/update-owner.json'),live=false;
         if(owner && Number.isInteger(owner.pid) && owner.pid>0){try{live=exec('/bin/ps',['-p',String(owner.pid),'-o','command=']).indexOf(owner.root+'/macos/Update.js')>=0;}catch(_){}}
         if(live)return 'busy';
-        if(age<600)return 'busy';lock.breakLock();if(!lock.tryLock())return 'busy';
+        if(age<600)return 'busy';lock.breakLock;if(!lock.tryLock)return 'busy';
     }
     var job=home+'/updates/'+ObjC.unwrap($.NSUUID.UUID.UUIDString),backup=job+'/backup',files=[],oldFiles=[],swapped=false,candidate=null;
     cache.nextCheck=now+21600;
@@ -68,7 +68,7 @@ function run(argv) {
         if(!candidate){status('update_unavailable');return 'no update';}
         if(!force && candidate.version===cache.failedVersion)return 'failed version skipped';
         var settings=json(home+'/settings.json')||{},words=json(root+'/strings.json')[settings.language||'ko'];
-        if(!settings.autoUpdate){var alert=$.NSAlert.alloc.init;alert.messageText=$(words.update_title);alert.informativeText=$(words.update_body.replace('{old}',current).replace('{new}',candidate.version));alert.addButtonWithTitle($(words.update_now));alert.addButtonWithTitle($(words.startup_later));if(Number(alert.runModal())!==1000){status('update_available');return 'declined';}}
+        if(!settings.autoUpdate){var alert=$.NSAlert.alloc.init;alert.messageText=$(words.update_title);alert.informativeText=$(words.update_body.replace('{old}',current).replace('{new}',candidate.version));alert.addButtonWithTitle($(words.update_now));alert.addButtonWithTitle($(words.startup_later));if(Number(alert.runModal)!==1000){status('update_available');return 'declined';}}
         status('update_downloading');fetch(candidate.sums,job+'/SHA256SUMS.txt',262144);var sum=ScriptUpdates.checksum(read(job+'/SHA256SUMS.txt'),candidate.name);
         if(candidate.digest && candidate.digest!==sum)throw new Error('update_checksum');fetch(candidate.url,job+'/payload.zip',33554432);
         if(digest(job+'/payload.zip')!==sum || Number(fm.attributesOfItemAtPathError($(job+'/payload.zip'),null).objectForKey($.NSFileSize))!==candidate.size)throw new Error('update_checksum');
@@ -84,5 +84,5 @@ function run(argv) {
         var state='failed';
         if(swapped){try{stop();apply(backup,oldFiles,files);start(current);state='rolled_back';}catch(_){state='recovery_required';}}
         cache.failedVersion=candidate?candidate.version:'';status(/^update_/.test(error.message)?error.message:'update_network');write(job+'/result.json',{status:state,error:String(error),backup:backup});return state;
-    } finally {fm.removeItemAtPathError($(home+'/update-owner.json'),null);lock.unlock();}
+    } finally {fm.removeItemAtPathError($(home+'/update-owner.json'),null);lock.unlock;}
 }

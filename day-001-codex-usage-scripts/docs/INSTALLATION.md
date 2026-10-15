@@ -10,6 +10,8 @@ macOS preview 설치형은 ZIP을 풀고 최상위 `Install.command`를 실행�
 해당 폴더의 `macos/run.command` / `settings.command`로 실행하며, 로그인 자동 실행은 설정에서 선택하거나 `install.command --startup`으로 선택합니다.
 실제 Mac의 실행 권한·보안 안내·접근성 권한·로그인 동작은 아직 검증하지 않았습니다. `MAC-QA.md`를 먼저 확인하세요.
 
+1.4.4 이하 Mac 버전에서 `choice.runModal is not a function` 오류가 발생했다면 1.4.5 설치 ZIP을 전체 압축 해제한 뒤 `Install.command`로 수동 갱신하세요. 기존 Mac 업데이터에도 같은 호출 오류가 있으므로 자동 갱신에 의존하지 마세요. 개발자 확인 경고는 실행 시도 뒤 시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기에서 해당 파일을 승인할 수 있습니다. [Apple 안내](https://support.apple.com/ko-kr/102445)를 참고하세요.
+
 ## 업데이트와 제거
 
 설치형은 새 설치 ZIP의 Install 진입점을 실행하면 전체 파일의 SHA-256을 확인한 후 교체합니다. 내부 `windows/update.cmd` / `macos/update.command`도 설치형 갱신용입니다. 포터블은 설정에서 자동 업데이트하거나 종료 후 새 포터블 ZIP으로 교체하세요. 자동 업데이트는 설치형·포터블 모두 현재 실행 위치를 갱신합니다.

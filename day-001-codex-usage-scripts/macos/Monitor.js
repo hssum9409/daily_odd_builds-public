@@ -1,4 +1,5 @@
 /* macOS 내장 JXA 실행기. Node/Python/Swift 설치나 .app 번들이 필요하지 않다. */
+// 무인수 ObjC selector는 .launch/.run처럼 접근한다. NSHomeDirectory 같은 C 함수는 ()를 유지한다.
 ObjC.import('Foundation');
 ObjC.import('AppKit');
 ObjC.import('ApplicationServices');
@@ -22,7 +23,7 @@ function startUpdate(force) {
     nextUpdate=now()+21600;
     updateTask=task('/usr/bin/osascript',['-l','JavaScript',root+'/macos/Update.js',root,home].concat(force?['--force']:[]));
 }
-function stopUpdateCheck(){var state=readJSON(home+'/updates.json')||{};if(updateTask && updateTask.running && ['applying','installed'].indexOf(state.status)<0)updateTask.terminate();}
+function stopUpdateCheck(){var state=readJSON(home+'/updates.json')||{};if(updateTask && updateTask.running && ['applying','installed'].indexOf(state.status)<0)updateTask.terminate;}
 function now() { return Date.now() / 1000; }
 function unwrap(v) { return ObjC.unwrap(v); }
 function textFile(path) { var v = $.NSString.stringWithContentsOfFileEncodingError($(path), $.NSUTF8StringEncoding, null); return v ? unwrap(v) : ''; }
@@ -38,7 +39,7 @@ function instanceAlive(record) {
     if (!record || !Number.isInteger(Number(record.pid)) || Number(record.pid) <= 0) return false;
     // 오래된 heartbeat만으로 실행 중인 창의 lock을 깨거나 파일을 교체하지 않는다.
     var output = $.NSPipe.pipe, probe = task('/bin/ps', ['-p', String(record.pid), '-o', 'command='], output);
-    probe.waitUntilExit();
+    probe.waitUntilExit;
     var bytes = output.fileHandleForReading.readDataToEndOfFile;
     var command = unwrap($.NSString.alloc.initWithDataEncoding(bytes, $.NSUTF8StringEncoding)) || '';
     return Number(probe.terminationStatus) === 0 && command.indexOf((record.root || root) + '/macos/Monitor.js') >= 0;
@@ -50,7 +51,7 @@ function task(path, args, output) {
     var p = $.NSTask.alloc.init;
     p.launchPath = $(path); p.arguments = nsArray(args);
     p.standardOutput = output || nullFile(); p.standardError = nullFile();
-    p.launch(); return p;
+    p.launch; return p;
 }
 function findCodex() {
     var fm = $.NSFileManager.defaultManager, candidates = [];
@@ -68,9 +69,9 @@ function findCodex() {
 function stopRPC() {
     if (!rpc) return;
     var old = rpc; rpc = null;
-    try { $.NSNotificationCenter.defaultCenter.removeObserverNameObject(delegate, $.NSFileHandleReadCompletionNotification, old.reader); old.writer.closeFile(); } catch (_) { }
-    try { if (old.process.running) old.process.terminate(); } catch (_) { }
-    try { old.reader.closeFile(); } catch (_) { }
+    try { $.NSNotificationCenter.defaultCenter.removeObserverNameObject(delegate, $.NSFileHandleReadCompletionNotification, old.reader); old.writer.closeFile; } catch (_) { }
+    try { if (old.process.running) old.process.terminate; } catch (_) { }
+    try { old.reader.closeFile; } catch (_) { }
 }
 function rpcSend(method, params) {
     if (!rpc || rpc.waiting) return;
@@ -84,7 +85,7 @@ function startRPC() {
     p.launchPath = $(findCodex()); p.arguments = nsArray(['app-server', '--listen', 'stdio://']); p.standardInput = input; p.standardOutput = output; p.standardError = nullFile();
     rpc = {process: p, writer: input.fileHandleForWriting, reader: output.fileHandleForReading, partial: '', waiting: null, id: 0, ready: false};
     $.NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(delegate, 'rpcRead:', $.NSFileHandleReadCompletionNotification, rpc.reader);
-    p.launch(); rpc.reader.readInBackgroundAndNotify();
+    p.launch; rpc.reader.readInBackgroundAndNotify;
     rpcSend('initialize', {clientInfo: {name: 'codex_usage_scripts', title: 'Codex Usage Monitor Scripts', version: defaults.version}});
 }
 function rpcRead(notification) {
@@ -115,7 +116,7 @@ function rpcRead(notification) {
                 if (once) onceResult = {version: defaults.version, lines: core.render(data, settings, now(), words).lines, planPro: core.pro(data), source: 'account/rateLimits/read'};
             }
         }
-        if (rpc) rpc.reader.readInBackgroundAndNotify();
+        if (rpc) rpc.reader.readInBackgroundAndNotify;
     } catch (_) { lastError = 'connection'; stopRPC(); nextUsage = now() + 10; if (once) onceResult = {error: 'connection'}; }
 }
 function startFeed() {
@@ -201,7 +202,7 @@ function button(value, rect, callback, checkbox) {
     b.tag = ++actionId; actions[actionId] = callback; b.target = delegate; b.action = 'action:';
     return b;
 }
-function play(kind) { if (settings.placement !== 'hidden' && ((kind === 'reset' && settings.resetSound) || (kind === 'credit' && settings.creditSound))) $.NSSound.beep(); }
+function play(kind) { if (settings.placement !== 'hidden' && ((kind === 'reset' && settings.resetSound) || (kind === 'credit' && settings.creditSound))) $.NSSound.beep; }
 function openLink(url) { $.NSWorkspace.sharedWorkspace.openURL($.NSURL.URLWithString($(url))); }
 function createCard(kind) {
     var p = $.NSPanel.alloc.initWithContentRectStyleMaskBackingDefer($.NSMakeRect(80, 80, 350, 90), $.NSWindowStyleMaskBorderless | $.NSWindowStyleMaskNonactivatingPanel, $.NSBackingStoreBuffered, false);
@@ -249,7 +250,7 @@ function displayCard(card, lines, visible) {
         card.view.layer.backgroundColor = color(style.color, style.opacity).CGColor;
         card.view.layer.borderColor = color('#FFFFFF', 48/255).CGColor;
         var subviews = card.view.subviews;
-        while (Number(subviews.count)) { subviews.objectAtIndex(0).removeFromSuperview(); subviews = card.view.subviews; }
+        while (Number(subviews.count)) { subviews.objectAtIndex(0).removeFromSuperview; subviews = card.view.subviews; }
         var top = height - 28 - extraHeight / 2;
         for (var i = 0; i < rows.length; i++) { top -= rows[i].height; rows[i].view.setFrame($.NSMakeRect(16, top, rows[i].width, rows[i].height)); card.view.addSubview(rows[i].view); }
         if (card.kind === 'reset') {
@@ -259,7 +260,7 @@ function displayCard(card, lines, visible) {
         card.view.addSubview(card.close); if (card.kind !== 'credit') card.view.addSubview(card.more);
     }
     if (card.kind === 'main') card.window.movableByWindowBackground = mode === 'free';
-    card.window.orderFrontRegardless();
+    card.window.orderFrontRegardless;
 }
 function screens() {
     var list = $.NSScreen.screens, result = [], primaryTop = Number(list.objectAtIndex(0).frame.size.height);
@@ -275,8 +276,8 @@ function moveCard(card, x, y, animate, screen) {
     if (card.x !== null && Math.abs(card.x - x) < 0.5 && Math.abs(card.y - y) < 0.5) return;
     var frame = $.NSMakeRect(x, screen.primaryTop - y - card.height, card.width, card.height);
     if (animate) {
-        $.NSAnimationContext.beginGrouping();$.NSAnimationContext.currentContext.duration=settings.motionMs/1000;
-        card.window.animator.setFrameDisplay(frame,true);$.NSAnimationContext.endGrouping();
+        $.NSAnimationContext.beginGrouping;$.NSAnimationContext.currentContext.duration=settings.motionMs/1000;
+        card.window.animator.setFrameDisplay(frame,true);$.NSAnimationContext.endGrouping;
     } else card.window.setFrameDisplay(frame,true);
     card.x = x; card.y = y;
 }
@@ -330,7 +331,7 @@ function render(force) {
     else if (tooltip) {
         var tf = tooltip.contentViewController.view.window.frame;
         var tx = Number(tf.origin.x), ty = screen.primaryTop - Number(tf.origin.y) - Number(tf.size.height);
-        if (pos.x < tx || pos.x > tx + Number(tf.size.width) || pos.y < ty || pos.y > ty + Number(tf.size.height)) { tooltip.close(); tooltip = null; }
+        if (pos.x < tx || pos.x > tx + Number(tf.size.width) || pos.y < ty || pos.y > ty + Number(tf.size.height)) { tooltip.close; tooltip = null; }
     }
 }
 function saveSettings() { writeJSON(home + '/settings.json', settings); }
@@ -368,7 +369,7 @@ function setStartup(enabled) {
 var settingsUI = null;
 function showSettings() { if (!settingsUI) settingsUI = eval(textFile(root + '/macos/Settings.js')); settingsUI.show(); }
 
-function alert(message) { var a = $.NSAlert.alloc.init; a.messageText = $(message); a.runModal(); }
+function alert(message) { var a = $.NSAlert.alloc.init; a.messageText = $(message); a.runModal; }
 function setupMenu() {
     statusItem = $.NSStatusBar.systemStatusBar.statusItemWithLength($.NSVariableStatusItemLength); var icon = $.NSImage.alloc.initWithContentsOfFile($(root + '/assets/gp-chan-face.png')); icon.size = $.NSMakeSize(18,18); statusItem.button.image = icon;
     var menu = $.NSMenu.alloc.init;
@@ -379,11 +380,11 @@ function setupMenu() {
 function shutdown() {
     if (stopping) return; stopping = true; stopRPC();
     stopUpdateCheck();
-    if (feedTask) { try { if (feedTask.running) feedTask.terminate(); } catch (_) { } }
-    if (timer) timer.invalidate();
+    if (feedTask) { try { if (feedTask.running) feedTask.terminate; } catch (_) { } }
+    if (timer) timer.invalidate;
     if (mode === 'free') saveSettings();
     var owned = readJSON(home + '/instance.json'); if (owned && owned.id === instanceId) $.NSFileManager.defaultManager.removeItemAtPathError($(home + '/instance.json'), null);
-    if (instanceLock) { instanceLock.unlock(); instanceLock = null; }
+    if (instanceLock) { instanceLock.unlock; instanceLock = null; }
     if (app) app.stop(null);
 }
 function tick() {
@@ -409,7 +410,7 @@ function tick() {
             if (control.command === 'refresh') { nextUsage = 0; nextFeed = 0; }
         }
         var apps = desktopApps(), present = apps.length > 0;
-        if (!present && alive) { stopRPC(); stopUpdateCheck(); nextUsage = 0; pet = null; creditState.previous = null; if (feedTask && feedTask.running) feedTask.terminate(); feedTask = null; nextFeed = 0; }
+        if (!present && alive) { stopRPC(); stopUpdateCheck(); nextUsage = 0; pet = null; creditState.previous = null; if (feedTask && feedTask.running) feedTask.terminate; feedTask = null; nextFeed = 0; }
         alive = present;
         if (alive) {
             if(now()>=nextUpdate)startUpdate(false);
@@ -433,7 +434,7 @@ function tick() {
 function syncReactionTimer() {
     if(!timer)return;
     var interval=core.reactionInterval(settings,alive,(Number($.NSEvent.pressedMouseButtons)&1)!==0)/1000;
-    if(Number(timer.timeInterval)!==interval){timer.invalidate();timer=$.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(interval,delegate,'tick:',null,true);}
+    if(Number(timer.timeInterval)!==interval){timer.invalidate;timer=$.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(interval,delegate,'tick:',null,true);}
 }
 ObjC.registerSubclass({
     name: 'UsageScriptsDelegate', superclass: 'NSObject', methods: {
@@ -478,10 +479,10 @@ function run(argv) {
     }
     var previous = readJSON(home + '/instance.json');
     instanceLock = $.NSDistributedLock.lockWithPath($(home + '/instance.lock'));
-    if (!instanceLock.tryLock()) {
+    if (!instanceLock.tryLock) {
         var lockDate = instanceLock.lockDate, lockAge = lockDate ? -Number(lockDate.timeIntervalSinceNow) : 0;
         if (instanceAlive(previous) || lockAge < 15) { queueCommand(argv.indexOf('--settings') >= 0 ? 'settings' : 'refresh'); return 'Already running'; }
-        instanceLock.breakLock(); if (!instanceLock.tryLock()) throw new Error('Another monitor is starting');
+        instanceLock.breakLock; if (!instanceLock.tryLock) throw new Error('Another monitor is starting');
     }
     instanceId = unwrap($.NSUUID.UUID.UUIDString); writeJSON(home + '/instance.json', {id: instanceId, heartbeat: now(), pid: Number($.NSProcessInfo.processInfo.processIdentifier), root: root});
     app = $.NSApplication.sharedApplication; app.setActivationPolicy($.NSApplicationActivationPolicyAccessory);
@@ -491,5 +492,5 @@ function run(argv) {
     timer = $.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(2, delegate, 'tick:', null, true);
     if (argv.indexOf('--settings') >= 0) showSettings();
     writeJSON(home + '/instance.json', {id:instanceId,heartbeat:now(),pid:Number($.NSProcessInfo.processInfo.processIdentifier),root:root,version:defaults.version,ready:true});
-    app.run(); shutdown(); return '';
+    app.run; shutdown(); return '';
 }

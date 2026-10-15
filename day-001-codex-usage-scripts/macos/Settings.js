@@ -34,8 +34,8 @@ function paintSwitch(f) {
     var on = Number(f.button.state) === 1;
     f.button.layer.backgroundColor = color(on ? '#a5e4ce' : '#405258').CGColor;
     f.thumb.layer.backgroundColor = color(on ? '#101617' : '#edf4f1').CGColor;
-    $.NSAnimationContext.beginGrouping(); $.NSAnimationContext.currentContext.duration = 0.16;
-    f.thumb.animator.setFrameOrigin($.NSMakePoint(on ? 18 : 3, 3)); $.NSAnimationContext.endGrouping();
+    $.NSAnimationContext.beginGrouping; $.NSAnimationContext.currentContext.duration = 0.16;
+    f.thumb.animator.setFrameOrigin($.NSMakePoint(on ? 18 : 3, 3)); $.NSAnimationContext.endGrouping;
     f.button.alphaValue = f.button.enabled ? 1 : 0.4; f.title.alphaValue = f.button.enabled ? 1 : 0.4;
 }
 function uiChoice(parent, key, name, values, labels, y, x, width) {
@@ -202,7 +202,7 @@ function buildSettings() {
 function showSettings() {
     if (!settingsWindow) {
         settingsWindow = $.NSWindow.alloc.initWithContentRectStyleMaskBackingDefer($.NSMakeRect(0,0,840,720), $.NSWindowStyleMaskTitled | $.NSWindowStyleMaskClosable | $.NSWindowStyleMaskMiniaturizable, $.NSBackingStoreBuffered, false);
-        settingsWindow.title = $('Codex Usage Monitor'); settingsWindow.releasedWhenClosed = false; settingsWindow.center(); buildSettings();
+        settingsWindow.title = $('Codex Usage Monitor'); settingsWindow.releasedWhenClosed = false; settingsWindow.center; buildSettings();
     }
     syncPetAvailability(); settingsWindow.makeKeyAndOrderFront(null); app.activateIgnoringOtherApps(true);
 }

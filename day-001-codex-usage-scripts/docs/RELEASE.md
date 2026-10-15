@@ -1,6 +1,12 @@
-# Codex Usage Monitor Scripts 1.4.4 — 배포 안내
+# Codex Usage Monitor Scripts 1.4.5 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.4는 Windows 설치본의 백그라운드 실행 경로를 보완합니다. 공개된 1.4.3 파일은 교체하지 않습니다. Mac은 **실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.5는 Mac 설치 중 `choice.runModal is not a function` 오류와 같은 원인의 실행·종료·업데이트 호출을 수정합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **실기기 미검증 preview**를 유지합니다.
+
+## 1.4.5 변경 사항
+
+Mac 설치기의 언어 선택·라이선스 동의 창에서 `runModal` 반환값을 함수로 다시 호출하여 설치가 중단되던 오류를 수정했습니다. 실행·대기·종료, 파이프·잠금·타이머·창·애니메이션에도 JXA의 무인수 Objective-C 메서드 접근 규칙을 적용했습니다. 관련 모의 호스트도 함수 대신 getter를 사용하도록 고쳐 재발 검사를 추가했습니다.
+
+Windows/Mac 설치형·포터블·자동 업데이트 ZIP을 같은 버전으로 제공합니다. Windows 기능 변경은 없으며 기존 백그라운드 실행 수정을 유지합니다. 실제 Mac 설치·화면 표시·Pet 추적·업데이트는 아직 미검증입니다. 1.4.4 이하에서 설치가 중단됐다면 새 설치 ZIP을 전체 압축 해제하고 `Install.command`를 실행하세요. 기존 Mac 업데이터에도 같은 호출 오류가 있어 이 수정은 수동 설치를 권장합니다.
 
 ## 1.4.4 변경 사항
 
@@ -12,10 +18,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.4-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.4.4-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.4-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.4-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.5-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.4.5-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.5-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.5-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 

@@ -1,3 +1,11 @@
+## 2026-10-15 실제 Mac 제보: JXA 무인수 selector 호출 오류
+
+1.4.2 설치본에서 언어 선택 뒤 `choice.runModal is not a function` / `runModal is "1000"` 오류가 제보됐다. 공개 1.4.4까지 같은 호출이 남아 있었다. Gatekeeper 통과 뒤 설치 UI에서 발생하는 코드 오류이며 1.4.5 소스에서 수정했다.
+
+JXA는 무인수 Objective-C 메서드를 속성 접근으로 실행한다. `choice.runModal()`은 창의 반환값 1000을 다시 함수로 호출한다. 1.4.5 소스의 설치·알림·업데이트 확인창, NSTask 실행/종료/대기, 파이프·잠금·타이머·창·애니메이션의 같은 잘못된 호출을 수정했다. `NSHomeDirectory()` / `AXIsProcessTrusted()` 같은 C 함수의 호출 문법은 유지했다.
+
+`node --test tests/mac_jxa_bridge.test.js tests/mac_updates.test.js`는 getter 기반 모의 호스트에서 설치 동의/취소/언어/시작 등록, 프로세스·RPC 경계, 업데이트 승인/거절/복구를 검사한다. 기존 함수형 모의 객체가 JXA 규칙 오류를 허용했던 점도 수정했다. **이 검사는 실제 JXA/AppKit 실행이 아니다. 수정본의 Mac 설치부터 패널 표시·Pet 추적·업데이트까지 실제 장치에서 다시 확인해야 한다. 공개 1.4.4 ZIP은 보존하고 1.4.5를 새로 배포한다. 기존 Mac 업데이터도 같은 규칙 오류가 있으므로 1.4.4 이하에서는 새 설치 ZIP을 통한 수동 갱신을 권장한다.**
+
 ## 1.4.3 포터블 터미널 연결 점검
 
 Mac 포터블 실행기는 기존 `nohup`과 `</dev/null >/dev/null 2>&1 &`를 유지한다. 일반 실행은 부모 셸을 기다리지 않고, 단발 조회·명시적인 `--foreground`는 의도적으로 동기 실행한다.
