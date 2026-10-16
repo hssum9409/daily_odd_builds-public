@@ -71,17 +71,45 @@ function Get-View($Data, $Settings, [double]$Now, $Words) {
     if (-not $lines.Count) { $lines = @($Words.noData) }
     return @{lines = $lines; tickets = $ticket; balance = $balance; unlimited = $unlimited; pro = (Test-Pro $Data)}
 }
-function Get-Scheduled($Payload) {
+function Get-ResetTimestamp($Value) {
+    $date = [DateTimeOffset]::MinValue
+    if ($Value -is [string] -and $Value -match '(Z|[+-]\d\d:\d\d)$' -and [DateTimeOffset]::TryParse($Value, [ref]$date)) { return $date.ToUnixTimeSeconds() }
+    return $null
+}
+function Get-ResetSource($Source) {
+    if ($Source.author -ceq 'thsottiaux' -and $Source.url -cmatch '^https://(x|twitter)\.com/thsottiaux/status/\d+(\?.*)?$') { return $Source.url }
+    return ''
+}
+function Get-Scheduled($Payload, [double]$Now = ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds())) {
     $a = $Payload.data.scheduled_reset
-    if (-not $a -or $a.status -ne 'scheduled' -or $a.id -notmatch '^[a-zA-Z0-9_-]{1,64}$' -or $a.reset_type -notin @('regular', 'banked')) { return $null }
-    $at = $null; $date = [DateTimeOffset]::MinValue
-    if ($a.scheduled_for -match '(Z|[+-]\d\d:\d\d)$' -and [DateTimeOffset]::TryParse($a.scheduled_for, [ref]$date)) { $at = $date.ToUnixTimeSeconds() }
-    $url = ''
-    if ($a.source.author -eq 'thsottiaux' -and $a.source.url -match '^https://(x|twitter)\.com/thsottiaux/status/\d+(\?.*)?$') { $url = $a.source.url }
-    return @{id = $a.id; type = $a.reset_type; at = $at; url = $url}
+    # 유효한 예고를 우선한다. 조짐 유효기간은 초기화 예정 시각과 분리한다.
+    if ($a -and $a.status -eq 'scheduled' -and $a.id -match '^[a-zA-Z0-9_-]{1,64}$' -and $a.reset_type -in @('regular', 'banked')) {
+        return @{id = $a.id; type = $a.reset_type; at = (Get-ResetTimestamp $a.scheduled_for); url = (Get-ResetSource $a.source)}
+    }
+    $watch = $Payload.data.active_watch
+    if (-not $watch) { return $null }
+    $url = Get-ResetSource $watch.source; $until = Get-ResetTimestamp $watch.expires_at
+    if (-not $url -or -not (Test-Finite $until) -or $until -le $Now) { return $null }
+    $observed = Get-ResetTimestamp $watch.observed_at; $completed = Get-ResetTimestamp $Payload.data.latest_reset.announced_at
+    if ((Test-Finite $observed) -and (Test-Finite $completed) -and $completed -ge $observed) { return $null }
+    $hours = if ($watch.forecast_window -cmatch '^within ([1-9]\d{0,2})h$') { [int]$Matches[1] } else { $null }
+    $post = [regex]::Match($url, '/status/(\d+)').Groups[1].Value
+    return @{id = "watch-$post"; type = 'watch'; at = $null; until = $until; hours = $hours; url = $url}
+}
+function Test-NoticeActive($Announcement, [double]$Now) {
+    return [bool]($Announcement -and ($Announcement.type -ne 'watch' -or ((Test-Finite $Announcement.until) -and $Now -lt $Announcement.until)))
+}
+function Get-NoticeTitle($Announcement, [double]$Now, $Words) {
+    if ($Announcement.type -eq 'watch') {
+        $hint = if (Test-Finite $Announcement.hours) { $Words.watch_within.Replace('{hours}', [string]$Announcement.hours) } else { $Words.watch_pending }
+        return $Words.reset_watch + ' · ' + $hint
+    }
+    $kind = if ($Announcement.type -eq 'banked') { $Words.reset_stored } else { $Words.reset_normal }
+    return "$kind $($Words.notice_reset) · $($Words.notice_after.Replace('{value}', (Get-Forecast $Announcement $Now $Words))) $($Words.estimated)"
 }
 function Get-ReminderKey($Announcement, [double]$Now, [int]$Minutes) {
-    if (-not $Announcement) { return '' }
+    if (-not (Test-NoticeActive $Announcement $Now)) { return '' }
+    if ($Announcement.type -eq 'watch') { return $Announcement.id + ':watch:' + [Math]::Floor($Now / ($Minutes * 60)) }
     if (-not (Test-Finite $Announcement.at)) { return $Announcement.id + ':pending' }
     $remain = [Math]::Max(0, $Announcement.at - $Now)
     $key = [string][Math]::Ceiling($remain / ($Minutes * 60))

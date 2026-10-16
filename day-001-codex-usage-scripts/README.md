@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.5"><img alt="버전 1.4.5" src="https://img.shields.io/badge/version-1.4.5-a5e4ce?labelColor=101617"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.6"><img alt="버전 1.4.6" src="https://img.shields.io/badge/version-1.4.6-a5e4ce?labelColor=101617"></a>
   <img alt="Windows 실제 실행 검증" src="https://img.shields.io/badge/Windows-tested-a5e4ce?labelColor=101617">
   <img alt="macOS 실기기 미검증 preview" src="https://img.shields.io/badge/macOS-preview-f1d77f?labelColor=101617">
   <a href="LICENSE"><img alt="코드 라이선스 MIT" src="https://img.shields.io/badge/code-MIT-a5e4ce?labelColor=101617"></a>
@@ -32,12 +32,12 @@ Day 001 of [daily_odd_builds](https://daily-odd-builds.web.app/) · OS 기본 �
 
 | 환경 | 다운로드 | 압축 해제 후 실행 | 상태 |
 | --- | --- | --- | --- |
-| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.5/CodexUsageMonitorScripts-1.4.5-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
-| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.5/CodexUsageMonitorScripts-1.4.5-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
-| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.5/CodexUsageMonitorScripts-1.4.5-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
-| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.5/CodexUsageMonitorScripts-1.4.5-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
+| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.6/CodexUsageMonitorScripts-1.4.6-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
+| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.6/CodexUsageMonitorScripts-1.4.6-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
+| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.6/CodexUsageMonitorScripts-1.4.6-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
+| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.6/CodexUsageMonitorScripts-1.4.6-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
 
-[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.5) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.5/SHA256SUMS.txt)
+[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.6) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.6/SHA256SUMS.txt)
 
 **Mac은 아직 실제 Mac에서 실행해보지 못했습니다.** 화면·권한·Pet 추적·로그인 자동 실행·실제 자동 업데이트가 장치 검증 전입니다. 아래 이미지도 모두 Windows 화면입니다. [미검증 목록](docs/MAC-QA.md)을 확인하고 preview 테스트 용도로 사용해주세요.
 
@@ -60,7 +60,7 @@ Day 001 of [daily_odd_builds](https://daily-odd-builds.web.app/) · OS 기본 �
 
 ZIP을 전부 푼 뒤 설치형은 `Install.command`, 포터블은 `Start.command`를 실행합니다. 실행 권한 문제라면 해당 폴더의 터미널에서 `sh ./Install.command` 또는 `sh ./Start.command`로 실행할 수 있습니다.
 
-개발자 확인 경고가 나오면 실행을 시도한 뒤 **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**에서 해당 파일을 승인할 수 있습니다. [Apple 공식 안내](https://support.apple.com/ko-kr/102445)를 확인하세요. 1.4.4 이하에서 `runModal` 오류가 났다면 1.4.5 설치 ZIP으로 수동 갱신하세요.
+개발자 확인 경고가 나오면 실행을 시도한 뒤 **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**에서 해당 파일을 승인할 수 있습니다. [Apple 공식 안내](https://support.apple.com/ko-kr/102445)를 확인하세요. `runModal` 오류가 나거나 1.4.5에서 동의 뒤 아무 설치 결과가 없었다면 1.4.6 이상 설치 ZIP으로 수동 갱신하세요. 정상 설치가 끝나면 터미널에 `Installed at ...`가 표시됩니다. 실행 오류는 `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/startup.log`에서 확인할 수 있습니다.
 
 일반 실행기는 `nohup`과 입출력 분리로 백그라운드 실행합니다. 실행이 끝난 터미널 창이 남는지는 [Terminal 프로필 설정](https://support.apple.com/en-gb/guide/terminal/trmlshll)에 따라 달라집니다. 셸 종료·SIGHUP 동작은 Git Bash의 모의 자식으로 확인했으며, 실제 Mac에서 창을 닫은 뒤 모니터가 유지되는지는 아직 미검증입니다.
 
@@ -104,9 +104,9 @@ Pet 추적에는 접근성 권한이 필요할 수 있습니다. 실제 권한 �
 
 ![연노란 리셋 예고와 빨간 크레딧 사용 경고의 실제 Windows UI 예시](docs/images/notices.png)
 
-리셋 예고는 노랗게, 크레딧 사용 경고는 빨갛게 표시합니다. 알림과 소리는 각각 ON/OFF 할 수 있습니다. 예고 창의 화살표는 원문으로 이동합니다.
+리셋 예고와 조짐은 노랗게, 크레딧 사용 경고는 빨갛게 표시합니다. 알림과 소리는 각각 ON/OFF 할 수 있습니다. 알림 창의 화살표는 원문으로 이동합니다. 조짐은 `리셋 조짐 · 24시간 이내 가능성`처럼 표시하며 일반/보관형 리셋 예고와 구분합니다.
 
-리셋 알림 간격은 10분/30분/1시간/2시간입니다. 1시간·30분·10분·5분·1분 전에는 간격과 관계없이 알립니다. 크레딧 경고 단위는 1,000/3,000/5,000/10,000입니다.
+리셋 알림 간격은 10분/30분/1시간/2시간입니다. 실제 예정 시각이 있는 예고는 1시간·30분·10분·5분·1분 전에도 간격과 관계없이 알립니다. 조짐에는 확정된 예정 시각이 없으므로 설정한 간격으로만 다시 알리고 유효기간이 지나면 숨깁니다. 크레딧 경고 단위는 1,000/3,000/5,000/10,000입니다.
 
 **리셋 예고는 [Codex Resets](https://codex-resets.com/)가 정리한 제3자 정보이며 실제 초기화를 보장하지 않습니다.** 위 이미지도 알림 UI 예시입니다. 미래를 맞히는 고양이는 아직 못 만들었습니다.
 
@@ -171,6 +171,14 @@ Windows 실제 WPF·계정/Pet 연결, 설치·업데이트·롤백·제거를 �
 
 ## 업데이트 로그
 
+### 1.4.6 · 2026-10-16
+
+- Windows/Mac에서 **리셋 조짐**도 알립니다. `리셋 조짐 · 24시간 이내 가능성`처럼 기존 리셋 예고와 구분하고, 만료되거나 후속 리셋이 완료되면 숨깁니다. 기존 알림/소리 설정을 함께 사용합니다.
+- Mac의 폴더 생성·텍스트 표시·CLI 탐색을 수정했습니다. 사용자 진단 v6에서 실제 계정/사용량 응답 수신을 확인했습니다. 설정창 갱신 오류를 고친 v7 영역은 아직 실기기 미검증입니다.
+- Mac에서 라이선스 동의 뒤 설치가 진행되지 않는 언어 추출 코드를 POSIX 정규식으로 수정했습니다. 설치 진행·취소·오류도 터미널에 표시합니다.
+- Mac 백그라운드 실행 오류를 `startup.log`에 기록하고 직전 로그 한 개를 보관합니다. 설치 UI에서 파일 설치로 이어지는 경로의 회귀 검사를 추가했습니다.
+- 설치형·포터블·자동 업데이트 파일을 같은 버전으로 제공합니다. **Mac은 전체 기능 검증이 끝나지 않은 preview입니다.**
+
 ### 1.4.5 · 2026-10-15
 
 - **Mac 설치 중 `choice.runModal is not a function` 오류로 중단되던 문제를 수정했습니다.** 언어 선택·라이선스 창과 실행·종료·업데이트의 같은 JXA 호출 오류도 함께 수정했습니다.
@@ -210,7 +218,7 @@ AI 슬롭 같다구요? 으쩌라구요
 
 ## 소스와 라이선스
 
-이 폴더는 **1.4.5 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
+이 폴더는 **1.4.6 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
 
 코드는 [MIT](LICENSE)입니다. 한국어·중국어·일본어 참고 번역과 영어 원문을 제공합니다. 지피쨩 캐릭터 아트의 출처와 적용 범위는 [ARTWORK.md](docs/ARTWORK.md), 화면 예시의 제작 방식은 [README-MEDIA.md](docs/README-MEDIA.md)를 참고하세요. OpenAI 공식 제품이 아닙니다.
 
