@@ -29,11 +29,13 @@ Day 005 of [Daily Odd Builds](https://daily-odd-builds-portal.web.app/). Windows
 | --- | --- | --- |
 | 웹 · beta | [bbi.hssum.kr](https://bbi.hssum.kr/) | 이메일로 가입하고 인증 메일을 확인합니다. |
 | Windows · beta | [설치 ZIP 받기](https://bbi.hssum.kr/download) | ZIP 전체 압축 해제 → `Install.cmd` → 위젯의 업무 시작 |
-| macOS · preview | [프리뷰 ZIP 받기](https://bbi.hssum.kr/download) | ZIP 전체 압축 해제 → `Install.command`. 실제 Mac 검증은 남아 있습니다. |
+| macOS · preview | [설치 안내와 다운로드](https://bbi.hssum.kr/download/macos?download=1) | ZIP 전체 압축 해제 → `Install.command`. 보안 경고 시 안내 페이지의 허용 절차를 확인하세요. 실제 Mac 검증은 남아 있습니다. |
 
 데스크톱은 웹에서 만든 **같은 이메일 계정**으로 로그인합니다. Node, Flutter, .NET SDK나 Swift 개발 도구를 별도로 설치할 필요가 없습니다. 설치가 끝나면 내려받은 ZIP과 압축 해제 폴더를 지워도 됩니다. [자세한 설치·진단 안내](desktop/README.md)
 
 문서는 **0.6.5 릴리스** 기준이며, 기능 화면은 0.6.4에서 촬영했습니다. 공개 ZIP의 현재 버전은 다운로드 페이지에서 확인하세요.
+
+다운로드 페이지는 열거나 새로고침할 때 GitHub의 공개된 `day005-vX.Y.Z` 릴리스를 한 번 확인합니다. Windows·Mac 설치 ZIP과 `SHA256SUMS.txt`가 모두 업로드된 가장 높은 버전을 제공합니다. Git 커밋·태그만 올리거나 초안으로 저장한 릴리스는 반영되지 않습니다. 조회가 실패하면 페이지에 명시된 기존 버전과 GitHub 확인 링크를 표시합니다.
 
 ## 시작하고, 쉬었다가, 다시 이어서
 
