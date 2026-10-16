@@ -1,6 +1,14 @@
-# Codex Usage Monitor Scripts 1.4.9 — 배포 안내
+# Codex Usage Monitor Scripts 1.4.10 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.9는 재시작 후 알림 복원, 24시간 표시, Windows 작업표시줄 아이콘과 이름을 수정합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.10은 작업표시줄 캐시 오류 복구, 설정 삭제 시 캐시 정리, Mac 알림의 30분 신선도 경계를 수정합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+
+## 1.4.10 변경 사항
+
+Windows에서 작업표시줄용 아이콘·바로가기를 만들지 못해도 설정창을 열 수 있습니다. 같은 아이콘은 다시 쓰지 않으며, 실패하면 다음 설정창 열기에서 같은 창으로 작업표시줄 등록을 재시도합니다. 창을 닫을 때 Shell 정리 실패도 설정창 종료를 막지 않습니다.
+
+설정을 함께 삭제하는 `-Uninstall -PurgeSettings`는 작업표시줄 아이콘과 바로가기 캐시까지 정리합니다. 앱을 먼저 제거한 뒤 설정 삭제를 실행해도 작동합니다. 일반 제거의 설정 보존은 유지하고, 알 수 없는 파일이나 junction으로 연결된 외부 폴더는 삭제하지 않습니다.
+
+Mac의 응답이 정확히 1800초 지난 경계를 Windows와 동일하게 처리하여 리셋 알림을 숨깁니다. 이후 유효한 응답을 받으면 기존 복원·닫기·소리 규칙을 따릅니다. Mac은 모의 JXA·공통 로직·POSIX 셸 검사 범위이며 preview를 유지합니다.
 
 ## 1.4.9 변경 사항
 
@@ -52,10 +60,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.9-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.4.9-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.9-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.9-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.10-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.4.10-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.10-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.10-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 
