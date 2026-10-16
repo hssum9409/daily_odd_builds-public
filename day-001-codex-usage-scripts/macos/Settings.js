@@ -207,4 +207,5 @@ function showSettings() {
     syncPetAvailability(); settingsWindow.makeKeyAndOrderFront(null); app.activateIgnoringOtherApps(true);
 }
 
-({show: showSettings});
+// 모니터의 주기 갱신에서도 같은 설정창 클로저를 사용한다. 전역 함수에 의존하지 않는다.
+({show: showSettings, syncPetAvailability: syncPetAvailability, syncUpdateStatus: syncUpdateStatus});

@@ -1,6 +1,16 @@
-# Codex Usage Monitor Scripts 1.4.5 — 배포 안내
+# Codex Usage Monitor Scripts 1.4.6 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.5는 Mac 설치 중 `choice.runModal is not a function` 오류와 같은 원인의 실행·종료·업데이트 호출을 수정합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.6은 Windows/Mac 리셋 조짐 알림과 Mac 설치·화면 표시·CLI 탐색 수정을 포함합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+
+## 1.4.6 변경 사항
+
+Windows/Mac 모두 Codex Resets의 `active_watch`를 읽어 `리셋 조짐 · 24시간 이내 가능성`처럼 표시합니다. 일반/보관형 리셋 예고와 문구를 구분하고 기존 알림 디자인·표시/소리 설정·원문 링크를 사용합니다. 유효기간이 지나거나 더 최근의 리셋 완료가 확인되면 숨기고, 정식 예고가 함께 있으면 예고를 우선합니다. 조짐 유효기간을 리셋 예정 시각으로 사용하지 않습니다. 같은 게시물은 중복 알리지 않고 설정된 10분/30분/1시간/2시간 간격에 재표시합니다. 실제 예정 시각에 적용되는 필수 임계 알림은 조짐에는 적용하지 않습니다.
+
+Mac 설치 동의 응답에서 언어를 읽는 셸 코드가 GNU sed 확장에 의존하던 문제를 POSIX 정규식으로 수정했습니다. 취소·설치 진행·잘못된 응답·설치 UI 실패를 터미널에 표시하며, 라이선스 동의 후 실제 설치 스크립트까지 연결되는 배포 ZIP 검사를 추가했습니다. 이 검사는 Windows의 Git Bash/POSIX 모드와 모의 UI 경계를 사용하므로 실제 macOS 설치 성공의 증거는 아닙니다.
+
+Mac 폴더 생성의 ObjC nil 인수, 글자 서식과 렌더링 재시도, 실행 앱 번들 및 중첩 CLI 탐색을 수정했습니다. macOS 14.6.1 / arm64 사용자 진단 v6에서 CLI 발견·프로세스 시작·계정/사용량 응답 수신을 확인했고, 앞선 v4에서 실제 글자 표시를 확인했습니다. 설정창의 지역 함수를 모듈 객체로 호출하도록 수정한 v7 영역은 아직 실기기 미검증입니다. 이 결과를 전체 설치·Pet 추적·업데이트 검증 완료로 확대하지 않습니다.
+
+Mac 백그라운드 실행 오류는 프로필의 `startup.log`에 남기고 직전 로그는 `startup.previous.log`에 보관합니다. 설치 성공 시 `Installed at ...`가 표시됩니다. 기존 Mac 설치가 동의 직후 끝났다면 새 설치 ZIP을 전체 압축 해제해 `Install.command`를 실행하세요.
 
 ## 1.4.5 변경 사항
 
@@ -18,10 +28,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.5-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.4.5-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.5-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.5-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.6-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.4.6-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.6-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.6-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 

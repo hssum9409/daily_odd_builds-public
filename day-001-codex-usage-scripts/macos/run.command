@@ -10,6 +10,13 @@ case "${1-}" in
         shift
         exec /usr/bin/osascript -l JavaScript "$SCRIPT_DIR/Monitor.js" "$@" ;;
     *)
-        /usr/bin/nohup /usr/bin/osascript -l JavaScript "$SCRIPT_DIR/Monitor.js" "$@" </dev/null >/dev/null 2>&1 &
+        # 시작 오류를 버리지 않는다. 최근 두 실행의 로그만 사용자 프로필에 보관한다.
+        profile=${CODEX_USAGE_SCRIPTS_HOME:-"$HOME/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts"}
+        umask 077
+        mkdir -p "$profile" || exit 1
+        if [ -f "$profile/startup.log" ]; then
+            mv -f "$profile/startup.log" "$profile/startup.previous.log" || exit 1
+        fi
+        /usr/bin/nohup /usr/bin/osascript -l JavaScript "$SCRIPT_DIR/Monitor.js" "$@" </dev/null >"$profile/startup.log" 2>&1 &
         ;;
 esac

@@ -119,14 +119,41 @@ var MonitorCore = (function () {
         return {lines: lines.length ? lines : [words.noData], tickets: detail, balance: balance, unlimited: unlimited, pro: pro(data)};
     }
     function scheduled(payload, now) {
+        if (!finite(now)) now = Date.now() / 1000;
         var a = payload && payload.data && payload.data.scheduled_reset;
-        if (!a || a.status !== 'scheduled' || !/^[a-z0-9_-]{1,64}$/i.test(a.id || '') || ['regular', 'banked'].indexOf(a.reset_type) < 0) return null;
-        var at = typeof a.scheduled_for === 'string' && /(Z|[+-]\d\d:\d\d)$/.test(a.scheduled_for) ? Date.parse(a.scheduled_for) / 1000 : NaN;
-        var source = a.source || {}, url = source.author === 'thsottiaux' && /^https:\/\/(?:x|twitter)\.com\/thsottiaux\/status\/\d+(?:\?.*)?$/.test(source.url || '') ? source.url : '';
-        return {id: a.id, type: a.reset_type, at: isFinite(at) ? at : null, url: url};
+        // 예고가 있으면 우선한다. 조짐의 유효기간은 초기화 예정 시각으로 쓰지 않는다.
+        if (a && a.status === 'scheduled' && /^[a-z0-9_-]{1,64}$/i.test(a.id || '') && ['regular', 'banked'].indexOf(a.reset_type) >= 0) {
+            return {id: a.id, type: a.reset_type, at: utcSeconds(a.scheduled_for), url: resetSource(a.source)};
+        }
+        var w = payload && payload.data && payload.data.active_watch;
+        if (!w) return null;
+        var url = resetSource(w.source), until = utcSeconds(w.expires_at), observed = utcSeconds(w.observed_at);
+        if (!url || !finite(until) || until <= now) return null;
+        // 후속 리셋 완료가 확인됐으면 이전 게시물의 조짐은 다시 띄우지 않는다.
+        var completed = utcSeconds(payload.data.latest_reset && payload.data.latest_reset.announced_at);
+        if (finite(observed) && finite(completed) && completed >= observed) return null;
+        var window = /^within ([1-9]\d{0,2})h$/.exec(w.forecast_window || '');
+        return {id: 'watch-' + /\/status\/(\d+)/.exec(url)[1], type: 'watch', at: null, until: until, hours: window ? Number(window[1]) : null, url: url};
+    }
+    function utcSeconds(value) {
+        var at = typeof value === 'string' && /(Z|[+-]\d\d:\d\d)$/.test(value) ? Date.parse(value) / 1000 : NaN;
+        return isFinite(at) ? at : null;
+    }
+    function resetSource(source) {
+        return source && source.author === 'thsottiaux' && /^https:\/\/(?:x|twitter)\.com\/thsottiaux\/status\/\d+(?:\?.*)?$/.test(source.url || '') ? source.url : '';
+    }
+    function noticeActive(a, now) {
+        return !!a && (a.type !== 'watch' || (finite(a.until) && now < a.until));
+    }
+    function noticeTitle(a, now, words) {
+        if (a && a.type === 'watch') return words.reset_watch + ' · ' + (finite(a.hours) ? words.watch_within.replace('{hours}', a.hours) : words.watch_pending);
+        return (a && a.type === 'banked' ? words.reset_stored : words.reset_normal) + ' ' + words.notice_reset + ' · ' + words.notice_after.replace('{value}', forecast(a, now, words)) + ' ' + words.estimated;
     }
     function reminderKey(a, now, minutes) {
-        if (!a || !finite(a.at)) return a ? a.id + ':pending' : '';
+        if (!noticeActive(a, now)) return '';
+        // 조짐에는 실제 예정 시각이 없다. 설정된 간격에만 다시 알리고 시각 임계값은 적용하지 않는다.
+        if (a.type === 'watch') return a.id + ':watch:' + Math.floor(now / (minutes * 60));
+        if (!finite(a.at)) return a.id + ':pending';
         var remain = Math.max(0, a.at - now), milestones = [3600, 1800, 600, 300, 60, 0], key = Math.ceil(remain / (minutes * 60));
         for (var i = 0; i < milestones.length; i++) if (remain <= milestones[i]) key = 'm' + milestones[i];
         return a.id + ':' + key;
@@ -178,6 +205,6 @@ var MonitorCore = (function () {
         var side = preferred === 'above' ? (fitsTop ? 'above' : fitsBottom ? 'below' : null) : (fitsBottom ? 'below' : fitsTop ? 'above' : null);
         return side ? {x: x, y: side === 'above' ? top : bottom, side: side} : null;
     }
-    return {finite: finite, wrapFooter: wrapFooter, styleInk: styleInk, normalize: normalize, buckets: buckets, pro: pro, duration: duration, credit: credit, tickets: tickets, render: render, scheduled: scheduled, reminderKey: reminderKey, forecast: forecast, creditEvent: creditEvent, retryDelay: retryDelay, lifecycle: lifecycle, place: place, speedPreset: speedPreset, reactionInterval: reactionInterval};
+    return {finite: finite, wrapFooter: wrapFooter, styleInk: styleInk, normalize: normalize, buckets: buckets, pro: pro, duration: duration, credit: credit, tickets: tickets, render: render, scheduled: scheduled, noticeActive: noticeActive, noticeTitle: noticeTitle, reminderKey: reminderKey, forecast: forecast, creditEvent: creditEvent, retryDelay: retryDelay, lifecycle: lifecycle, place: place, speedPreset: speedPreset, reactionInterval: reactionInterval};
 }());
 if (typeof module !== 'undefined') module.exports = MonitorCore;

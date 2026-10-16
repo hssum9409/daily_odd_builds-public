@@ -5,7 +5,8 @@ function run(argv) {
     function read(p){var v=$.NSString.stringWithContentsOfFileEncodingError($(p),$.NSUTF8StringEncoding,null);return v?ObjC.unwrap(v):'';}
     function json(p){try{return JSON.parse(read(p));}catch(_){return null;}}
     function write(p,v){if(!$(JSON.stringify(v,null,2)).writeToFileAtomicallyEncodingError($(p),true,$.NSUTF8StringEncoding,null))throw new Error('update_install');}
-    function mkdir(p){if(!fm.createDirectoryAtPathWithIntermediateDirectoriesAttributesError($(p),true,null,null))throw new Error('update_install');}
+    // 새 작업 폴더에도 attributes 사전 대신 NSNull이 전달되지 않도록 bridged nil을 쓴다.
+    function mkdir(p){if(!fm.createDirectoryAtPathWithIntermediateDirectoriesAttributesError($(p),true,$(),$()))throw new Error('update_install');}
     function exec(path,args,installBase){
         var p=$.NSTask.alloc.init,out=$.NSPipe.pipe,environment=$.NSProcessInfo.processInfo.environment.mutableCopy;
         // argv로 받은 프로필과 설치 위치를 자식에도 전달한다. 포터블/별도 QA 프로필을 섞지 않는다.

@@ -373,15 +373,14 @@ function Render {
     if (-not $script:config.resetNotice) {$script:resetVisible=$false}
     if (-not $script:config.creditNotice) {$script:creditVisible=$false}
     $key=Get-ReminderKey $script:announcement $now $script:config.resetMinutes
-    if ($show -and $script:config.resetNotice -and $script:announcement -and $now-$script:lastFeed -lt 1800) {
+    $activeNotice=Test-NoticeActive $script:announcement $now
+    if ($show -and $script:config.resetNotice -and $activeNotice -and $now-$script:lastFeed -lt 1800) {
         if ($key -ne $script:lastKey) {
             if (-not $script:resetVisible) {Play-Notice 'reset'}
             $script:resetVisible=$true;$script:lastKey=$key;Write-Json $stateFile @{lastKey=$key}
         }
-    } elseif (-not $script:announcement -or $now-$script:lastFeed -ge 1800) {$script:resetVisible=$false}
-    $kind=if ($script:announcement.type -eq 'banked') {T 'reset_stored'} else {T 'reset_normal'}
-    $within=(T 'notice_after').Replace('{value}',(Get-Forecast $script:announcement $now $script:words))
-    $title="$kind $(T 'notice_reset') · $within $(T 'estimated')"
+    } elseif (-not $activeNotice -or $now-$script:lastFeed -ge 1800) {$script:resetVisible=$false}
+    $title=Get-NoticeTitle $script:announcement $now $script:words
     Fill-Card $script:resetCard @($title, (T 'reset_disclaimer')) ($show -and $script:resetVisible)
     Fill-Card $script:creditCard @((T 'credit_started'), ((T 'balance')+' '+(Format-Credit $view.balance))) ($show -and $script:creditVisible)
     $cards=@($script:mainCard,$script:resetCard,$script:creditCard)

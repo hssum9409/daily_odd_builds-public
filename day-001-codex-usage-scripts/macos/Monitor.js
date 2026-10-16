@@ -53,18 +53,82 @@ function task(path, args, output) {
     p.standardOutput = output || nullFile(); p.standardError = nullFile();
     p.launch; return p;
 }
-function findCodex() {
-    var fm = $.NSFileManager.defaultManager, candidates = [];
-    if (settings.codexPath) candidates.push(settings.codexPath);
-    // 앱 내 CLI를 먼저 쓰고, 사용자가 이미 설치한 CLI만 PATH에서 찾는다.
-    ['/Applications/Codex.app', '/Applications/ChatGPT.app', unwrap($.NSHomeDirectory()) + '/Applications/Codex.app', unwrap($.NSHomeDirectory()) + '/Applications/ChatGPT.app'].forEach(function (path) {
-        candidates.push(path + '/Contents/Resources/codex');
-        candidates.push(path + '/Contents/Resources/bin/codex');
-    });
+var codexLookupCache = null;
+function findCodex(report) {
+    var fm = $.NSFileManager.defaultManager, roots = [], seen = {}, userHome = unwrap($.NSHomeDirectory());
+    function note(stage, path) { if (report) report(stage, path); }
+    function executable(path) {
+        // 폴더에도 실행 권한이 있으므로 CLI 파일과 디렉터리를 구분한다.
+        var directory = Ref();
+        return fm.fileExistsAtPathIsDirectory($(path), directory) && !Number(directory[0]) && fm.isExecutableFileAtPath($(path));
+    }
+    function bundle(path) {
+        if (typeof path !== 'string' || path[0] !== '/' || !/\.app\/?$/.test(path)) return;
+        path = path.replace(/\/$/, '');
+        if (!seen[path]) { seen[path] = true; roots.push(path); }
+    }
+    function probe(path) {
+        if (!path || path[0] !== '/') return null;
+        note('candidate', path);
+        if (executable(path)) { note('selected', path); return path; }
+        return null;
+    }
+    var configured = settings.codexPath || '', selected;
+    if (/\.app\/?$/.test(configured)) bundle(configured);
+    else if ((selected = probe(configured))) return selected;
+    // /Applications에 있다는 가정 대신 실행 중인 번들의 실제 위치를 먼저 쓴다.
+    // Finder 이동, 이름 변경, 외장 볼륨·다운로드 폴더 실행도 같은 경로로 처리한다.
+    try {
+        desktopApps().forEach(function (application) {
+            try { bundle(unwrap(application.bundleURL.path)); } catch (_) { note('bundle-url-unavailable', ''); }
+        });
+    } catch (_) { note('running-app-path-unavailable', ''); }
+    ['/Applications/Codex.app', '/Applications/ChatGPT.app', userHome + '/Applications/Codex.app', userHome + '/Applications/ChatGPT.app'].forEach(bundle);
     var paths = unwrap($.NSProcessInfo.processInfo.environment.objectForKey('PATH')) || '';
-    (paths + ':/opt/homebrew/bin:/usr/local/bin').split(':').forEach(function (path) { if (path) candidates.push(path + '/codex'); });
-    for (var i = 0; i < candidates.length; i++) if (fm.isExecutableFileAtPath($(candidates[i]))) return candidates[i];
-    throw new Error(t('error'));
+    var key = JSON.stringify([configured, roots, paths]);
+    if (codexLookupCache && codexLookupCache.key === key) {
+        if (codexLookupCache.path && executable(codexLookupCache.path)) return codexLookupCache.path;
+        if (!codexLookupCache.path && now() < codexLookupCache.retryAt) throw new Error('Codex CLI executable not found (path lookup; sign-in not checked)');
+    }
+    function found(path) { codexLookupCache = {key: key, path: path}; return path; }
+    // 실제 ChatGPT macOS 번들에서 확인한 중첩 CLI도 디렉터리 순회 없이 확인한다.
+    var bundledCLI = ['codex', 'bin/codex', 'codex-cli/CodexCLI.app/Contents/MacOS/codex'];
+    for (var i = 0; i < roots.length; i++) {
+        note('app-bundle', roots[i]);
+        for (var j = 0; j < bundledCLI.length; j++) {
+            selected = probe(roots[i] + '/Contents/Resources/' + bundledCLI[j]);
+            if (selected) return found(selected);
+        }
+    }
+    // 이미 설치된 CLI만 확인한다. 상대 PATH나 셸 시작 파일은 실행하지 않는다.
+    var directories = (paths + ':/opt/homebrew/bin:/usr/local/bin').split(':');
+    for (var p = 0; p < directories.length; p++) {
+        if (!directories[p] || directories[p][0] !== '/') continue;
+        selected = probe(directories[p].replace(/\/$/, '') + '/codex');
+        if (selected) return found(selected);
+    }
+    // 번들 내부 배치가 달라졌을 때 Resources 안에서만 제한적으로 찾는다.
+    // 끝없는 탐색과 10초마다 같은 디스크 탐색이 반복되는 것을 막는다.
+    var remaining = 3000, deadline = now() + 0.3, reportedEntries = 0;
+    for (var r = 0; r < roots.length && remaining > 0 && now() < deadline; r++) {
+        var resources = roots[r] + '/Contents/Resources', iterator;
+        try { iterator = fm.enumeratorAtPath($(resources)); } catch (_) { note('resources-unreadable', resources); continue; }
+        if (!iterator || iterator.isNil()) continue;
+        note('scan-resources', resources);
+        while (remaining-- > 0 && now() < deadline) {
+            var name = unwrap(iterator.nextObject);
+            if (!name) break;
+            if (report && reportedEntries < 30 && (name.indexOf('/') < 0 || /codex/i.test(name))) { note('resource-entry', resources + '/' + name); reportedEntries++; }
+            if (name.split('/').length > 10 || /(^|\/)(\.git|locales|images|fonts|assets)(\/|$)|\.lproj$/.test(name)) { iterator.skipDescendants; continue; }
+            if (name.split('/').pop() === 'codex') {
+                selected = probe(resources + '/' + name);
+                if (selected) return found(selected);
+            }
+        }
+    }
+    note(remaining <= 0 || now() >= deadline ? 'scan-limit-reached' : 'not-found', '');
+    codexLookupCache = {key: key, path: null, retryAt: now() + 60};
+    throw new Error('Codex CLI executable not found (path lookup; sign-in not checked)');
 }
 function stopRPC() {
     if (!rpc) return;
@@ -120,7 +184,7 @@ function rpcRead(notification) {
     } catch (_) { lastError = 'connection'; stopRPC(); nextUsage = now() + 10; if (once) onceResult = {error: 'connection'}; }
 }
 function startFeed() {
-    var args = ['--silent', '--show-error', '--max-time', '15', '--max-filesize', '2097152', '--proto', '=https', '--dump-header', home + '/feed.headers', '--output', home + '/feed.response', '--header', 'Accept: application/json', '--user-agent', 'CodexUsageMonitorScripts/0.1.0'];
+    var args = ['--silent', '--show-error', '--max-time', '15', '--max-filesize', '2097152', '--proto', '=https', '--dump-header', home + '/feed.headers', '--output', home + '/feed.response', '--header', 'Accept: application/json', '--user-agent', 'CodexUsageMonitorScripts/' + defaults.version];
     if (feedETag) args.push('--header', 'If-None-Match: ' + feedETag);
     args.push('https://codex-resets.com/api/v1/status');
     feedTask = task('/usr/bin/curl', args); nextFeed = now() + feedDelay;
@@ -219,12 +283,33 @@ function createCard(kind) {
     close.hidden = true; more.hidden = true;
     return {window: p, view: v, close: close, more: more, kind: kind, height: 90, width: 350, x: null, y: null, text: ''};
 }
+var titleStyleWarning = '';
+function applyTitleStyle(row, text, kind) {
+    try {
+        // NSTextField가 이미 만든 문자열을 복사한다. JXA에서 노출되지 않는
+        // NSMutableAttributedString의 초기화 메서드에 직접 의존하지 않는다.
+        var rich = row.attributedStringValue.mutableCopy, matches = /[\(（][^\)）]*[\)）]/g, match;
+        while ((match = matches.exec(text)) !== null) {
+            var range = $.NSMakeRange(match.index, match[0].length);
+            rich.addAttributeValueRange($.NSFontAttributeName, $.NSFont.systemFontOfSize(kind === 'reset' ? 10.5 : 11), range);
+            rich.addAttributeValueRange($.NSForegroundColorAttributeName, color(kind === 'reset' ? '#696969' : '#B9B9B9', kind === 'reset' ? 240/255 : 220/255), range);
+        }
+        row.attributedStringValue = rich;
+        return true;
+    } catch (error) {
+        // 부분 서식 실패가 사용량 패널 전체를 막지 않게 기본 글자를 유지한다.
+        // 동일 오류는 한 번만 기록해 타이머마다 로그가 쌓이지 않게 한다.
+        var message = String(error);
+        if (message !== titleStyleWarning) console.log('[Codex Usage Monitor] title-style fallback: ' + message);
+        titleStyleWarning = message;
+        return false;
+    }
+}
 function displayCard(card, lines, visible) {
     if (!visible) { card.window.orderOut(null); return; }
     card.lastLines = lines;
     var contentKey = lines.join('\n') + JSON.stringify(settings.styles[card.kind]) + card.forceWidth + settings.language;
     if (contentKey !== card.text) {
-        card.text = contentKey;
         var style = settings.styles[card.kind], height = 34, rows = [], widest = 298, ink = core.styleInk(style,card.kind);
         lines.forEach(function (text, i) { if(card.kind === 'reset' && i>0)return;var sample = label(text,$.NSMakeRect(0,0,10000,50),i === 0 ? (card.kind === 'credit' ? 14 : 12) : 11.5,null,i === 0); widest = Math.max(widest,Number(sample.cell.cellSize.width)); });
         card.naturalWidth = Math.max(350,Math.min(660,Math.floor(widest+54))); card.width = card.forceWidth || card.naturalWidth;
@@ -234,10 +319,7 @@ function displayCard(card, lines, visible) {
             if(card.kind === 'reset' && n===1) {var viaMeasure=label(t('via'),$.NSMakeRect(0,0,10000,30),9.5);rowText=core.wrapFooter(rowText,rowWidth,Number(viaMeasure.cell.cellSize.width),function(text){return Number(label(text,$.NSMakeRect(0,0,10000,30),9.5).cell.cellSize.width);}).join('\n');}
             var row = label(rowText, $.NSMakeRect(16, 0, rowWidth, 24), size, color(ink), n === 0);
             if ((card.kind === 'main' || card.kind === 'reset') && n === 0) {
-                var attrs = {}; attrs[unwrap($.NSFontAttributeName)] = $.NSFont.boldSystemFontOfSize(size); attrs[unwrap($.NSForegroundColorAttributeName)] = color(ink);
-                var rich = $.NSMutableAttributedString.alloc.initWithStringAttributes($(lines[n]), $(attrs)), matches = /[\(（][^\)）]*[\)）]/g, match;
-                while ((match = matches.exec(lines[n])) !== null) { rich.addAttributeValueRange($.NSFontAttributeName, $.NSFont.systemFontOfSize(card.kind === 'reset' ? 10.5 : 11), $.NSMakeRange(match.index, match[0].length)); rich.addAttributeValueRange($.NSForegroundColorAttributeName, color(card.kind === 'reset' ? '#696969' : '#B9B9B9', card.kind === 'reset' ? 240/255 : 220/255), $.NSMakeRange(match.index, match[0].length)); }
-                row.attributedStringValue = rich;
+                applyTitleStyle(row, lines[n], card.kind);
             }
             var measured = row.cell.cellSizeForBounds($.NSMakeRect(0, 0, rowWidth, 1000)), rowHeight = (n < lines.length-1 ? (card.kind === 'credit' ? 22 : 18) : Math.max(size+2,Number(measured.height)));
             rows.push({view: row, height: rowHeight, width: rowWidth}); height += rowHeight;
@@ -258,6 +340,8 @@ function displayCard(card, lines, visible) {
         }
         card.close.setFrameOrigin($.NSMakePoint(0, height - 30)); card.more.setFrameOrigin($.NSMakePoint(card.kind === 'main' ? 29 : card.width - 42, height - 30));
         card.view.addSubview(card.close); if (card.kind !== 'credit') card.view.addSubview(card.more);
+        // 배치까지 끝난 내용만 캐시한다. 중간 실패 시 다음 tick에서 다시 만든다.
+        card.text = contentKey;
     }
     if (card.kind === 'main') card.window.movableByWindowBackground = mode === 'free';
     card.window.orderFrontRegardless;
@@ -309,14 +393,15 @@ function render(force) {
     if (!pressed && petDragging) { petDragging = false; scanAt = 0; }
     if (petDragging && (mode === 'above' || mode === 'below')) show = false;
     if (lastData && now() - lastData > 60) lines.push(t('stale'));
-    if (!settings.resetNotice || !announcement || now() - lastFeed > 1800) resetVisible = false;
+    var activeNotice = core.noticeActive(announcement, now());
+    if (!settings.resetNotice || !activeNotice || now() - lastFeed > 1800) resetVisible = false;
     var key = core.reminderKey(announcement, now(), settings.resetMinutes);
-    if (show && settings.resetNotice && announcement && now() - lastFeed < 1800 && key !== noticeState.lastKey) {
+    if (show && settings.resetNotice && activeNotice && now() - lastFeed < 1800 && key !== noticeState.lastKey) {
         if (!resetVisible) play('reset'); resetVisible = true; noticeState.lastKey = key; writeJSON(home + '/notices.json', noticeState);
     }
     if (!settings.creditNotice) creditVisible = false;
     displayCard(cards.main, lines, show);
-    var title = (announcement && announcement.type === 'banked' ? t('reset_stored') : t('reset_normal')) + ' ' + t('notice_reset') + ' · ' + t('notice_after').replace('{value}', core.forecast(announcement, now(), words)) + ' ' + t('estimated');
+    var title = core.noticeTitle(announcement, now(), words);
     displayCard(cards.reset, [title, t('reset_disclaimer')], show && resetVisible);
     displayCard(cards.credit, [t('credit_started'), t('balance') + ' ' + core.credit(view.balance)], show && creditVisible);
     var sharedWidth=350;
@@ -358,7 +443,8 @@ function toggle() { settings.placement = settings.placement === 'hidden' ? setti
 function setStartup(enabled) {
     var path = unwrap($.NSHomeDirectory()) + '/Library/LaunchAgents/com.dailyoddbuilds.codex-usage-scripts.plist';
     if (enabled) {
-        $.NSFileManager.defaultManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError($(unwrap($.NSHomeDirectory()) + '/Library/LaunchAgents'), true, null, null);
+        // JS null은 NSNull 객체다. 사전이 없는 경우에는 ObjC의 nil($())을 전달한다.
+        if (!$.NSFileManager.defaultManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError($(unwrap($.NSHomeDirectory()) + '/Library/LaunchAgents'), true, $(), $())) throw new Error('Cannot create LaunchAgents directory');
         var plist = $({Label: 'com.dailyoddbuilds.codex-usage-scripts', ProgramArguments: ['/usr/bin/osascript', '-l', 'JavaScript', root + '/macos/Monitor.js', '--startup'], WorkingDirectory: root, RunAtLoad: true, ProcessType: 'Interactive'});
         if (!plist.writeToFileAtomically($(path), true)) throw new Error('Cannot write LaunchAgent');
         // 다음 로그인부터 적용. 현재 실행 중인 프로세스의 이중 실행을 피한다.
@@ -368,6 +454,15 @@ function setStartup(enabled) {
 }
 var settingsUI = null;
 function showSettings() { if (!settingsUI) settingsUI = eval(textFile(root + '/macos/Settings.js')); settingsUI.show(); }
+function syncOpenSettings() {
+    if (!settingsUI || !settingsWindow || !settingsWindow.visible) return;
+    // Settings.js의 함수는 eval 내부의 지역 함수다. 공개한 객체를 통해 호출한다.
+    settingsUI.syncPetAvailability();
+    if (now() >= nextUpdateStatus) {
+        settingsUI.syncUpdateStatus();
+        nextUpdateStatus = now() + 1;
+    }
+}
 
 function alert(message) { var a = $.NSAlert.alloc.init; a.messageText = $(message); a.runModal; }
 function setupMenu() {
@@ -422,10 +517,7 @@ function tick() {
             if (settings.resetNotice && !feedTask && now() >= nextFeed) startFeed();
         }
         render(false);
-        if(settingsWindow && settingsWindow.visible){
-            syncPetAvailability();
-            if(now()>=nextUpdateStatus){syncUpdateStatus();nextUpdateStatus=now()+1;}
-        }
+        syncOpenSettings();
         syncReactionTimer();
         // 인스턴스 heartbeat에는 PID/시각만 저장하며 계정/토큰은 저장하지 않는다.
         if (Math.floor(now()) % 5 === 0) writeJSON(home + '/instance.json', {id: instanceId, heartbeat: now(), pid: Number($.NSProcessInfo.processInfo.processIdentifier), root: root, version:defaults.version, ready:true});
@@ -458,8 +550,9 @@ function run(argv) {
     eval(textFile(root + '/common/core.js')); core = MonitorCore;
     defaults = readJSON(root + '/defaults.json'); strings = readJSON(root + '/strings.json'); uiSpec = readJSON(root + '/ui.json'); if (!defaults || !strings || !uiSpec) throw new Error('Incomplete script package');
     home = unwrap(env.objectForKey('CODEX_USAGE_SCRIPTS_HOME')) || unwrap($.NSHomeDirectory()) + '/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts';
-    $.NSFileManager.defaultManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError($(home), true, null, null);
-    $.NSFileManager.defaultManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError($(home + '/commands'), true, null, null);
+    // 새 폴더의 attributes는 NSDictionary 또는 nil이어야 한다. JS null을 넘기지 않는다.
+    if (!$.NSFileManager.defaultManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError($(home), true, $(), $())) throw new Error('Cannot create profile directory');
+    if (!$.NSFileManager.defaultManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError($(home + '/commands'), true, $(), $())) throw new Error('Cannot create commands directory');
     settings = core.normalize(readJSON(home + '/settings.json'), defaults); words = strings[settings.language]; noticeState = readJSON(home + '/notices.json') || {};
     delegate = $.UsageScriptsDelegate.alloc.init; once = argv.indexOf('--once') >= 0;
     if (argv.indexOf('--register-startup') >= 0) { setStartup(true); return 'Startup registered'; }
