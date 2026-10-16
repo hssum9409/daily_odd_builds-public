@@ -88,12 +88,14 @@ namespace UsageScripts {
 }
 
 function Start-BackgroundPowerShell([string]$ScriptPath, [string[]]$ScriptArguments=@()) {
+    $ScriptPath=[IO.Path]::GetFullPath($ScriptPath)
     if (-not [IO.File]::Exists($ScriptPath)) { throw 'Script was not found. Extract the complete ZIP before starting.' }
     Initialize-BackgroundLauncher
     $exe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
     $parameters = @('-NoLogo', '-NoProfile', '-NonInteractive', '-STA', '-ExecutionPolicy', 'Bypass', '-File', $ScriptPath) + $ScriptArguments
     $commandLine = (Quote-ProcessArgument $exe) + ' ' + (($parameters | ForEach-Object { Quote-ProcessArgument ([string]$_) }) -join ' ')
-    $processId = [UsageScripts.BackgroundLauncher]::Start($exe, $commandLine, (Split-Path $ScriptPath -Parent))
+    # 설치 폴더를 작업 위치로 물려주면 다음 업데이트의 폴더 교체를 방해할 수 있다.
+    $processId = [UsageScripts.BackgroundLauncher]::Start($exe, $commandLine, $env:TEMP)
     return [Diagnostics.Process]::GetProcessById($processId)
 }
 

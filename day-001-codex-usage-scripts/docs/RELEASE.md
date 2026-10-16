@@ -1,6 +1,14 @@
-# Codex Usage Monitor Scripts 1.4.6 — 배포 안내
+# Codex Usage Monitor Scripts 1.4.7 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.6은 Windows/Mac 리셋 조짐 알림과 Mac 설치·화면 표시·CLI 탐색 수정을 포함합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.7은 Windows 설치형 자동 업데이트의 폴더 교체 오류를 수정하고 복구 실패 로그를 보강합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+
+## 1.4.7 변경 사항
+
+Windows 설치 폴더를 PowerShell 작업 위치로 사용하던 1.4.4에서 자동 업데이트할 때, 설치 폴더가 사용 중이라 교체와 복구가 모두 실패하던 문제를 수정했습니다. 설치기·업데이터의 PowerShell 작업 위치와 백그라운드 실행기의 작업 위치를 임시 폴더로 옮깁니다. 기존 1.4.4 업데이터도 새 설치기를 내려받아 사용하므로 별도의 구버전 패치는 필요하지 않습니다.
+
+업데이트 작업 폴더에 `update.log`, `install.stdout.log`, `install.stderr.log`와 복구 단계 로그를 보관합니다. 복구까지 실패하면 `result.json`에 원래 오류·복구 오류·실패 단계·백업 위치를 함께 기록하고 `recovery_required` 상태로 남깁니다. 구버전 업데이터가 실행하는 새 설치기도 프로필의 `install-last-error.json`에 실패 원인을 남깁니다.
+
+Windows/Mac ‘만든놈’과 README의 전체 프로젝트 링크를 [Daily Odd Builds](https://daily-odd-builds-portal.web.app/)로 바로잡았습니다. Mac 기능은 기존 수정 사항을 유지하며 preview로 제공합니다.
 
 ## 1.4.6 변경 사항
 
@@ -28,10 +36,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.6-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.4.6-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.6-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.6-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.7-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.4.7-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.7-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.7-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 

@@ -235,7 +235,7 @@ function Build-SettingsContent {
     $pattern='(github|GitHub|这里|こちら|here|여기)'
     foreach ($part in [regex]::Split((T 'creator_info'),$pattern)) {
         $run=New-Object Windows.Documents.Run($part)
-        if ($part -match ('^'+$pattern+'$')) {$link=New-Object Windows.Documents.Hyperlink($run);$url=if ($part -match 'github|GitHub') {'https://github.com/hssum9409/daily_odd_builds-public/issues'} else {'https://daily-odd-builds.web.app'};$link.NavigateUri=[Uri]$url;$link.Foreground=Brush '#a5e4ce';$link.Add_RequestNavigate({Start-Process $_.Uri.AbsoluteUri});$null=$info.Inlines.Add($link)} else {$null=$info.Inlines.Add($run)}
+        if ($part -match ('^'+$pattern+'$')) {$link=New-Object Windows.Documents.Hyperlink($run);$url=if ($part -match 'github|GitHub') {'https://github.com/hssum9409/daily_odd_builds-public/issues'} else {'https://daily-odd-builds-portal.web.app'};$link.NavigateUri=[Uri]$url;$link.Foreground=Brush '#a5e4ce';$link.Add_RequestNavigate({Start-Process $_.Uri.AbsoluteUri});$null=$info.Inlines.Add($link)} else {$null=$info.Inlines.Add($run)}
     }
     $null=$about.Children.Add($info);$null=$about.Children.Add((UI-Text ("Day 001 · Codex Usage Monitor Scripts`nv"+$script:defaults.version) 11 '#a5e4ce'))
     $note=UI-Text (T 'source_note') 11 '#99aeaa';$note.Margin='0,16,0,8';$null=$about.Children.Add($note);$null=$about.Children.Add((UI-Text (T 'reset_provider') 10 '#99aeaa'));UI-Link $about 'Data from Codex Resets ↗' 'https://codex-resets.com/'

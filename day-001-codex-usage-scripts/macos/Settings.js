@@ -194,7 +194,7 @@ function buildSettings() {
     var about = uiSection(settingsPages.creator.documentView, t('creator'), 0, 478);
     uiButton(about, 'hssum9409 ↗', 16, 38, 220, function () {openLink('https://github.com/hssum9409');}, true).font = $.NSFont.boldSystemFontOfSize(24);
     uiText(about, t('creator_info'), 16, 96, 566, 150, 13, true);
-    uiButton(about, 'GitHub ↗', 16, 254, 125, function () {openLink('https://github.com/hssum9409/daily_odd_builds-public/issues');}); uiButton(about, 'Daily Odd Builds ↗', 153, 254, 190, function () {openLink('https://daily-odd-builds.web.app');});
+    uiButton(about, 'GitHub ↗', 16, 254, 125, function () {openLink('https://github.com/hssum9409/daily_odd_builds-public/issues');}); uiButton(about, 'Daily Odd Builds ↗', 153, 254, 190, function () {openLink('https://daily-odd-builds-portal.web.app');});
     uiText(about, 'Day 001 · Codex Usage Monitor Scripts\nv' + defaults.version, 16, 314, 566, 42, 11);
     uiText(about, t('source_note') + '\n' + t('reset_provider'), 16, 368, 566, 54, 10, true); uiButton(about, 'Data from Codex Resets ↗', 16, 427, 235, function () {openLink('https://codex-resets.com/');});
     settingsSync = syncSettings; syncSettings(); selectSettingsPage(settingsPage);

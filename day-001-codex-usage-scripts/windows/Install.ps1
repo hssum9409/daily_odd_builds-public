@@ -4,6 +4,7 @@ $ErrorActionPreference = 'Stop'
 $product = 'CodexUsageMonitorScripts'
 $source = Split-Path $PSScriptRoot -Parent
 # 설치기가 자기 실행 위치의 디렉터리 핸들을 붙잡지 않도록 한다.
+Set-Location -LiteralPath $env:TEMP
 [Environment]::CurrentDirectory = $env:TEMP
 if (-not $InstallBase) { $InstallBase = Join-Path $env:LOCALAPPDATA 'Programs' }
 $base = [IO.Path]::GetFullPath($InstallBase).TrimEnd('\')
@@ -59,7 +60,7 @@ function Stop-OwnedMonitor {
 function Start-InstalledMonitor {
     $null=Start-BackgroundPowerShell (Join-Path $target 'windows\Monitor.ps1')
 }
-$stage=$null;$backup=$null;$wasRunning=$false;$committed=$false
+$stage=$null;$backup=$null;$wasRunning=$false;$committed=$false;$installPhase='verify'
 try {
     if ($Uninstall) {
         if (-not (Test-Path -LiteralPath $target)) {Write-Output 'Already removed.';exit 0}
@@ -98,17 +99,18 @@ try {
         if ($receipt.product -ne $product) {throw 'Existing folder is not owned by Scripts edition.'}
     }
     $null=New-Item -ItemType Directory -Path $base -Force
-    $stage=Join-Path $base ($product+'.stage-'+[Guid]::NewGuid().ToString('N'))
+    $installPhase='stage';$stage=Join-Path $base ($product+'.stage-'+[Guid]::NewGuid().ToString('N'))
     $null=New-Item -ItemType Directory -Path $stage
     foreach ($relative in $files+@('payload.sha256')) {
         $destination=Join-Path $stage $relative;$null=New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force
         Copy-Item -LiteralPath (Join-Path $source $relative) -Destination $destination
     }
     @{product=$product;version=$version;root=$target;profile=$profile;installedAt=[DateTimeOffset]::UtcNow.ToString('o')} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $stage 'installed.json') -Encoding UTF8
-    $wasRunning=Stop-OwnedMonitor
+    $installPhase='stop-monitor';$wasRunning=Stop-OwnedMonitor
+    $installPhase='replace-folder'
     if (Test-Path -LiteralPath $target) {$backup=Join-Path $base ($product+'.backup-'+[Guid]::NewGuid().ToString('N'));Move-Item -LiteralPath $target -Destination $backup}
     Move-Item -LiteralPath $stage -Destination $target;$stage=$null
-    $shell=New-Object -ComObject WScript.Shell;$null=New-Item -ItemType Directory -Path $menu -Force
+    $installPhase='registration';$shell=New-Object -ComObject WScript.Shell;$null=New-Item -ItemType Directory -Path $menu -Force
     foreach ($entry in @(@('Codex Usage Monitor Scripts','Launch.ps1',''),@('Settings','Launch.ps1',' -Settings'),@('Uninstall','Install.ps1',' -Uninstall'))) {
         $shortcut=$shell.CreateShortcut((Join-Path $menu ($entry[0]+'.lnk')));$shortcut.TargetPath=$ps
         $shortcut.Arguments='-NoLogo -NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "'+(Join-Path $target ('windows\'+$entry[1]))+'"'+$entry[2]
@@ -131,12 +133,20 @@ try {
     if ($wasRunning -or $Launch) {Start-InstalledMonitor}
     Write-Output "Installed $version at $target. Download files can now be removed."
 } catch {
-    if (-not $committed -and $backup -and (Test-Path -LiteralPath $backup)) {
+    $failure=$_;$restoreFailure=$null
+    try {if (-not $committed -and $backup -and (Test-Path -LiteralPath $backup)) {
         if (Test-Path -LiteralPath $target) {Remove-OwnedFolder $target}
         Move-Item -LiteralPath $backup -Destination $target;$backup=$null
         if ($wasRunning) {Start-InstalledMonitor}
-    }
-    throw
+    }}catch{$restoreFailure=$_}
+    # 1.4.4 업데이터처럼 자식 프로세스 출력을 보관하지 않아도 설치 실패는 추적한다.
+    try {
+        $null=New-Item -ItemType Directory -Path $profile -Force
+        @{at=[DateTimeOffset]::UtcNow.ToString('o');phase=$installPhase;target=$target;workingDirectory=(Get-Location).Path;
+          error=$failure.Exception.Message;errorId=$failure.FullyQualifiedErrorId;line=$failure.InvocationInfo.ScriptLineNumber;
+          restoreError=$(if($restoreFailure){$restoreFailure.Exception.Message}else{$null});backup=$backup}|ConvertTo-Json -Depth 5|Set-Content -LiteralPath (Join-Path $profile 'install-last-error.json') -Encoding UTF8
+    }catch{[Console]::Error.WriteLine('Could not write installer diagnostic log.')}
+    throw $failure
 } finally {
     if ($stage -and (Test-Path -LiteralPath $stage)) {Remove-OwnedFolder $stage $false}
     if ($owned) {$lock.ReleaseMutex()};$lock.Dispose()
