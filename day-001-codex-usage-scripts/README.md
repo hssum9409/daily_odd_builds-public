@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.8"><img alt="버전 1.4.8" src="https://img.shields.io/badge/version-1.4.8-a5e4ce?labelColor=101617"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.9"><img alt="버전 1.4.9" src="https://img.shields.io/badge/version-1.4.9-a5e4ce?labelColor=101617"></a>
   <img alt="Windows 실제 실행 검증" src="https://img.shields.io/badge/Windows-tested-a5e4ce?labelColor=101617">
   <img alt="macOS 실기기 미검증 preview" src="https://img.shields.io/badge/macOS-preview-f1d77f?labelColor=101617">
   <a href="LICENSE"><img alt="코드 라이선스 MIT" src="https://img.shields.io/badge/code-MIT-a5e4ce?labelColor=101617"></a>
@@ -32,12 +32,12 @@ Day 001 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · OS �
 
 | 환경 | 다운로드 | 압축 해제 후 실행 | 상태 |
 | --- | --- | --- | --- |
-| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.8/CodexUsageMonitorScripts-1.4.8-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
-| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.8/CodexUsageMonitorScripts-1.4.8-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
-| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.8/CodexUsageMonitorScripts-1.4.8-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
-| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.8/CodexUsageMonitorScripts-1.4.8-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
+| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.9/CodexUsageMonitorScripts-1.4.9-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
+| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.9/CodexUsageMonitorScripts-1.4.9-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
+| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.9/CodexUsageMonitorScripts-1.4.9-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
+| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.9/CodexUsageMonitorScripts-1.4.9-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
 
-[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.8) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.8/SHA256SUMS.txt)
+[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.9) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.9/SHA256SUMS.txt)
 
 **Mac은 아직 실제 Mac에서 실행해보지 못했습니다.** 화면·권한·Pet 추적·로그인 자동 실행·실제 자동 업데이트가 장치 검증 전입니다. 아래 이미지도 모두 Windows 화면입니다. [미검증 목록](docs/MAC-QA.md)을 확인하고 preview 테스트 용도로 사용해주세요.
 
@@ -163,13 +163,20 @@ Codex App Server에서 계정/한도 정보를 읽고, Codex Resets의 공개 AP
 
 정식 서명/공증된 제품은 아닙니다. Windows 실행기는 해당 프로세스에만 `ExecutionPolicy Bypass`를 적용합니다. 시스템 정책을 바꾸지 않으며 조직의 실행 차단을 우회하지 못합니다. Mac 보안·권한 동작은 실기기 검증 전입니다.
 
-Windows는 이전 버전에서 실제 WPF·계정/Pet 연결을 검사했습니다. 1.4.8에서는 종료 시각 기준 카운트다운·시간 경계·만료·네 언어의 Windows/Mac 계산 일치를 검사합니다. 격리된 Windows 설치·백그라운드 실행·업데이트·롤백·복구 실패 로그·제거와 공개 1.4.4 업데이터의 후보 갱신도 검사 대상입니다. 오류 조건의 HTTP/확인창 응답은 fixture이며 공개 후 실제 GitHub 다운로드 경로도 별도로 확인합니다. Mac 렌더링은 모의 AppKit에서 검사하며 실제 장치 검증과 구분합니다. Windows 로그온과 Codex 완전 종료/재실행은 이번에 재검사하지 않습니다. [검증 범위](docs/TESTING.md) · [Windows QA](docs/WINDOWS-QA.md) · [Mac 미검증 목록](docs/MAC-QA.md)
+Windows는 이전 버전에서 실제 계정/Pet 연결을 검사했습니다. 1.4.9에서는 배포 후보 ZIP의 실제 WPF 설정창·작업표시줄 속성·재시작 후 알림 복원과 설치·업데이트·롤백·제거를 격리 프로필에서 검사합니다. 네 언어의 Windows/Mac 카운트다운 일치도 확인합니다. 오류 조건의 HTTP/확인창 응답은 fixture이며 공개 후 실제 GitHub 다운로드 경로도 별도로 확인합니다. Mac 렌더링은 모의 AppKit에서 검사하며 실제 장치 검증과 구분합니다. Pet 실조작·Windows 로그온·Codex 완전 종료/재실행은 이번에 재검사하지 않습니다. [검증 범위](docs/TESTING.md) · [Windows QA](docs/WINDOWS-QA.md) · [Mac 미검증 목록](docs/MAC-QA.md)
 
 체크섬은 파일 무결성 확인이며 전자서명을 대신하지 않습니다.
 
 </details>
 
 ## 업데이트 로그
+
+### 1.4.9 · 2026-10-17
+
+- **업데이트·재시작 후 리셋 알림이 사라지던 문제**를 수정했습니다. 표시 중이던 알림은 소리 없이 복원하고, X로 닫은 알림은 다음 알림 구간까지 숨깁니다. Windows/Mac 모두 적용했습니다.
+- 리셋 안내의 **`1일 0시간`을 `24시간`**으로 표시합니다. 종료 시각 기준으로 남은 시간이 줄어들며 ‘가능성’ 문구는 유지합니다.
+- Windows 설정창 작업표시줄에 **지피쨩 아이콘 + `Codex Usage Monitor` 이름**을 지정했습니다. 긴 경로에서도 작업표시줄을 통한 재실행이 설정창으로 연결됩니다.
+- Windows/Mac 설치형·포터블·자동 업데이트 파일을 함께 갱신했습니다. **Mac은 실기기 전체 검증 전인 preview를 유지합니다.**
 
 ### 1.4.8 · 2026-10-17
 
@@ -231,7 +238,7 @@ AI 슬롭 같다구요? 으쩌라구요
 
 ## 소스와 라이선스
 
-이 폴더는 **1.4.8 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
+이 폴더는 **1.4.9 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
 
 코드는 [MIT](LICENSE)입니다. 한국어·중국어·일본어 참고 번역과 영어 원문을 제공합니다. 지피쨩 캐릭터 아트의 출처와 적용 범위는 [ARTWORK.md](docs/ARTWORK.md), 화면 예시의 제작 방식은 [README-MEDIA.md](docs/README-MEDIA.md)를 참고하세요. OpenAI 공식 제품이 아닙니다.
 

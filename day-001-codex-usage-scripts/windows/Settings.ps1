@@ -242,14 +242,42 @@ function Build-SettingsContent {
     $w.Content=$root;$script:settingsRoot=$root;$script:settingsPages=$pages;$script:buildingSettings=$false;Sync-Fields;Update-StylePreviews
     $script:settingsNav.settings.RaiseEvent((New-Object Windows.RoutedEventArgs([Windows.Controls.Primitives.ButtonBase]::ClickEvent)))
 }
+function Initialize-SettingsTaskbar($Window) {
+    # Shell의 재실행 명령 길이 제한을 피한다. 긴 실행 경로는 바로가기 내부에 보관한다.
+    $folder=Join-Path $script:profile 'taskbar';$null=New-Item -ItemType Directory -Path $folder -Force
+    $icon=Join-Path $folder 'gp-chan.ico';[IO.File]::Copy((Join-Path $script:root 'assets\gp-chan.ico'),$icon,$true)
+    $path=Join-Path $folder 'Codex Usage Monitor.lnk'
+    $hostPath=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $arguments=@('-NoLogo','-NoProfile','-NonInteractive','-STA','-WindowStyle','Hidden','-ExecutionPolicy','Bypass','-File',(Join-Path $script:root 'windows\Launch.ps1'),'-Settings')
+    $shell=New-Object -ComObject WScript.Shell;$shortcut=$null
+    try {
+        $shortcut=$shell.CreateShortcut($path);$shortcut.TargetPath=$hostPath
+        $shortcut.Arguments=($arguments | ForEach-Object {Quote-ProcessArgument ([string]$_)}) -join ' '
+        $shortcut.WorkingDirectory=$env:TEMP;$shortcut.WindowStyle=7
+        $shortcut.IconLocation=$icon+',0';$shortcut.Description='Codex Usage Monitor';$shortcut.Save()
+    } finally {
+        if($shortcut){$null=[Runtime.InteropServices.Marshal]::ReleaseComObject($shortcut)}
+        $null=[Runtime.InteropServices.Marshal]::ReleaseComObject($shell)
+    }
+    [UsageScripts.TaskbarIdentity]::ApplyToShortcut($path)
+    $handle=(New-Object Windows.Interop.WindowInteropHelper($Window)).EnsureHandle()
+    [UsageScripts.TaskbarIdentity]::ApplyToWindow($handle,$icon,(Quote-ProcessArgument $path))
+}
 function Show-Settings {
     Load-UI
     if (-not $script:settingsWindow) {
         $w=New-Object Windows.Window;$w.Title='Codex Usage Monitor';$w.Background=Brush '#101617';$w.Foreground=Brush '#edf4f1';$w.WindowStartupLocation='CenterScreen'
         $w.Resources= [Windows.Markup.XamlReader]::Parse([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'Theme.xaml')))
-        $w.Icon=New-Object Windows.Media.Imaging.BitmapImage([Uri](Join-Path $script:root 'assets\gp-chan-face.png'))
+        $w.Icon=New-Object Windows.Media.Imaging.BitmapImage([Uri](Join-Path $script:root 'assets\gp-chan.ico'))
         $w.Width=[Math]::Min(856,[Windows.SystemParameters]::WorkArea.Width-34);$w.Height=[Math]::Min(759,[Windows.SystemParameters]::WorkArea.Height-40);$w.MinWidth=[Math]::Min(776,$w.Width);$w.MinHeight=[Math]::Min(609,$w.Height)
         $script:settingsWindow=$w;$script:report.settingsOpened=$true;Build-SettingsContent
+        # HWND를 먼저 만들고 Shell 속성을 지정한 뒤 표시해 PowerShell 아이콘이 잠깐 뜨는 것도 막는다.
+        Initialize-SettingsTaskbar $w
+        $w.Add_Closing({
+            param($sender,$eventArgs)
+            $handle=(New-Object Windows.Interop.WindowInteropHelper($sender)).Handle
+            if($handle -ne [IntPtr]::Zero){[UsageScripts.TaskbarIdentity]::ClearWindow($handle)}
+        })
         $w.Add_Closed({if ($script:previews) {foreach ($entry in $script:previews.Values) {$entry.card.window.Close()}};$script:settingsWindow=$null;$script:settingsSized=$false;$script:previews=$null})
     }
     $w=$script:settingsWindow;$w.Show();$w.UpdateLayout();Sync-PetAvailability

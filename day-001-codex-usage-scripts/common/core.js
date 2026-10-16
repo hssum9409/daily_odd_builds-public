@@ -166,6 +166,7 @@ var MonitorCore = (function () {
         if (mins === null) return words.pending;
         if (!mins) return words.due;
         days = Math.floor(mins / 1440); hours = Math.floor(mins % 1440 / 60);
+        if (days === 1 && hours === 0) return '24' + words.hour;
         return days ? days + words.day + ' ' + hours + words.hour : Math.floor(mins / 60) + words.hour + ' ' + mins % 60 + words.minute;
     }
     function creditEvent(state, data, step) {

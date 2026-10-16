@@ -1,4 +1,4 @@
-// PowerShell에 없는 비동기 I/O와 읽기 전용 Win32/UIA 접근만 맡는다.
+// PowerShell에 없는 비동기 I/O, Win32/UIA 조회와 자체 창의 Shell 속성 설정을 맡는다.
 // 독립 exe를 설치하지 않고 Windows 기본 .NET Framework로 메모리에서 컴파일한다.
 using System;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace UsageScripts {
         public string Executable;
         // 기본은 Codex stdio 서버다. 격리 전송 QA는 OS 내장 스크립트 서버로 대체한다.
         public string ServerArguments = "app-server --listen stdio://";
-        public string ClientVersion = "1.4.8";
+        public string ClientVersion = "1.4.9";
         public int TimeoutMilliseconds = 20000;
         public int OwnedPid { get { return process == null ? 0 : process.Id; } }
         public Rpc(string path) { Executable = path; }
@@ -166,6 +166,100 @@ namespace UsageScripts {
     }
     public sealed class Box { public double x, y, w, h; public Box(double a, double b, double c, double d) { x=a; y=b; w=c; h=d; } }
     public sealed class Frame { public bool Alive; public long Hwnd, Revision; public Box Pet, Window; public Box[] Blockers = new Box[0]; }
+    public static class TaskbarIdentity {
+        public const string AppId = "DailyOddBuilds.CodexUsageMonitor";
+        public const string DisplayName = "Codex Usage Monitor";
+        static readonly Guid PropertyFormat = new Guid("9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3");
+        [StructLayout(LayoutKind.Sequential, Pack=4)]
+        struct PropertyKey { public Guid format; public uint id; }
+        // PROPVARIANT의 union은 x64에서 16바이트, x86에서 8바이트다. 문자열 포인터만 사용한다.
+        [StructLayout(LayoutKind.Sequential)]
+        struct PropertyValue { public ushort type, reserved1, reserved2, reserved3; public IntPtr text, unused; }
+        [ComImport, Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface PropertyStore {
+            [PreserveSig] int GetCount(out uint count);
+            [PreserveSig] int GetAt(uint index, out PropertyKey key);
+            [PreserveSig] int GetValue(ref PropertyKey key, out PropertyValue value);
+            [PreserveSig] int SetValue(ref PropertyKey key, ref PropertyValue value);
+            [PreserveSig] int Commit();
+        }
+        [DllImport("shell32.dll", CharSet=CharSet.Unicode, ExactSpelling=true)]
+        static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
+        [DllImport("shell32.dll", ExactSpelling=true)]
+        static extern int GetCurrentProcessExplicitAppUserModelID(out IntPtr appId);
+        [DllImport("shell32.dll", ExactSpelling=true)]
+        static extern int SHGetPropertyStoreForWindow(IntPtr hwnd, ref Guid iid, out PropertyStore store);
+        [DllImport("shell32.dll", CharSet=CharSet.Unicode, ExactSpelling=true)]
+        static extern int SHGetPropertyStoreFromParsingName(string path, IntPtr bindContext, uint flags, ref Guid iid, out PropertyStore store);
+        [DllImport("ole32.dll", ExactSpelling=true)]
+        static extern int PropVariantClear(ref PropertyValue value);
+
+        public static void InitializeProcess() {
+            // 어떤 창도 표시하기 전에 PowerShell 호스트와 별개의 앱으로 등록한다.
+            Marshal.ThrowExceptionForHR(SetCurrentProcessExplicitAppUserModelID(AppId));
+        }
+        public static string CurrentProcessId() {
+            IntPtr value;
+            Marshal.ThrowExceptionForHR(GetCurrentProcessExplicitAppUserModelID(out value));
+            try { return Marshal.PtrToStringUni(value); }
+            finally { Marshal.FreeCoTaskMem(value); }
+        }
+        static PropertyStore Open(IntPtr hwnd) {
+            if (hwnd == IntPtr.Zero) throw new ArgumentException("Window handle is not initialized.", "hwnd");
+            Guid iid = typeof(PropertyStore).GUID; PropertyStore store;
+            Marshal.ThrowExceptionForHR(SHGetPropertyStoreForWindow(hwnd, ref iid, out store));
+            return store;
+        }
+        static void SetString(PropertyStore store, uint id, string text) {
+            var key = new PropertyKey { format=PropertyFormat, id=id };
+            var value = new PropertyValue { type=31, text=Marshal.StringToCoTaskMemUni(text) };
+            try { Marshal.ThrowExceptionForHR(store.SetValue(ref key, ref value)); }
+            finally { PropVariantClear(ref value); }
+        }
+        public static void ApplyToWindow(IntPtr hwnd, string iconPath, string relaunchCommand) {
+            iconPath = Path.GetFullPath(iconPath);
+            if (!File.Exists(iconPath)) throw new FileNotFoundException("Taskbar icon was not found.", iconPath);
+            if (String.IsNullOrWhiteSpace(relaunchCommand)) throw new ArgumentException("A relaunch command is required.", "relaunchCommand");
+            var store = Open(hwnd);
+            try {
+                // 이름과 재실행 명령은 함께 지정한다. 앱 ID는 나머지 속성을 설정한 뒤 적용한다.
+                SetString(store, 2, relaunchCommand);
+                SetString(store, 3, iconPath + ",0");
+                SetString(store, 4, DisplayName);
+                SetString(store, 5, AppId);
+            } catch {
+                try { ClearValues(store); } catch { }
+                throw;
+            } finally { Marshal.ReleaseComObject(store); }
+        }
+        static void ClearValues(PropertyStore store) {
+            // 창이 닫히기 전에 VT_EMPTY로 지워 Shell의 속성 리소스를 반환한다.
+            for (uint id=2; id<=5; id++) {
+                var key = new PropertyKey { format=PropertyFormat, id=id }; var value = new PropertyValue();
+                Marshal.ThrowExceptionForHR(store.SetValue(ref key, ref value));
+            }
+        }
+        public static void ClearWindow(IntPtr hwnd) {
+            var store = Open(hwnd);
+            try { ClearValues(store); }
+            finally { Marshal.ReleaseComObject(store); }
+        }
+        public static void ApplyToShortcut(string path) {
+            Guid iid = typeof(PropertyStore).GUID; PropertyStore store;
+            Marshal.ThrowExceptionForHR(SHGetPropertyStoreFromParsingName(Path.GetFullPath(path), IntPtr.Zero, 2, ref iid, out store));
+            try { SetString(store, 5, AppId); Marshal.ThrowExceptionForHR(store.Commit()); }
+            finally { Marshal.ReleaseComObject(store); }
+        }
+        public static string ReadWindowProperty(IntPtr hwnd, uint id) {
+            var store = Open(hwnd);
+            try {
+                var key = new PropertyKey { format=PropertyFormat, id=id }; PropertyValue value;
+                Marshal.ThrowExceptionForHR(store.GetValue(ref key, out value));
+                try { return value.type == 31 ? Marshal.PtrToStringUni(value.text) : ""; }
+                finally { PropVariantClear(ref value); }
+            } finally { Marshal.ReleaseComObject(store); }
+        }
+    }
     public static class WindowChrome {
         const int ExtendedStyleIndex = -20;
         const long ToolWindow = 0x80, AppWindow = 0x40000;
