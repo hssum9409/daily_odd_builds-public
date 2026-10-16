@@ -368,6 +368,7 @@ function Render {
     $now=Now; $frame=if ($FixturePath) {$script:fixtureFrame} else {[UsageScripts.Desktop]::MovedFrame()}
     $oldMode=$script:mode;$script:mode=Get-Lifecycle $script:config $script:alive ([bool]$frame.Pet) $now $script:life
     if ($script:mode -eq 'free' -and $oldMode -in @('above','below','waiting') -and -not [double]::IsNaN($script:mainCard.window.Left)) {$script:config.x=$script:mainCard.window.Left;$script:config.y=$script:mainCard.window.Top}
+    if($script:settingsWindow -and $script:settingsWindow.IsVisible){Sync-PetAvailability}
     $show=$script:mode -notin @('idle','hidden','waiting')
     $view=Get-View $script:data $script:config $now $script:words
     $lines=if ($script:lastData -eq 0) {@($(if ($script:lastError) {T 'error'} else {T 'connecting'}))} else {$view.lines}

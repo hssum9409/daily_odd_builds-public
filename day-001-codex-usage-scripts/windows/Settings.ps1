@@ -56,6 +56,15 @@ function Sync-PetAvailability {
         $button=$script:positionButtons[$key]
         if ($button -and $button.IsEnabled -ne $available) {$button.IsEnabled=$available}
     }
+    $selected=Get-PositionSelection $script:config $script:mode
+    if($script:lastPositionSelection -cne $selected) {
+        foreach($key in @('above','below','free','hidden')) {
+            $button=$script:positionButtons[$key];if(-not $button){continue}
+            $button.Background=Brush $(if($key -eq $selected){'#a5e4ce'}else{'#233236'})
+            $button.Foreground=Brush $(if($key -eq $selected){'#101617'}else{'#edf4f1'})
+        }
+        $script:lastPositionSelection=$selected
+    }
 }
 function Sync-Fields {
     foreach ($pair in @(@('short','shortReset'),@('weekly','weeklyReset'),@('tickets','expiry'),@('resetNotice','resetSound'),@('creditNotice','creditSound'))) {
@@ -65,7 +74,6 @@ function Sync-Fields {
     $pro=Test-Pro $script:data;$script:fields.short.IsEnabled=-not $pro
     if ($pro) {$script:fields.shortReset.IsEnabled=$false};$script:proHint.Visibility=if ($pro) {'Visible'} else {'Collapsed'}
     Sync-PetAvailability
-    foreach ($key in $script:positionButtons.Keys) {$b=$script:positionButtons[$key];$b.Background=Brush $(if ($script:config.placement -eq $key) {'#a5e4ce'} else {'#233236'});$b.Foreground=Brush $(if ($script:config.placement -eq $key) {'#101617'} else {'#edf4f1'})}
 }
 function UI-Text([string]$Text,[double]$Size=11.5,[string]$Color='#edf4f1',[bool]$Bold=$false) {
     $v=Label $Text $Size;$v.Margin=0;$v.Foreground=Brush $Color;if ($Bold) {$v.FontWeight='SemiBold'};return $v
@@ -136,6 +144,7 @@ function Update-StylePreviews {
 function Build-SettingsContent {
     if ($script:previews) {foreach ($entry in $script:previews.Values) {$entry.card.window.Close()}}
     $script:buildingSettings=$true;$script:fields=@{};$script:styleFields=@{};$script:styleAuto=@{};$script:stylePercent=@{};$script:settingsNav=@{};$script:positionButtons=@{};$script:previews=@{};$script:rangeLabels=@{}
+    $script:lastPositionSelection=$null
     $w=$script:settingsWindow;$w.FontFamily=New-Object Windows.Media.FontFamily(@{ko='Malgun Gothic';en='Segoe UI';zh='Microsoft YaHei';ja='Meiryo'}[$script:config.language])
     $root=New-Object Windows.Controls.Grid;$root.Background=Brush '#101617'
     $sideColumn=New-Object Windows.Controls.ColumnDefinition;$sideColumn.Width=154;$root.ColumnDefinitions.Add($sideColumn);$root.ColumnDefinitions.Add((New-Object Windows.Controls.ColumnDefinition))
