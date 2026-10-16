@@ -33,7 +33,7 @@ Day 005 of [Daily Odd Builds](https://daily-odd-builds-portal.web.app/). Windows
 
 데스크톱은 웹에서 만든 **같은 이메일 계정**으로 로그인합니다. Node, Flutter, .NET SDK나 Swift 개발 도구를 별도로 설치할 필요가 없습니다. 설치가 끝나면 내려받은 ZIP과 압축 해제 폴더를 지워도 됩니다. [자세한 설치·진단 안내](desktop/README.md)
 
-문서와 화면의 기준은 **0.6.4 릴리스**입니다. 공개 ZIP의 현재 버전은 다운로드 페이지에서 확인하세요.
+문서는 **0.6.5 릴리스** 기준이며, 기능 화면은 0.6.4에서 촬영했습니다. 공개 ZIP의 현재 버전은 다운로드 페이지에서 확인하세요.
 
 ## 시작하고, 쉬었다가, 다시 이어서
 
@@ -131,9 +131,9 @@ Day 005 of [Daily Odd Builds](https://daily-odd-builds-portal.web.app/). Windows
 - 웹·Windows는 beta, macOS는 preview입니다. Android/iOS 배포와 그룹·랭킹은 포함하지 않습니다.
 - Windows 설치·실행·토큰 갱신·프로세스 재시작·테마를 검사했습니다. 기능 이미지는 실제 Windows 렌더러 또는 웹 컴포넌트에 예시 데이터를 넣은 화면이며, Mac 실행이나 실제 OS 포인터 조작의 증거는 아닙니다.
 - 기록 저장에는 인터넷 연결이 필요합니다. 완전한 오프라인 편집·병합은 지원하지 않습니다.
-- 개인정보처리방침 확정과 계정·전체 데이터 삭제 UI는 준비 중입니다. 기록 삭제는 복원 가능한 삭제입니다.
+- [개인정보처리방침](https://daily-odd-builds-portal.web.app/privacy/seongsilbbi)은 웹 화면과 앱 설정창 하단에서도 확인할 수 있습니다. 계정·전체 데이터 삭제 UI는 준비 중이며, 기록 삭제는 복원 가능한 삭제입니다.
 
-[이미지 출처와 재현 범위](docs/README-MEDIA.md) · [홍보 이미지와 프롬프트](docs/ARTWORK.md) · [릴리스와 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day005-v0.6.4)
+[이미지 출처와 재현 범위](docs/README-MEDIA.md) · [홍보 이미지와 프롬프트](docs/ARTWORK.md) · [릴리스와 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day005-v0.6.5)
 
 ## 만든놈
 

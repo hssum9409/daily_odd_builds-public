@@ -49,4 +49,4 @@ Chrome Extension Manifest V3 · PC 일반·마이너·미니 갤러리 지원 ·
 
 ## Day 005 · 성실삐🤖
 
-업무·휴식 시간 기록. [웹](https://bbi.hssum.kr/) · [Windows / macOS 다운로드](https://bbi.hssum.kr/download) · [안내·공개 소스](day-005-seongsilbbi/README.md). [릴리스 · 0.6.4](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day005-v0.6.4). Windows/Web beta, macOS preview.
+업무·휴식 시간 기록. [웹](https://bbi.hssum.kr/) · [Windows / macOS 다운로드](https://bbi.hssum.kr/download) · [안내·공개 소스](day-005-seongsilbbi/README.md). [릴리스 · 0.6.4](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day005-v0.6.5). Windows/Web beta, macOS preview.
