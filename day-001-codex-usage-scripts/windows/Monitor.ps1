@@ -59,16 +59,23 @@ if (-not $Once) {
 }
 Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes,System.Web.Extensions,WindowsBase
 Add-Type -Path "$PSScriptRoot\Native.cs" -ReferencedAssemblies @('System.dll','System.Core.dll',[Web.Script.Serialization.JavaScriptSerializer].Assembly.Location,[Windows.Automation.AutomationElement].Assembly.Location,[Windows.Automation.ControlType].Assembly.Location,[Windows.Rect].Assembly.Location)
+[UsageScripts.TaskbarIdentity]::InitializeProcess()
 $rpc = $null; $feed = New-Object UsageScripts.Feed
 $data = $null; $lastData = 0.0; $announcement = $null; $lastFeed = 0.0; $nextFeed = 0.0; $nextUsage = 0.0; $nextScan = 0.0; $nextPresence = 0.0
 $alive = $false; $mode = 'idle'; $life = @{missingSince=$null}; $creditState = @{previous=$null;consuming=$false;cycle=''}
 $noticeState = Read-Json $stateFile; $lastKey = if ($noticeState) { $noticeState.lastKey } else { '' }
+$dismissedResetKey = if ($noticeState) { [string]$noticeState.dismissedKey } else { '' }
 $updateProcess=$null;$nextUpdate=0.0
 $resetVisible = $false; $creditVisible = $false; $quit = $false; $uiLoaded = $false; $settingsWindow = $null; $tray = $null
 $started = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() / 1000.0
 $loopCpu=0.0
 $report = [ordered]@{version=$defaults.version;runtime=$PSVersionTable.PSVersion.ToString();passed=$false;settingsOpened=$false;usageRead=$false;petDetected=$false;feedRead=$false;ownedServerStopped=$false}
 function Now { return [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() / 1000.0 }
+function Dismiss-ResetNotice {
+    # 표시 이력과 사용자가 닫은 이력을 구분해야 업데이트 후에도 표시 중이던 알림을 복원할 수 있다.
+    $script:resetVisible=$false;$script:dismissedResetKey=$script:lastKey
+    Write-Json $script:stateFile @{lastKey=$script:lastKey;dismissedKey=$script:dismissedResetKey}
+}
 function Check-ScriptUpdate([bool]$Force=$false) {
     if(-not $script:alive -or $FixturePath -or ($script:updateProcess -and -not $script:updateProcess.HasExited)){return}
     $cache=Read-Json (Join-Path $profile 'updates.json')
@@ -156,7 +163,7 @@ function Card([string]$Kind) {
     $controls=New-Object Windows.Controls.Grid; $controls.VerticalAlignment='Top'; $controls.Margin='2,4,2,0'; $controls.Visibility='Collapsed'
     $close=Button '×' { }
     $close.Style=$w.Resources['HoverPill'];$close.HorizontalAlignment='Left'
-    if ($Kind -eq 'main') { $close.Add_Click({$script:config.placement='hidden'; Save-Config; Render}) } elseif ($Kind -eq 'reset') { $close.Add_Click({$script:resetVisible=$false; Render}) } else { $close.Add_Click({$script:creditVisible=$false; Render}) }
+    if ($Kind -eq 'main') { $close.Add_Click({$script:config.placement='hidden'; Save-Config; Render}) } elseif ($Kind -eq 'reset') { $close.Add_Click({Dismiss-ResetNotice; Render}) } else { $close.Add_Click({$script:creditVisible=$false; Render}) }
     $null=$controls.Children.Add($close)
     if ($Kind -eq 'main') { $more=Button '···' {Show-Settings};$more.Style=$w.Resources['HoverPill'];$more.HorizontalAlignment='Left';$more.Margin='27,0,0,0';$null=$controls.Children.Add($more) }
     if ($Kind -eq 'reset') { $arrow=Button '→' {if ($script:announcement.url) { Start-Process $script:announcement.url }};$arrow.Style=$w.Resources['HoverPill'];$arrow.HorizontalAlignment='Right';$null=$controls.Children.Add($arrow) }
@@ -190,7 +197,7 @@ function Close-Tray {
 function Sync-Tray {
     if (-not $script:config.trayIcon) {Close-Tray;return}
     if ($script:tray) {return}
-    $script:tray=New-Object Windows.Forms.NotifyIcon; $script:tray.Icon=New-Object Drawing.Icon((Join-Path $root 'assets\gp-chan.ico')); $script:tray.Text='Codex Usage Monitor Scripts'; $script:tray.Visible=$true
+    $script:tray=New-Object Windows.Forms.NotifyIcon; $script:tray.Icon=New-Object Drawing.Icon((Join-Path $root 'assets\gp-chan.ico')); $script:tray.Text='Codex Usage Monitor'; $script:tray.Visible=$true
     $menu=New-Object Windows.Forms.ContextMenuStrip
     $item=$menu.Items.Add((T 'settings')); $item.Add_Click({Show-Settings})
     $script:toggleItem=$menu.Items.Add('Monitor OFF'); $script:toggleItem.Add_Click({ Toggle-Monitor })
@@ -377,7 +384,11 @@ function Render {
     if ($show -and $script:config.resetNotice -and $activeNotice -and $now-$script:lastFeed -lt 1800) {
         if ($key -ne $script:lastKey) {
             if (-not $script:resetVisible) {Play-Notice 'reset'}
-            $script:resetVisible=$true;$script:lastKey=$key;Write-Json $stateFile @{lastKey=$key}
+            $script:resetVisible=$true;$script:lastKey=$key;$script:dismissedResetKey=''
+            Write-Json $stateFile @{lastKey=$key;dismissedKey=''}
+        } elseif ($key -ne $script:dismissedResetKey) {
+            # 같은 구간의 재실행/연결 복구는 화면만 복원한다. 이미 낸 소리는 반복하지 않는다.
+            $script:resetVisible=$true
         }
     } elseif (-not $activeNotice -or $now-$script:lastFeed -ge 1800) {$script:resetVisible=$false}
     $title=Get-NoticeTitle $script:announcement $now $script:words
@@ -459,6 +470,18 @@ try {
         Assert-Window $settingsWindow.ShowInTaskbar 'settings keeps its taskbar entry'
         Assert-Window (([UsageScripts.WindowChrome]::ExtendedStyle($settingsHandle) -band 0x80) -eq 0) 'settings remains a normal switchable window'
         $report.windowChecks=$windowChecks
+        $taskbarChecks=0
+        function Assert-Taskbar($Ok,[string]$Message) {$script:taskbarChecks++;if (-not $Ok) {throw $Message}}
+        # WPF 속성뿐 아니라 Windows가 보관하는 실제 창의 Shell 속성을 읽어 검증한다.
+        Assert-Taskbar ([UsageScripts.TaskbarIdentity]::CurrentProcessId() -ceq 'DailyOddBuilds.CodexUsageMonitor') 'dedicated process app ID'
+        Assert-Taskbar ($settingsWindow.Title -ceq 'Codex Usage Monitor') 'settings title'
+        Assert-Taskbar ([UsageScripts.TaskbarIdentity]::ReadWindowProperty($settingsHandle,5) -ceq 'DailyOddBuilds.CodexUsageMonitor') 'dedicated taskbar app ID'
+        Assert-Taskbar ([UsageScripts.TaskbarIdentity]::ReadWindowProperty($settingsHandle,4) -ceq 'Codex Usage Monitor') 'taskbar display name'
+        $taskbarIcon=Join-Path $profile 'taskbar\gp-chan.ico';$taskbarLink=Join-Path $profile 'taskbar\Codex Usage Monitor.lnk'
+        Assert-Taskbar ([UsageScripts.TaskbarIdentity]::ReadWindowProperty($settingsHandle,3) -ceq ($taskbarIcon+',0')) 'taskbar character icon resource'
+        Assert-Taskbar ($settingsWindow.Icon.UriSource.LocalPath -ceq (Join-Path $root 'assets\gp-chan.ico')) 'window character icon'
+        $relaunch=[UsageScripts.TaskbarIdentity]::ReadWindowProperty($settingsHandle,2)
+        Assert-Taskbar ($relaunch -ceq (Quote-ProcessArgument $taskbarLink) -and (Test-Path -LiteralPath $taskbarLink)) 'taskbar relaunch uses its dedicated shortcut'
         Render
         $trayChecks=0
         function Assert-Tray($Ok,[string]$Message) {$script:trayChecks++;if (-not $Ok) {throw $Message}}
@@ -472,6 +495,10 @@ try {
         Assert-Tray $settingsWindow.IsVisible 'settings remains open without tray'
         $settingsWindow.Close();Show-Settings
         Assert-Tray ($settingsWindow.IsVisible -and -not $fields.trayIcon.IsChecked) 'settings reopens with hidden tray'
+        $reopenedHandle=(New-Object Windows.Interop.WindowInteropHelper($settingsWindow)).Handle
+        Assert-Taskbar ([UsageScripts.TaskbarIdentity]::ReadWindowProperty($reopenedHandle,4) -ceq 'Codex Usage Monitor') 'taskbar name survives window recreation'
+        Assert-Taskbar ([UsageScripts.TaskbarIdentity]::ReadWindowProperty($reopenedHandle,3) -ceq ($taskbarIcon+',0')) 'taskbar icon survives window recreation'
+        $report.taskbarChecks=$taskbarChecks
         $fields.trayIcon.IsChecked=$true;Save-Fields
         Assert-Tray ([bool]($tray -and $tray.Visible)) 'tray restored through settings'
         $savedTray=$tray;Save-Fields
@@ -575,7 +602,7 @@ try {
         $report.availabilityChecks=$availabilityChecks
         $placementChecks=0;$placementCases=@()
         function Assert-Placement($Ok,[string]$Message) {$script:placementChecks++;if (-not $Ok) {throw $Message}}
-        $placementSaved=@{config=($config|ConvertTo-Json -Depth 15|ConvertFrom-Json);frame=$fixtureFrame;resetVisible=$resetVisible;creditVisible=$creditVisible;lastKey=$lastKey}
+        $placementSaved=@{config=($config|ConvertTo-Json -Depth 15|ConvertFrom-Json);frame=$fixtureFrame;resetVisible=$resetVisible;creditVisible=$creditVisible;lastKey=$lastKey;dismissedKey=$dismissedResetKey}
         try {
             # 실제 Border 치수로 한/세 줄 및 알림 조합을 검사한다. DPI별 픽셀 간격도 기록한다.
             $testFrame=New-Object UsageScripts.Frame;$testFrame.Alive=$true
@@ -587,7 +614,8 @@ try {
                     $config.weekly=$true;$config.tickets=$rows -eq 'full';$config.expiry=$rows -eq 'full';$config.balance=$rows -eq 'full';$config.placement=$side
                     foreach ($notices in @('none','reset','credit','both')) {
                         $script:resetVisible=$notices -in @('reset','both');$script:creditVisible=$notices -in @('credit','both')
-                        $script:lastKey=Get-ReminderKey $announcement (Now) $config.resetMinutes;Render
+                        $script:lastKey=Get-ReminderKey $announcement (Now) $config.resetMinutes
+                        $script:dismissedResetKey=if($script:resetVisible){''}else{$script:lastKey};Render
                         $borderTop=$mainCard.targetY+$mainCard.border.Margin.Top
                         $borderBottom=$mainCard.targetY+$mainCard.window.ActualHeight-$mainCard.border.Margin.Bottom
                         $edge=if ($side -eq 'above') {500/$script:scale} else {970/$script:scale}
@@ -601,7 +629,7 @@ try {
             $report.placementChecks=$placementChecks;$report.placementCases=$placementCases
         } finally {
             $script:config=$placementSaved.config;$script:fixtureFrame=$placementSaved.frame
-            $script:resetVisible=$placementSaved.resetVisible;$script:creditVisible=$placementSaved.creditVisible;$script:lastKey=$placementSaved.lastKey
+            $script:resetVisible=$placementSaved.resetVisible;$script:creditVisible=$placementSaved.creditVisible;$script:lastKey=$placementSaved.lastKey;$script:dismissedResetKey=$placementSaved.dismissedKey
             Render
         }
         $designChecks=0;$designSaved=$config|ConvertTo-Json -Depth 15|ConvertFrom-Json

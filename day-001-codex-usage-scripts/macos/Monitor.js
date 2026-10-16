@@ -276,7 +276,7 @@ function createCard(kind) {
     var v = $.NSView.alloc.initWithFrame($.NSMakeRect(0, 0, 350, 90)); v.wantsLayer = true; v.layer.cornerRadius = 30; v.layer.borderWidth = 1;
     var outer = $.NSView.alloc.initWithFrame($.NSMakeRect(0,0,350,90)); outer.addSubview(v); p.contentView = outer; v.layer.shadowOpacity = 24/255; v.layer.shadowRadius = 4; v.layer.shadowOffset = $.CGSizeMake(0,-3);
     var close = button('×', $.NSMakeRect(3, 64, 28, 24), function () {
-        if (kind === 'main') { settings.placement = 'hidden'; saveSettings(); } else if (kind === 'reset') resetVisible = false; else creditVisible = false;
+        if (kind === 'main') { settings.placement = 'hidden'; saveSettings(); } else if (kind === 'reset') dismissResetNotice(); else creditVisible = false;
         render(true);
     });
     var more = button(kind === 'main' ? '···' : '→', $.NSMakeRect(469, 64, 28, 24), function () { if (kind === 'main') showSettings(); else if (announcement && announcement.url) openLink(announcement.url); });
@@ -384,6 +384,11 @@ function placeCards() {
     moveCard(cards.reset, x, side === 'above' ? y - rh - ch : y + main.height - 20 + settings.noticeGap, true, screen);
     moveCard(cards.credit, x, side === 'above' ? y - ch : y + main.height + rh - 20 + settings.noticeGap, true, screen);
 }
+function dismissResetNotice() {
+    // 표시 이력과 X 닫기를 구분한다. 닫은 구간만 재실행 후에도 숨긴다.
+    resetVisible = false; noticeState.dismissedKey = noticeState.lastKey;
+    writeJSON(home + '/notices.json', noticeState);
+}
 function render(force) {
     if (!cards.main) return;
     mode = core.lifecycle(settings, alive, !!pet, now(), life);
@@ -396,8 +401,14 @@ function render(force) {
     var activeNotice = core.noticeActive(announcement, now());
     if (!settings.resetNotice || !activeNotice || now() - lastFeed > 1800) resetVisible = false;
     var key = core.reminderKey(announcement, now(), settings.resetMinutes);
-    if (show && settings.resetNotice && activeNotice && now() - lastFeed < 1800 && key !== noticeState.lastKey) {
-        if (!resetVisible) play('reset'); resetVisible = true; noticeState.lastKey = key; writeJSON(home + '/notices.json', noticeState);
+    if (show && settings.resetNotice && activeNotice && now() - lastFeed < 1800) {
+        if (key !== noticeState.lastKey) {
+            if (!resetVisible) play('reset'); resetVisible = true;
+            noticeState.lastKey = key; noticeState.dismissedKey = ''; writeJSON(home + '/notices.json', noticeState);
+        } else if (key !== noticeState.dismissedKey) {
+            // 업데이트/재실행으로 사라졌던 알림은 소리 없이 복원한다.
+            resetVisible = true;
+        }
     }
     if (!settings.creditNotice) creditVisible = false;
     displayCard(cards.main, lines, show);

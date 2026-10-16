@@ -124,6 +124,7 @@ function Get-ForecastUntil($Until, [double]$Now, $Words) {
     $mins = [Math]::Max(0, [Math]::Ceiling(($Until - $Now) / 60))
     if (-not $mins) { return $Words.due }
     $days = [Math]::Floor($mins / 1440); $hours = [Math]::Floor(($mins % 1440) / 60)
+    if ($days -eq 1 -and $hours -eq 0) { return "24$($Words.hour)" }
     if ($days) { return "$days$($Words.day) $hours$($Words.hour)" }
     return "$([Math]::Floor($mins / 60))$($Words.hour) $($mins % 60)$($Words.minute)"
 }
