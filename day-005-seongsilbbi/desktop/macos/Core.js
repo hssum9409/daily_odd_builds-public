@@ -10,7 +10,7 @@
         ((day && day.segments) || []).forEach(function (s) { if (s.deletedAt !== null) return; var length = Math.max(0, (s.end === null ? now : s.end) - s.start); if (s.kind === 'break') rest += length; else { work += length; } });
         var status = !active && state.dayId !== today ? 'idle' : state.status;
         var firstStart = !state.segmentId && !active && (!day || !day.segments.some(function (s) { return s.kind === 'work'; }));
-        return { today: today, day: day, active: active, firstStart: firstStart, status: status, work: work, rest: rest, clock: duration(work, true), restClock: active && active.kind === 'break' ? duration(now - active.start, true) : null, timeline: timeline(day, now, state.dailyGoalMs), primary: active ? active.kind === 'break' ? 'resume' : 'pause' : 'clockIn', secondary: 'clockOut' };
+        return { today: today, day: day, active: active, firstStart: firstStart, completed: !state.segmentId && !active && !firstStart, status: status, work: work, rest: rest, clock: duration(work, true), restClock: active && active.kind === 'break' ? duration(now - active.start, true) : null, timeline: timeline(day, now, state.dailyGoalMs), primary: active ? active.kind === 'break' ? 'resume' : 'pause' : 'clockIn', secondary: 'clockOut' };
     }
     function timeline(day, now, goal) {
         var rows = ((day && day.segments) || []).filter(function (s) { return s.deletedAt === null; }).slice().sort(function (a, b) { return a.start - b.start; });

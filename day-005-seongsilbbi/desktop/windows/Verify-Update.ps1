@@ -1,5 +1,8 @@
 ﻿param([Parameter(Mandatory=$true)][string]$PreviousArchive,[Parameter(Mandatory=$true)][string]$CurrentArchive,[Parameter(Mandatory=$true)][string]$UpdateArchive,[string]$OutputDirectory)
 $ErrorActionPreference='Stop'
+$PreviousArchive=[IO.Path]::GetFullPath($PreviousArchive)
+$CurrentArchive=[IO.Path]::GetFullPath($CurrentArchive)
+$UpdateArchive=[IO.Path]::GetFullPath($UpdateArchive)
 $env:WORKLOG_DISABLE_UPDATE_CHECK='1'
 if(-not $OutputDirectory){$OutputDirectory=Join-Path $env:TEMP ('seongsil-update-verify-'+[Guid]::NewGuid().ToString('N'))}
 $OutputDirectory=[IO.Path]::GetFullPath($OutputDirectory)
@@ -36,14 +39,14 @@ try {
  Assert ($after.pid-ne$before.pid-and-not(Get-Process -Id $before.pid -ErrorAction SilentlyContinue)) 'new WPF process becomes ready and the old process exits'
  Assert ([IO.File]::ReadAllText($marker)-eq'preserve profile') 'update preserves the separate profile'
  $unsafe=Join-Path $OutputDirectory 'unsafe.zip';$zip=[IO.Compression.ZipFile]::Open($unsafe,[IO.Compression.ZipArchiveMode]::Create);$entry=$zip.CreateEntry('../escape.txt');$writer=New-Object IO.StreamWriter($entry.Open());$writer.Write('must not extract');$writer.Dispose();$zip.Dispose()
- $exit=Update $unsafe '0.6.1' ''
+ $exit=Update $unsafe '0.6.5' ''
  Assert ($exit-ne0-and(Status).pid-eq$after.pid-and-not(Test-Path -LiteralPath (Join-Path $OutputDirectory 'escape.txt'))) 'archive traversal is rejected before stopping the app'
  $broken=Join-Path $OutputDirectory 'broken';Copy-Item -LiteralPath $current -Destination $broken -Recurse
- $release=Get-Content -LiteralPath (Join-Path $broken 'release.json') -Raw|ConvertFrom-Json;$release.version='0.6.1';$release|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $broken 'release.json') -Encoding UTF8
+ $release=Get-Content -LiteralPath (Join-Path $broken 'release.json') -Raw|ConvertFrom-Json;$release.version='0.6.5';$release|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $broken 'release.json') -Encoding UTF8
  [IO.File]::WriteAllText((Join-Path $broken 'desktop/windows/Runtime.ps1'),"throw 'Intentional verification startup failure'",(New-Object Text.UTF8Encoding($true)))
  $lines=@();foreach($line in Get-Content -LiteralPath (Join-Path $broken 'payload.sha256')){$name=($line-split '  ',2)[1];$lines+=((Get-FileHash -LiteralPath (Join-Path $broken $name) -Algorithm SHA256).Hash.ToLowerInvariant()+'  '+$name)}
  [IO.File]::WriteAllLines((Join-Path $broken 'payload.sha256'),$lines,(New-Object Text.UTF8Encoding($false)))
- $brokenZip=Join-Path $OutputDirectory 'broken.zip';Zip-Files $broken $brokenZip;$exit=Update $brokenZip '0.6.1' ''
+ $brokenZip=Join-Path $OutputDirectory 'broken.zip';Zip-Files $broken $brokenZip;$exit=Update $brokenZip '0.6.5' ''
  Assert ($exit-ne0) 'a correctly hashed but unstartable runtime fails the health check'
  $restored=Wait-Ready $version;$last=Get-ChildItem -LiteralPath (Join-Path $env:WORKLOG_SCRIPTS_HOME 'updates') -Filter result.json -Recurse|Sort-Object LastWriteTimeUtc|Select-Object -Last 1;$result=Get-Content -LiteralPath $last.FullName -Raw|ConvertFrom-Json
  Assert ($result.status-eq'rolled_back'-and$result.rollback.succeeded-and[IO.File]::ReadAllText($marker)-eq'preserve profile') 'failed startup restores and relaunches the previous version with the profile preserved'

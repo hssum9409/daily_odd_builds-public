@@ -7,7 +7,7 @@ $null=New-Item -ItemType Directory -Path (Join-Path $profile 'commands') -Force
 Add-Type -AssemblyName PresentationFramework,PresentationCore,WindowsBase,System.Xaml,System.Windows.Forms,System.Drawing,System.Net.Http,System.Security,System.Web.Extensions
 $names=@('System','System.Core','System.Net.Http','System.Security','System.Web.Extensions','System.Xaml','WindowsBase','PresentationCore','PresentationFramework','System.Windows.Forms','System.Drawing')
 $references=@([AppDomain]::CurrentDomain.GetAssemblies() | Where-Object {$_.GetName().Name -in $names} | ForEach-Object {$_.Location} | Sort-Object -Unique)
-Add-Type -Path (Join-Path $PSScriptRoot 'Client.cs'),(Join-Path $PSScriptRoot 'Panel.cs'),(Join-Path $PSScriptRoot 'Settings.cs') -ReferencedAssemblies $references
+Add-Type -Path (Join-Path $PSScriptRoot 'Client.cs'),(Join-Path $PSScriptRoot 'Panel.cs'),(Join-Path $PSScriptRoot 'Settings.cs'),(Join-Path $PSScriptRoot 'Startup.cs') -ReferencedAssemblies $references
 if($LoadOnly){return}
 $client=New-Object WorklogScripts.Client($appRoot,$profile,[bool]$Emulator)
 if($FixtureLogin){if($env:WORKLOG_QA_EMAIL -notmatch '^qa-[a-f0-9-]{36}@worklog\.test$'){throw 'An explicit disposable QA fixture is required.'};try{$null=$client.Login($env:WORKLOG_QA_EMAIL,$env:WORKLOG_QA_PASSWORD).GetAwaiter().GetResult();'Disposable QA session prepared.'}finally{$client.Dispose()};exit}

@@ -28,7 +28,7 @@ namespace WorklogScripts {
  public sealed class Store {
   public readonly string DirectoryPath;
   public Store(string directory) { DirectoryPath=Path.GetFullPath(directory);Directory.CreateDirectory(DirectoryPath); }
-  private string PathFor(string name) { if(!new[]{"session","pending","panel"}.Contains(name))throw new ArgumentException("Unknown store entry");return Path.Combine(DirectoryPath,name+".bin"); }
+  private string PathFor(string name) { if(!new[]{"session","pending","panel","account"}.Contains(name))throw new ArgumentException("Unknown store entry");return Path.Combine(DirectoryPath,name+".bin"); }
   public void Save(string name,object value) { string path=PathFor(name);byte[] bytes=ProtectedData.Protect(Encoding.UTF8.GetBytes(Json.Write(value)),null,DataProtectionScope.CurrentUser);File.WriteAllBytes(path+".tmp",bytes);if(File.Exists(path))File.Replace(path+".tmp",path,null);else File.Move(path+".tmp",path); }
   public Dictionary<string,object> Read(string name) { try{string p=PathFor(name);return File.Exists(p)?Json.Read(Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(p),null,DataProtectionScope.CurrentUser))):null;}catch{return null;} }
   public void Remove(string name) { var p=PathFor(name);if(File.Exists(p))File.Delete(p); }
@@ -65,8 +65,11 @@ namespace WorklogScripts {
   }
   public async Task<bool> Restore() {
    Session=Store.Read("session");if(Session==null)return false;Pending=Store.Read("pending");if(Json.Text(Pending,"uid")!=Json.Text(Session,"uid"))Pending=null;
+   RememberEmail(Json.Text(Session,"email"));
    try{await Refresh().ConfigureAwait(false);StartStream();return true;}catch(ApiError e){if(e.Status==400||e.Status==401){Logout();return false;}throw;}
   }
+  public string RememberedEmail { get { return Json.Text(Store.Read("account"),"email"); } }
+  private void RememberEmail(string email) { if(!string.IsNullOrWhiteSpace(email))Store.Save("account",new{email=email.Trim()}); }
   public async Task<string> DashboardLink() {
    if(Session==null)return Dashboard;
    string uid=Json.Text(Session,"uid");long generation=Interlocked.Read(ref sessionGeneration);
@@ -86,7 +89,7 @@ namespace WorklogScripts {
   public async Task Login(string email,string password) {
    using(var response=await http.PostAsync(identity+"/accounts:signInWithPassword?key="+key,new StringContent(Json.Write(new{email=email,password=password,returnSecureToken=true}),Encoding.UTF8,"application/json")).ConfigureAwait(false)) {
     var r=await ReadResponse(response,"이메일과 비밀번호를 확인해 주세요.").ConfigureAwait(false);
-    Interlocked.Increment(ref sessionGeneration);Session=new Dictionary<string,object>{{"idToken",r["idToken"]},{"refreshToken",r["refreshToken"]},{"uid",r["localId"]},{"email",email},{"expiresAt",UtcNow()+3500000}};Store.Save("session",Session);
+    Interlocked.Increment(ref sessionGeneration);Session=new Dictionary<string,object>{{"idToken",r["idToken"]},{"refreshToken",r["refreshToken"]},{"uid",r["localId"]},{"email",Json.Text(r,"email")==""?email.Trim():Json.Text(r,"email")},{"expiresAt",UtcNow()+3500000}};Store.Save("session",Session);RememberEmail(Json.Text(Session,"email"));
    }
    Pending=Store.Read("pending");if(Json.Text(Pending,"uid")!=Json.Text(Session,"uid"))Pending=null;await Refresh().ConfigureAwait(false);StartStream();
   }

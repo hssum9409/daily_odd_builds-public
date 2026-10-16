@@ -13,6 +13,8 @@ try {
  if($LASTEXITCODE-ne0){throw 'OS runtime compilation failed'};$report.checks+='PowerShell 5.1 / .NET Framework compilation'
  & $ps -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File (Join-Path $target 'desktop/windows/Verify-Theme.ps1') -OutputDirectory (Join-Path $OutputDirectory 'theme-checks') | Out-Null
  if($LASTEXITCODE-ne0){throw 'Native theme verification failed'};$report.checks+='native cream/dark/custom theme controls, persistence, migration and rounded font'
+ & $ps -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File (Join-Path $target 'desktop/windows/Verify-Startup.ps1') -OutputDirectory (Join-Path $OutputDirectory 'startup-checks') | Out-Null
+ if($LASTEXITCODE-ne0){throw 'Startup consent verification failed'};$report.checks+='native startup consent UI and persisted decisions; no OS startup registration changed'
  if($Live){$result=& $ps -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass -File (Join-Path $target 'desktop/windows/Runtime.ps1') -SelfTest;if($LASTEXITCODE-ne0){throw 'Live verification failed'};$parsed=$result|ConvertFrom-Json;if(-not$parsed.passed){throw 'Live result was not passed'};$report.liveResult=$parsed}
  & (Join-Path $target 'desktop/windows/Launch.ps1')
  $deadline=[DateTime]::UtcNow.AddSeconds(20);$statusPath=Join-Path $env:WORKLOG_SCRIPTS_HOME 'status.json'

@@ -37,12 +37,12 @@ while IFS= read -r line; do
  actual=$(/usr/bin/shasum -a 256 "$source_root/$file"); actual=${actual%% *}
  [ "$actual" = "$hash" ] || { echo 'Checksum mismatch' >&2; exit 1; }
 done < "$source_root/payload.sha256"
-for required in desktop/macos/Runtime.js desktop/macos/Core.js desktop/macos/Widget.js desktop/macos/ready.js desktop/macos/install.command desktop/macos/run.command desktop/macos/control.command config/firebase.json desktop/themes.json desktop/macos/Settings.js desktop/assets/Nunito-Bold.ttf desktop/assets/Nunito-ExtraBold.ttf desktop/assets/NanumSquareRoundR.ttf desktop/assets/NanumSquareRoundB.ttf desktop/assets/NanumSquareRoundEB.ttf desktop/assets/robot.png desktop/assets/LICENSE-Fluent-Emoji.txt desktop/assets/OFL-Nunito.txt desktop/assets/OFL-NanumSquareRound.txt release.json; do grep -F "  $required" "$source_root/payload.sha256" >/dev/null || { echo 'Incomplete payload' >&2; exit 1; }; done
+for required in desktop/macos/Runtime.js desktop/macos/Core.js desktop/macos/Widget.js desktop/macos/StartupConsent.js desktop/macos/ready.js desktop/macos/install.command desktop/macos/run.command desktop/macos/control.command config/firebase.json desktop/themes.json desktop/macos/Settings.js desktop/assets/Nunito-Bold.ttf desktop/assets/Nunito-ExtraBold.ttf desktop/assets/NanumSquareRoundR.ttf desktop/assets/NanumSquareRoundB.ttf desktop/assets/NanumSquareRoundEB.ttf desktop/assets/robot.png desktop/assets/LICENSE-Fluent-Emoji.txt desktop/assets/OFL-Nunito.txt desktop/assets/OFL-NanumSquareRound.txt release.json; do grep -F "  $required" "$source_root/payload.sha256" >/dev/null || { echo 'Incomplete payload' >&2; exit 1; }; done
 mkdir "$stage"
 while IFS= read -r line; do file=${line#*  }; mkdir -p "$stage/$(dirname -- "$file")"; cp "$source_root/$file" "$stage/$file"; done < "$source_root/payload.sha256"
 cp "$source_root/payload.sha256" "$stage/payload.sha256"
 chmod +x "$stage"/*.command "$stage"/desktop/macos/*.command
-printf 'WorklogScripts\n%s\n' "$target" > "$stage/installed.txt"
+printf 'WorklogScripts\n%s\n%s\n' "$target" "$([ "$isolated" -eq 1 ] && echo isolated || echo standard)" > "$stage/installed.txt"
 [ ! -f "$profile/instance.json" ] || running=1
 stop_owned
 [ ! -d "$target" ] || mv "$target" "$backup"
@@ -52,7 +52,7 @@ if [ "$startup" -eq 1 ] && [ "$isolated" -eq 0 ]; then
  # Foundation writes XML safely, including paths with spaces, &, and Unicode.
  WORKLOG_AGENT_PATH="$agent" WORKLOG_AGENT_ROOT="$target" WORKLOG_AGENT_HOME="$profile" /usr/bin/osascript -l JavaScript "$target/desktop/macos/startup.js"
 fi
-if [ "$launch" -eq 1 ] || [ "$running" -eq 1 ]; then
+if [ "$launch" -eq 1 ] || [ "$running" -eq 1 ] || { [ "$isolated" -eq 0 ] && [ "$action" = install ]; }; then
  /bin/sh "$target/desktop/macos/run.command"
  count=0
  while ! WORKLOG_READY_ROOT="$target" /usr/bin/osascript -l JavaScript "$target/desktop/macos/ready.js" >/dev/null 2>&1 && [ "$count" -lt 20 ]; do sleep 1; count=$((count+1)); done
