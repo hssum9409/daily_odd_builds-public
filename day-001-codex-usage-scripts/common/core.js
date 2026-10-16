@@ -132,8 +132,7 @@ var MonitorCore = (function () {
         // 후속 리셋 완료가 확인됐으면 이전 게시물의 조짐은 다시 띄우지 않는다.
         var completed = utcSeconds(payload.data.latest_reset && payload.data.latest_reset.announced_at);
         if (finite(observed) && finite(completed) && completed >= observed) return null;
-        var window = /^within ([1-9]\d{0,2})h$/.exec(w.forecast_window || '');
-        return {id: 'watch-' + /\/status\/(\d+)/.exec(url)[1], type: 'watch', at: null, until: until, hours: window ? Number(window[1]) : null, url: url};
+        return {id: 'watch-' + /\/status\/(\d+)/.exec(url)[1], type: 'watch', at: null, until: until, url: url};
     }
     function utcSeconds(value) {
         var at = typeof value === 'string' && /(Z|[+-]\d\d:\d\d)$/.test(value) ? Date.parse(value) / 1000 : NaN;
@@ -146,7 +145,8 @@ var MonitorCore = (function () {
         return !!a && (a.type !== 'watch' || (finite(a.until) && now < a.until));
     }
     function noticeTitle(a, now, words) {
-        if (a && a.type === 'watch') return words.reset_watch + ' · ' + (finite(a.hours) ? words.watch_within.replace('{hours}', a.hours) : words.watch_pending);
+        // forecast_window는 최초 범위다. 캐시된 응답도 매 렌더링마다 종료 시각에서 남은 시간을 계산한다.
+        if (a && a.type === 'watch') return words.reset_watch + ' · ' + (finite(a.until) && a.until > now ? words.watch_within.replace('{value}', forecastUntil(a.until, now, words)) : words.watch_pending);
         return (a && a.type === 'banked' ? words.reset_stored : words.reset_normal) + ' ' + words.notice_reset + ' · ' + words.notice_after.replace('{value}', forecast(a, now, words)) + ' ' + words.estimated;
     }
     function reminderKey(a, now, minutes) {
@@ -159,7 +159,10 @@ var MonitorCore = (function () {
         return a.id + ':' + key;
     }
     function forecast(a, now, words) {
-        var mins = a && finite(a.at) ? Math.max(0, Math.ceil((a.at - now) / 60)) : null, days, hours;
+        return forecastUntil(a && a.at, now, words);
+    }
+    function forecastUntil(until, now, words) {
+        var mins = finite(until) ? Math.max(0, Math.ceil((until - now) / 60)) : null, days, hours;
         if (mins === null) return words.pending;
         if (!mins) return words.due;
         days = Math.floor(mins / 1440); hours = Math.floor(mins % 1440 / 60);

@@ -37,7 +37,7 @@ codex-resets.com/api/v1/status → 제3자 초기화 예고 / 리셋 조짐
 
 ## 상태
 
-리셋 공급 응답은 `scheduled_reset`의 유효한 예고를 우선하고, 없으면 `active_watch`를 조짐으로 해석한다. 조짐 식별자는 원문 게시물 ID를 사용하고 `expires_at`은 표시 유효기간으로만 사용한다. 조짐에는 초기화 예정 시각을 부여하지 않는다. 기존 resetNotice/resetSound 설정과 같은 알림 카드를 사용하되 문구를 구분한다. 정식 예고 전환·소식 없음·후속 완료·만료를 처리하며, 조짐의 재표시는 설정 간격으로만 결정한다.
+리셋 공급 응답은 `scheduled_reset`의 유효한 예고를 우선하고, 없으면 `active_watch`를 조짐으로 해석한다. 조짐 식별자는 원문 게시물 ID를 사용하고 `expires_at`은 표시 유효기간과 가능성 문구의 남은 시간 계산에 사용한다. 최초 범위인 `forecast_window`는 카운트다운에 사용하지 않는다. Windows/Mac 모두 매 렌더링마다 종료 시각에서 현재 시각을 빼며 API 조회 횟수는 늘리지 않는다. 조짐에는 확정된 초기화 예정 시각을 부여하지 않는다. 기존 resetNotice/resetSound 설정과 같은 알림 카드를 사용하되 문구를 구분한다. 정식 예고 전환·소식 없음·후속 완료·만료를 처리하며, 조짐의 재표시는 설정 간격으로만 결정한다.
 
 `placement`는 명시적 사용자 선호이고 `mode`는 실제 표시 상태다. `above/below → Pet 감지 실패 → free → Pet 재발견 → above/below` 동안 설정값을 덮어쓰지 않는다. 데스크톱이 종료되면 `idle`로 전환하고 자기가 만든 App Server만 종료한다. 명시적인 `hidden`은 그대로 유지한다.
 
