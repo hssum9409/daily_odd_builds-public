@@ -92,16 +92,16 @@ function Get-Scheduled($Payload, [double]$Now = ([DateTimeOffset]::UtcNow.ToUnix
     if (-not $url -or -not (Test-Finite $until) -or $until -le $Now) { return $null }
     $observed = Get-ResetTimestamp $watch.observed_at; $completed = Get-ResetTimestamp $Payload.data.latest_reset.announced_at
     if ((Test-Finite $observed) -and (Test-Finite $completed) -and $completed -ge $observed) { return $null }
-    $hours = if ($watch.forecast_window -cmatch '^within ([1-9]\d{0,2})h$') { [int]$Matches[1] } else { $null }
     $post = [regex]::Match($url, '/status/(\d+)').Groups[1].Value
-    return @{id = "watch-$post"; type = 'watch'; at = $null; until = $until; hours = $hours; url = $url}
+    return @{id = "watch-$post"; type = 'watch'; at = $null; until = $until; url = $url}
 }
 function Test-NoticeActive($Announcement, [double]$Now) {
     return [bool]($Announcement -and ($Announcement.type -ne 'watch' -or ((Test-Finite $Announcement.until) -and $Now -lt $Announcement.until)))
 }
 function Get-NoticeTitle($Announcement, [double]$Now, $Words) {
     if ($Announcement.type -eq 'watch') {
-        $hint = if (Test-Finite $Announcement.hours) { $Words.watch_within.Replace('{hours}', [string]$Announcement.hours) } else { $Words.watch_pending }
+        # 최초 범위(forecast_window) 대신 종료 시각으로 계산한다. 추가 API 조회 없이 분 단위로 줄어든다.
+        $hint = if ((Test-Finite $Announcement.until) -and $Announcement.until -gt $Now) { $Words.watch_within.Replace('{value}', (Get-ForecastUntil $Announcement.until $Now $Words)) } else { $Words.watch_pending }
         return $Words.reset_watch + ' · ' + $hint
     }
     $kind = if ($Announcement.type -eq 'banked') { $Words.reset_stored } else { $Words.reset_normal }
@@ -117,8 +117,11 @@ function Get-ReminderKey($Announcement, [double]$Now, [int]$Minutes) {
     return $Announcement.id + ':' + $key
 }
 function Get-Forecast($Announcement, [double]$Now, $Words) {
-    if (-not (Test-Finite $Announcement.at)) { return $Words.pending }
-    $mins = [Math]::Max(0, [Math]::Ceiling(($Announcement.at - $Now) / 60))
+    return Get-ForecastUntil $Announcement.at $Now $Words
+}
+function Get-ForecastUntil($Until, [double]$Now, $Words) {
+    if (-not (Test-Finite $Until)) { return $Words.pending }
+    $mins = [Math]::Max(0, [Math]::Ceiling(($Until - $Now) / 60))
     if (-not $mins) { return $Words.due }
     $days = [Math]::Floor($mins / 1440); $hours = [Math]::Floor(($mins % 1440) / 60)
     if ($days) { return "$days$($Words.day) $hours$($Words.hour)" }

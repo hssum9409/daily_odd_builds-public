@@ -1,6 +1,12 @@
-# Codex Usage Monitor Scripts 1.4.7 — 배포 안내
+# Codex Usage Monitor Scripts 1.4.8 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.7은 Windows 설치형 자동 업데이트의 폴더 교체 오류를 수정하고 복구 실패 로그를 보강합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.8은 Windows/Mac 리셋 조짐의 남은 시간을 종료 시각 기준으로 계산합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+
+## 1.4.8 변경 사항
+
+리셋 조짐이 최초 범위인 `within 24h`에 고정되던 문제를 수정했습니다. Windows/Mac 모두 API의 `active_watch.expires_at`에서 현재 시각을 빼서 `리셋 조짐 · 11시간 48분 이내 가능성`처럼 표시합니다. 이미 표시 중인 알림도 API를 추가로 조회하지 않고 분 단위로 감소하며, 종료 시각에 도달하면 숨깁니다.
+
+‘가능성’ 문구와 기존 알림 간격·소리·닫기 동작을 유지합니다. 조짐의 종료 시각은 확정된 리셋 일정이 아니므로 일반/보관형 리셋 예고와 계속 구분합니다. 한국어·영어·중국어·일본어에 같은 계산을 적용하며, 설치형·포터블·자동 업데이트 파일을 모두 갱신합니다. Mac은 preview입니다.
 
 ## 1.4.7 변경 사항
 
@@ -36,10 +42,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.7-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.4.7-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.7-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.7-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.8-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.4.8-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.8-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.8-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 
