@@ -4,8 +4,10 @@ param([string]$TargetRoot=(Split-Path $PSScriptRoot -Parent),[string]$Profile=$e
 $ErrorActionPreference='Stop'
 # 테스트 사본도 제품과 같은 실행기를 사용하며 모니터 PID를 직접 추적한다.
 . (Join-Path $PSScriptRoot 'Launch.ps1') -LoadOnly
-[Environment]::CurrentDirectory=$env:TEMP
 $TargetRoot=[IO.Path]::GetFullPath($TargetRoot)
+# .NET 작업 위치만 옮기면 PowerShell의 $PWD가 설치 폴더를 계속 사용한다.
+Set-Location -LiteralPath $env:TEMP
+[Environment]::CurrentDirectory=$env:TEMP
 if (-not $Profile) {
     $receipt=try {Get-Content -LiteralPath (Join-Path $TargetRoot 'installed.json') -Raw -Encoding UTF8|ConvertFrom-Json} catch {$null}
     $Profile=if($receipt.product -eq 'CodexUsageMonitorScripts' -and $receipt.profile){[string]$receipt.profile}else{Join-Path $env:LOCALAPPDATA 'DailyOddBuilds\CodexUsageMonitorScripts'}
@@ -22,6 +24,42 @@ function Save-Status([string]$Status) {
     $cache.status=$Status;$temp=$cachePath+'.'+$PID+'.tmp'
     $cache|ConvertTo-Json -Depth 8|Set-Content -LiteralPath $temp -Encoding UTF8
     if([IO.File]::Exists($cachePath)){$backup=$cachePath+'.bak';[IO.File]::Replace($temp,$cachePath,$backup);[IO.File]::Delete($backup)}else{[IO.File]::Move($temp,$cachePath)}
+}
+function Error-Summary($Failure) {
+    if(-not $Failure){return $null}
+    # HTTP 예외의 서명 URL이나 헤더를 남기지 않는다. 계정 데이터는 조회하지 않는다.
+    $message=[regex]::Replace([string]$Failure.Exception.Message,'https?://\S+','[URL]')
+    if($message.Length -gt 1500){$message=$message.Substring(0,1500)}
+    return @{type=$Failure.Exception.GetType().FullName;id=$Failure.FullyQualifiedErrorId;message=$message;line=$Failure.InvocationInfo.ScriptLineNumber}
+}
+function Log-Update([string]$Phase,$Failure=$null,$Details=$null) {
+    $entry=@{at=[DateTimeOffset]::UtcNow.ToString('o');phase=$Phase;pid=$PID}
+    if($Failure){$entry.failure=Error-Summary $Failure};if($Details){$entry.details=$Details}
+    try{[IO.File]::AppendAllText((Join-Path $job 'update.log'),(($entry|ConvertTo-Json -Depth 8 -Compress)+[Environment]::NewLine),(New-Object Text.UTF8Encoding($false)))}catch{[Console]::Error.WriteLine('Could not write updater diagnostic log.')}
+}
+function Save-Result($Result) {
+    $path=Join-Path $job 'result.json';$temp=$path+'.tmp'
+    [IO.File]::WriteAllText($temp,($Result|ConvertTo-Json -Depth 10),(New-Object Text.UTF8Encoding($false)))
+    if([IO.File]::Exists($path)){[IO.File]::Replace($temp,$path,$null)}else{[IO.File]::Move($temp,$path)}
+}
+function Invoke-Installer([string]$Source,[string]$Phase) {
+    # 예전 업데이터처럼 표준 오류를 버리지 않고 단계별로 보관한다.
+    $arguments=@('-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',(Join-Path $Source 'windows\Install.ps1'),'-InstallBase',([IO.Path]::GetDirectoryName($TargetRoot)))
+    $info=New-Object Diagnostics.ProcessStartInfo
+    $info.FileName=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $info.Arguments=(($arguments|ForEach-Object{Quote-ProcessArgument ([string]$_)}) -join ' ')
+    $info.WorkingDirectory=$env:TEMP;$info.UseShellExecute=$false;$info.CreateNoWindow=$true
+    $info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true
+    $process=New-Object Diagnostics.Process;$process.StartInfo=$info
+    try {
+        if(-not $process.Start()){throw 'update_install'}
+        $stdout=$process.StandardOutput.ReadToEndAsync();$stderr=$process.StandardError.ReadToEndAsync()
+        $process.WaitForExit()
+        [IO.File]::WriteAllText((Join-Path $job ($Phase+'.stdout.log')),$stdout.Result,(New-Object Text.UTF8Encoding($false)))
+        [IO.File]::WriteAllText((Join-Path $job ($Phase+'.stderr.log')),$stderr.Result,(New-Object Text.UTF8Encoding($false)))
+        Log-Update ($Phase+'-exit') $null @{exitCode=$process.ExitCode}
+        if($process.ExitCode -ne 0){throw 'update_install'}
+    } finally {$process.Dispose()}
 }
 function Newer([string]$A,[string]$B) {return $A -match '^\d+\.\d+\.\d+$' -and $B -match '^\d+\.\d+\.\d+$' -and [version]$A -gt [version]$B}
 function Select-Release($Items,[string]$Current) {
@@ -101,8 +139,9 @@ $mutex=New-Object Threading.Mutex($false,('Local\ScriptsUpdate-'+$hash.Substring
 try{$owned=$mutex.WaitOne(0)}catch [Threading.AbandonedMutexException]{$owned=$true}
 if(-not $owned){$mutex.Dispose();exit 0}
 $job=Join-Path $Profile ('updates\'+[Guid]::NewGuid().ToString('N'));$null=New-Item -ItemType Directory -Path $job -Force
-$backup=Join-Path $job 'backup';$swapped=$false;$oldFiles=@();$newFiles=@();$running=$null;$newProcess=$null
+$backup=Join-Path $job 'backup';$swapped=$false;$oldFiles=@();$newFiles=@();$running=$null;$newProcess=$null;$stage='check';$oldVersion=''
 try {
+    Log-Update 'started' $null @{target=$TargetRoot;workingDirectory=(Get-Location).Path}
     $oldCache=Json $cachePath;if($oldCache){foreach($key in @('nextCheck','blockedUntil','failedVersion')){if($null -ne $oldCache.$key){$cache[$key]=$oldCache.$key}}}
     $now=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds();$oldVersion=(Json (Join-Path $TargetRoot 'defaults.json')).version
     if(-not $PackagePath){
@@ -118,6 +157,7 @@ try {
         $config=Json (Join-Path $Profile 'settings.json');$language=if($config.language -in @('ko','en','zh','ja')){$config.language}else{'ko'}
         $words=(Json (Join-Path $TargetRoot 'strings.json')).$language
         if(-not $config.autoUpdate -and -not (Confirm-Update $words $oldVersion $candidate.version)){Save-Status 'update_available';exit 0}
+        $stage='download';Log-Update $stage
         Save-Status 'update_downloading';$sums=Join-Path $job 'SHA256SUMS.txt';Fetch $candidate.sums $sums 256KB
         $checksumLines=@(Get-Content -LiteralPath $sums|Where-Object{$_ -match ('^([a-fA-F0-9]{64})\s+\*?'+[regex]::Escape($candidate.name)+'$')})
         if($checksumLines.Count -ne 1){throw 'update_checksum'};$Digest=($checksumLines[0] -split '\s+')[0].ToLowerInvariant()
@@ -125,6 +165,7 @@ try {
         $PackagePath=Join-Path $job 'payload.zip';Fetch $candidate.url $PackagePath 32MB
         if((Get-Item -LiteralPath $PackagePath).Length -ne $candidate.size){throw 'update_checksum'};$ExpectedVersion=$candidate.version
     }
+    $stage='verify';Log-Update $stage
     if($Digest -notmatch '^[a-fA-F0-9]{64}$' -or (File-Digest $PackagePath) -ne $Digest){throw 'update_checksum'}
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $archive=[IO.Compression.ZipFile]::OpenRead($PackagePath);$payload=Join-Path $job 'payload';$expanded=0;$seen=@{}
@@ -134,32 +175,42 @@ try {
     }}finally{$archive.Dispose()}
     $source=Join-Path $payload 'CodexUsageMonitorScripts';$newFiles=@(Payload-Files $source);$oldFiles=@(Payload-Files $TargetRoot)
     if((Json (Join-Path $source 'defaults.json')).version -ne $ExpectedVersion -or -not (Newer $ExpectedVersion $oldVersion)){throw 'update_response'}
-    Copy-Payload $TargetRoot $backup $oldFiles
+    $stage='backup';Log-Update $stage;Copy-Payload $TargetRoot $backup $oldFiles
     $record=Json (Join-Path $Profile 'instance.json');$env:CODEX_USAGE_SCRIPTS_HOME=$Profile
     if($record){$running=Get-CimInstance Win32_Process -Filter "ProcessId=$([int]$record.pid)" -ErrorAction SilentlyContinue
+        $stage='stop-monitor';Log-Update $stage
         if($running -and $running.CommandLine.IndexOf((Join-Path $TargetRoot 'windows\Monitor.ps1'),[StringComparison]::OrdinalIgnoreCase) -lt 0){throw 'update_shutdown'}
         Save-Status 'applying';& powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File (Join-Path $TargetRoot 'windows\Monitor.ps1') -Stop
         $watch=[Diagnostics.Stopwatch]::StartNew();while($running -and (Get-Process -Id $record.pid -ErrorAction SilentlyContinue) -and $watch.Elapsed.TotalSeconds -lt 25){Start-Sleep -Milliseconds 100}
         if($running -and (Get-Process -Id $record.pid -ErrorAction SilentlyContinue)){throw 'update_shutdown'}
     }
-    $swapped=$true
-    if(Test-Path -LiteralPath (Join-Path $TargetRoot 'installed.json')){& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $source 'windows\Install.ps1') -InstallBase ([IO.Path]::GetDirectoryName($TargetRoot));if($LASTEXITCODE){throw 'update_install'}}
+    $stage='install';Log-Update $stage;$swapped=$true
+    if(Test-Path -LiteralPath (Join-Path $TargetRoot 'installed.json')){Invoke-Installer $source 'install'}
     else{Copy-Payload $source $TargetRoot $newFiles;foreach($name in $oldFiles){if($newFiles -notcontains $name){Remove-Item -LiteralPath (Join-Path $TargetRoot $name) -Force}}}
-    if(-not $NoRelaunch){$newProcess=Launch-Monitor;$watch=[Diagnostics.Stopwatch]::StartNew();$ready=$false
+    if(-not $NoRelaunch){$stage='start-monitor';Log-Update $stage;$newProcess=Launch-Monitor;$watch=[Diagnostics.Stopwatch]::StartNew();$ready=$false
         while($watch.Elapsed.TotalSeconds -lt 30 -and -not $newProcess.HasExited){$instance=Json (Join-Path $Profile 'instance.json');if($instance.pid -eq $newProcess.Id -and $instance.ready -and $instance.version -eq $ExpectedVersion){$ready=$true;break};Start-Sleep -Milliseconds 200}
         if(-not $ready){throw 'update_startup'};Start-Sleep -Seconds 2;if($newProcess.HasExited){throw 'update_startup'}
     }
-    $cache.failedVersion='';Save-Status 'installed';@{status='installed';version=$ExpectedVersion;settingsPreserved=$true}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $job 'result.json') -Encoding UTF8
+    $cache.failedVersion='';Save-Status 'installed';Log-Update 'installed'
+    Save-Result @{status='installed';version=$ExpectedVersion;previousVersion=$oldVersion;settingsPreserved=$true}
 } catch {
-    $errorCode=if($_.Exception.Message -match '^update_'){$_.Exception.Message}else{'update_network'}
-    if($swapped){
+    $failure=$_;$failedStage=$stage
+    $errorCode=if($failure.Exception.Message -match '^update_'){$failure.Exception.Message}elseif($stage -in @('install','backup')){'update_install'}elseif($stage -eq 'start-monitor'){'update_startup'}else{'update_network'}
+    Log-Update 'failed' $failure @{stage=$failedStage;code=$errorCode}
+    $rollbackFailure=$null
+    try {if($swapped){
+        Log-Update 'rollback-start'
         if($newProcess -and -not $newProcess.HasExited){& powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File (Join-Path $TargetRoot 'windows\Monitor.ps1') -Stop;$null=$newProcess.WaitForExit(15000)}
-        if($newProcess -and -not $newProcess.HasExited){Save-Status 'recovery_required';throw 'New monitor is still running; backup preserved.'}
-        if(Test-Path -LiteralPath (Join-Path $TargetRoot 'installed.json')){& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $backup 'windows\Install.ps1') -InstallBase ([IO.Path]::GetDirectoryName($TargetRoot));if($LASTEXITCODE){Save-Status 'recovery_required';throw 'Rollback failed; backup preserved.'}}
+        if($newProcess -and -not $newProcess.HasExited){throw 'New monitor is still running; backup preserved.'}
+        if(Test-Path -LiteralPath (Join-Path $TargetRoot 'installed.json')){Invoke-Installer $backup 'rollback'}
         else{Copy-Payload $backup $TargetRoot $oldFiles;foreach($name in $newFiles){if($oldFiles -notcontains $name){Remove-Item -LiteralPath (Join-Path $TargetRoot $name) -Force -ErrorAction SilentlyContinue}}}
         if(-not $NoRelaunch){$null=Launch-Monitor}
-    }
-    $cache.failedVersion=$ExpectedVersion;Save-Status $errorCode
-    @{status=$(if($swapped){'rolled_back'}else{'failed'});error=$errorCode;backup=$backup}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $job 'result.json') -Encoding UTF8
+        Log-Update 'rollback-completed'
+    }}catch{$rollbackFailure=$_;Log-Update 'rollback-failed' $rollbackFailure}
+    # 복구나 상태 캐시 기록이 실패해도 원래 오류와 복구 오류를 함께 남긴다.
+    $status=if($rollbackFailure){'recovery_required'}elseif($swapped){'rolled_back'}else{'failed'}
+    $cache.failedVersion=$ExpectedVersion
+    try{Save-Status $(if($rollbackFailure){'recovery_required'}else{$errorCode})}catch{Log-Update 'status-write-failed' $_}
+    Save-Result @{status=$status;error=$errorCode;stage=$failedStage;failure=(Error-Summary $failure);backup=$backup;previousVersion=$oldVersion;version=$ExpectedVersion;rollback=@{attempted=$swapped;succeeded=($swapped -and -not $rollbackFailure);failure=(Error-Summary $rollbackFailure)}}
     if($PackagePath){throw $errorCode}
 } finally {if($owned){$mutex.ReleaseMutex()};$mutex.Dispose()}
