@@ -148,6 +148,11 @@ function Get-Lifecycle($Settings, [bool]$Alive, [bool]$Pet, [double]$Now, $State
     if ($Now - $State.missingSince -lt 1) { return 'waiting' }
     return 'free'
 }
+function Get-PositionSelection($Settings, [string]$Mode) {
+    # 실행 중인 위치만 선택 표시한다. 일시 대기/절전에서 복원용 선호값을 덮어쓰지 않는다.
+    if($Mode -in @('above','below','free','hidden')){return $Mode}
+    return $Settings.placement
+}
 function Get-Placement($Pet, $Blockers, $Screen, [double]$Width, [double]$Height, [string]$Preferred, $Insets=$null, $Settings=$null) {
     if ($Width -le 0 -or $Height -le 0 -or $Width -gt $Screen.w -or $Height -gt $Screen.h) {return $null}
     $x = [Math]::Max($Screen.x, [Math]::Min($Screen.x + $Screen.w - $Width, $Pet.x + $Pet.w / 2 - $Width / 2))

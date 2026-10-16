@@ -193,6 +193,10 @@ var MonitorCore = (function () {
         // 드래그 중 잠깐 사라진 창을 Hide Pet으로 오인하지 않는다. 설정값은 덮어쓰지 않는다.
         return now - state.missingSince < 1 ? 'waiting' : 'free';
     }
+    function positionSelection(settings, mode) {
+        // 실행 중인 위치를 보여주되 대기/절전은 저장한 선호값을 유지한다. 설정을 변경하지 않는다.
+        return ['above', 'below', 'free', 'hidden'].indexOf(mode) >= 0 ? mode : settings.placement;
+    }
     function speedPreset(settings,presets) {
         var names=['fast','default','relaxed'];
         for(var i=0;i<names.length;i++) {var p=presets[names[i]];if(['dragMs','idleMs','chromeMs','motionMs'].every(function(k){return settings[k]===p[k];}))return names[i];}
@@ -209,6 +213,6 @@ var MonitorCore = (function () {
         var side = preferred === 'above' ? (fitsTop ? 'above' : fitsBottom ? 'below' : null) : (fitsBottom ? 'below' : fitsTop ? 'above' : null);
         return side ? {x: x, y: side === 'above' ? top : bottom, side: side} : null;
     }
-    return {finite: finite, wrapFooter: wrapFooter, styleInk: styleInk, normalize: normalize, buckets: buckets, pro: pro, duration: duration, credit: credit, tickets: tickets, render: render, scheduled: scheduled, noticeActive: noticeActive, noticeTitle: noticeTitle, reminderKey: reminderKey, forecast: forecast, creditEvent: creditEvent, retryDelay: retryDelay, lifecycle: lifecycle, place: place, speedPreset: speedPreset, reactionInterval: reactionInterval};
+    return {finite: finite, wrapFooter: wrapFooter, styleInk: styleInk, normalize: normalize, buckets: buckets, pro: pro, duration: duration, credit: credit, tickets: tickets, render: render, scheduled: scheduled, noticeActive: noticeActive, noticeTitle: noticeTitle, reminderKey: reminderKey, forecast: forecast, creditEvent: creditEvent, retryDelay: retryDelay, lifecycle: lifecycle, positionSelection: positionSelection, place: place, speedPreset: speedPreset, reactionInterval: reactionInterval};
 }());
 if (typeof module !== 'undefined') module.exports = MonitorCore;

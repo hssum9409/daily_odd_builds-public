@@ -429,6 +429,8 @@ function render(force) {
         var tx = Number(tf.origin.x), ty = screen.primaryTop - Number(tf.origin.y) - Number(tf.size.height);
         if (pos.x < tx || pos.x > tx + Number(tf.size.width) || pos.y < ty || pos.y > ty + Number(tf.size.height)) { tooltip.close; tooltip = null; }
     }
+    // 클릭/숨기기 직후에도 다음 타이머를 기다리지 않고 현재 선택 표시를 맞춘다.
+    if (force) syncOpenSettings();
 }
 function saveSettings() { writeJSON(home + '/settings.json', settings); }
 function localDate(at) {

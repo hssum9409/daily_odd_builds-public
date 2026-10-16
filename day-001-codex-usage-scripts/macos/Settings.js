@@ -1,5 +1,6 @@
 /* 같은 에셋·레이아웃·글자 크기를 쓰는 AppKit 설정창. Mac 실기기 QA는 별도 기록한다. */
 var settingsPage = 'settings', settingsPages = {}, navButtons = {};
+var lastPositionSelection = null;
 var designRanges={},speedPopup=null,advancedExpanded=false;
 ObjC.registerSubclass({name: 'UsageScriptsFlippedView', superclass: 'NSView', methods: {
     isFlipped: {types: ['bool', []], implementation: function () { return true; }}
@@ -83,6 +84,15 @@ function syncPetAvailability() {
             button.enabled = available; button.alphaValue = available ? 1 : 0.4;
         }
     });
+    var selected = core.positionSelection(settings, mode);
+    if (lastPositionSelection !== selected) {
+        ['above', 'below', 'free', 'hidden'].forEach(function (key) {
+            var button = navButtons[key]; if (!button) return;
+            button.layer.backgroundColor = color(key === selected ? '#a5e4ce' : '#233236').CGColor;
+            button.contentTintColor = color(key === selected ? '#101617' : '#edf4f1');
+        });
+        lastPositionSelection = selected;
+    }
 }
 function syncSettings() {
     [['short', 'shortReset'], ['weekly', 'weeklyReset'], ['tickets', 'expiry'], ['resetNotice', 'resetSound'], ['creditNotice', 'creditSound']].forEach(function (p) {
@@ -93,7 +103,6 @@ function syncSettings() {
     fields.short.button.enabled = !core.pro(data); if (core.pro(data)) fields.shortReset.button.enabled = false;
     paintSwitch(fields.short); paintSwitch(fields.shortReset); settingsProOverlay.hidden = !core.pro(data);
     syncPetAvailability();
-    ['above', 'below', 'free', 'hidden'].forEach(function (key) { var b = navButtons[key]; b.layer.backgroundColor = color(settings.placement === key ? '#a5e4ce' : '#233236').CGColor; b.contentTintColor = color(settings.placement === key ? '#101617' : '#edf4f1'); b.alphaValue = b.enabled ? 1 : 0.4; });
 }
 var settingsProOverlay;
 var updateStatus;
@@ -108,6 +117,7 @@ function selectSettingsPage(name) {
 }
 function buildSettings() {
     fields = {}; styleFields = {}; navButtons = {}; settingsPages = {};designRanges={};speedPopup=null;
+    lastPositionSelection = null;
     var outer = uiView($.NSMakeRect(0, 0, 840, 720), '#101617'); settingsWindow.contentView = outer;
     var sidebar = uiView($.NSMakeRect(0, 0, 154, 720), '#151d1f'); outer.addSubview(sidebar);
     var art = $.NSImageView.alloc.initWithFrame($.NSMakeRect(17, 22, 120, 180)); art.image = $.NSImage.alloc.initWithContentsOfFile($(root + '/assets/gp-chan-monitor.png')); art.imageScaling = $.NSImageScaleProportionallyUpOrDown; sidebar.addSubview(art);
