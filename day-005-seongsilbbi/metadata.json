@@ -1,0 +1,19 @@
+{
+  "day": "005",
+  "date": "2026-10-16",
+  "released_at": "2026-10-17",
+  "name": "성실삐🤖",
+  "slug": "seongsilbbi",
+  "version": "0.6.0",
+  "one_line_description": "작은 위젯과 웹으로 업무·휴식 시간을 확실히 기록하세요.",
+  "status": "beta",
+  "platform": ["Web", "Windows", "macOS preview"],
+  "technologies": ["React", "TypeScript", "Firebase", "PowerShell", "WPF", "JXA", "AppKit", "Resend"],
+  "source_path": "apps/worklog",
+  "live_url": "https://bbi.hssum.kr/",
+  "download_url": "https://bbi.hssum.kr/download",
+  "release_repository_url": "https://github.com/hssum9409/daily_odd_builds-public",
+  "release_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day005-v0.6.0",
+  "source_url": "https://github.com/hssum9409/daily_odd_builds-public/tree/main/day-005-seongsilbbi",
+  "mac_device_verified": false
+}

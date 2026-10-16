@@ -45,3 +45,8 @@ Web / PWA · Google 로그인 · 개인 Chrome Push 실제 수신/클릭 확인.
 
 Chrome Extension Manifest V3 · PC 일반·마이너·미니 갤러리 지원 · 설정과 최근 갤러리는 로컬 저장. 출시 버전 소스 공개, 코드 MIT. DCInside 비공식 도구입니다.
 <!-- day003:end -->
+
+
+## Day 005 · 성실삐🤖
+
+업무·휴식 시간 기록. [웹](https://bbi.hssum.kr/) · [Windows / macOS 다운로드](https://bbi.hssum.kr/download) · [안내·공개 소스](day-005-seongsilbbi/README.md). Windows/Web beta, macOS preview.

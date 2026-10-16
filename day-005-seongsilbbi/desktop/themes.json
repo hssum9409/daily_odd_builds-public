@@ -1,0 +1,24 @@
+{
+  "cream": {
+    "name": "크림 (기본)",
+    "color": "#F5F1E8",
+    "text": "#353A34",
+    "button": "#D7E2D4",
+    "icon": "#355B3B",
+    "border": "#E2DFD6",
+    "work": "#A8C4A6",
+    "rest": "#DFC098",
+    "track": "#E2DFD6"
+  },
+  "dark": {
+    "name": "차콜 (다크)",
+    "color": "#292C29",
+    "text": "#F1F1E8",
+    "button": "#40463F",
+    "icon": "#F1F1E8",
+    "border": "#52564E",
+    "work": "#B3CAA8",
+    "rest": "#D8BD97",
+    "track": "#41453F"
+  }
+}

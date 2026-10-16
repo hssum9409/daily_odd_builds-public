@@ -1,0 +1,9 @@
+{
+  "projectId": "daily-worklog-20261015",
+  "appUrl": "https://bbi.hssum.kr/",
+  "appId": "1:1079767880892:web:e48905f1c8b04e9b5cecb9",
+  "apiKey": "AIzaSyC4kXziGYi-XTq1k1uJLMtzewi_HjlbxCs",
+  "authDomain": "daily-worklog-20261015.firebaseapp.com",
+  "messagingSenderId": "1079767880892",
+  "databaseURL": "https://daily-worklog-20261015-default-rtdb.asia-southeast1.firebasedatabase.app"
+}
