@@ -31,6 +31,23 @@ function Payload-Digest([string]$Path) {
     $stream=[IO.File]::OpenRead($Path);$sha=[Security.Cryptography.SHA256]::Create()
     try{return [BitConverter]::ToString($sha.ComputeHash($stream)).Replace('-','').ToLowerInvariant()}finally{$stream.Dispose();$sha.Dispose()}
 }
+function Remove-ProfileData {
+    # 명시적 설정 삭제 때만 알려진 파일을 지운다. 임의 파일이나 연결된 외부 폴더는 보존한다.
+    if(-not (Test-Path -LiteralPath $profile)){return}
+    if((Get-Item -LiteralPath $profile).Attributes -band [IO.FileAttributes]::ReparsePoint){Write-Warning 'Linked profile was kept.';return}
+    foreach($name in @('settings.json','notices.json','instance.json')) {
+        $path=Join-Path $profile $name
+        if([IO.File]::Exists($path)){Remove-Item -LiteralPath $path -Force}
+    }
+    $cache=Join-Path $profile 'taskbar'
+    if(-not [IO.Directory]::Exists($cache)){return}
+    if((Get-Item -LiteralPath $cache).Attributes -band [IO.FileAttributes]::ReparsePoint){Write-Warning 'Linked taskbar cache was kept.';return}
+    foreach($name in @('gp-chan.ico','Codex Usage Monitor.lnk')) {
+        $path=Join-Path $cache $name
+        if([IO.File]::Exists($path)){Remove-Item -LiteralPath $path -Force}
+    }
+    if(-not (Get-ChildItem -LiteralPath $cache -Force)){Remove-Item -LiteralPath $cache}
+}
 function Remove-OwnedFolder([string]$Path,[bool]$RequireReceipt=$true) {
     # 재귀 삭제는 확인된 설치 폴더 또는 그 바로 옆의 작업 폴더에만 허용한다.
     $full=[IO.Path]::GetFullPath($Path)
@@ -63,7 +80,7 @@ function Start-InstalledMonitor {
 $stage=$null;$backup=$null;$wasRunning=$false;$committed=$false;$installPhase='verify'
 try {
     if ($Uninstall) {
-        if (-not (Test-Path -LiteralPath $target)) {Write-Output 'Already removed.';exit 0}
+        if (-not (Test-Path -LiteralPath $target)) {if($PurgeSettings){Remove-ProfileData};Write-Output 'Already removed.';exit 0}
         $receipt=Get-Content -LiteralPath (Join-Path $target 'installed.json') -Raw -Encoding UTF8 | ConvertFrom-Json
         if ($receipt.product -ne $product) {throw 'Installation receipt mismatch.'}
         $null=Stop-OwnedMonitor
@@ -74,10 +91,7 @@ try {
         Remove-Item -LiteralPath $uninstallKey -Recurse -ErrorAction SilentlyContinue
         Set-Location -LiteralPath $env:TEMP
         Remove-OwnedFolder $target
-        if ($PurgeSettings) {
-            # 명시적 선택 때만 이 버전의 알려진 프로필 파일을 삭제한다.
-            foreach ($name in @('settings.json','notices.json','instance.json')) {Remove-Item -LiteralPath (Join-Path $profile $name) -Force -ErrorAction SilentlyContinue}
-        }
+        if ($PurgeSettings) {Remove-ProfileData}
         Write-Output 'Removed. Settings are kept unless -PurgeSettings was selected.';exit 0
     }
     $manifest=Join-Path $source 'payload.sha256'

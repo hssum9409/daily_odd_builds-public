@@ -399,7 +399,7 @@ function render(force) {
     if (petDragging && (mode === 'above' || mode === 'below')) show = false;
     if (lastData && now() - lastData > 60) lines.push(t('stale'));
     var activeNotice = core.noticeActive(announcement, now());
-    if (!settings.resetNotice || !activeNotice || now() - lastFeed > 1800) resetVisible = false;
+    if (!settings.resetNotice || !activeNotice || now() - lastFeed >= 1800) resetVisible = false;
     var key = core.reminderKey(announcement, now(), settings.resetMinutes);
     if (show && settings.resetNotice && activeNotice && now() - lastFeed < 1800) {
         if (key !== noticeState.lastKey) {

@@ -245,7 +245,14 @@ function Build-SettingsContent {
 function Initialize-SettingsTaskbar($Window) {
     # Shell의 재실행 명령 길이 제한을 피한다. 긴 실행 경로는 바로가기 내부에 보관한다.
     $folder=Join-Path $script:profile 'taskbar';$null=New-Item -ItemType Directory -Path $folder -Force
-    $icon=Join-Path $folder 'gp-chan.ico';[IO.File]::Copy((Join-Path $script:root 'assets\gp-chan.ico'),$icon,$true)
+    $icon=Join-Path $folder 'gp-chan.ico';$sourceIcon=Join-Path $script:root 'assets\gp-chan.ico'
+    # 같은 아이콘은 덮어쓰지 않는다. Explorer가 읽거나 캐시가 읽기 전용이어도 재사용한다.
+    $sameIcon=$false
+    if([IO.File]::Exists($icon)) {
+        $sha=[Security.Cryptography.SHA256]::Create()
+        try {$sameIcon=[BitConverter]::ToString($sha.ComputeHash([IO.File]::ReadAllBytes($sourceIcon))) -ceq [BitConverter]::ToString($sha.ComputeHash([IO.File]::ReadAllBytes($icon)))} finally {$sha.Dispose()}
+    }
+    if(-not $sameIcon){[IO.File]::Copy($sourceIcon,$icon,$true)}
     $path=Join-Path $folder 'Codex Usage Monitor.lnk'
     $hostPath=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
     $arguments=@('-NoLogo','-NoProfile','-NonInteractive','-STA','-WindowStyle','Hidden','-ExecutionPolicy','Bypass','-File',(Join-Path $script:root 'windows\Launch.ps1'),'-Settings')
@@ -271,16 +278,21 @@ function Show-Settings {
         $w.Icon=New-Object Windows.Media.Imaging.BitmapImage([Uri](Join-Path $script:root 'assets\gp-chan.ico'))
         $w.Width=[Math]::Min(856,[Windows.SystemParameters]::WorkArea.Width-34);$w.Height=[Math]::Min(759,[Windows.SystemParameters]::WorkArea.Height-40);$w.MinWidth=[Math]::Min(776,$w.Width);$w.MinHeight=[Math]::Min(609,$w.Height)
         $script:settingsWindow=$w;$script:report.settingsOpened=$true;Build-SettingsContent
-        # HWND를 먼저 만들고 Shell 속성을 지정한 뒤 표시해 PowerShell 아이콘이 잠깐 뜨는 것도 막는다.
-        Initialize-SettingsTaskbar $w
+        $script:settingsTaskbarReady=$false
         $w.Add_Closing({
             param($sender,$eventArgs)
             $handle=(New-Object Windows.Interop.WindowInteropHelper($sender)).Handle
-            if($handle -ne [IntPtr]::Zero){[UsageScripts.TaskbarIdentity]::ClearWindow($handle)}
+            if($handle -ne [IntPtr]::Zero){try {[UsageScripts.TaskbarIdentity]::ClearWindow($handle)} catch {$script:report.taskbarError=$_.Exception.Message}}
         })
-        $w.Add_Closed({if ($script:previews) {foreach ($entry in $script:previews.Values) {$entry.card.window.Close()}};$script:settingsWindow=$null;$script:settingsSized=$false;$script:previews=$null})
+        $w.Add_Closed({if ($script:previews) {foreach ($entry in $script:previews.Values) {$entry.card.window.Close()}};$script:settingsWindow=$null;$script:settingsSized=$false;$script:settingsTaskbarReady=$false;$script:previews=$null})
     }
-    $w=$script:settingsWindow;$w.Show();$w.UpdateLayout();Sync-PetAvailability
+    $w=$script:settingsWindow
+    # 선택적인 Shell 꾸미기 실패가 설정 조작을 막지 않게 한다. 다음 열기에서 같은 창으로 재시도한다.
+    if(-not $script:settingsTaskbarReady) {
+        try {Initialize-SettingsTaskbar $w;$script:settingsTaskbarReady=$true;$script:report.taskbarError=$null}
+        catch {$script:report.taskbarError=$_.Exception.Message}
+    }
+    $w.Show();$w.UpdateLayout();Sync-PetAvailability
     if (-not $script:settingsSized) {$w.Width+=([Math]::Min(840,[Windows.SystemParameters]::WorkArea.Width-50)-$script:settingsRoot.ActualWidth);$w.Height+=([Math]::Min(720,[Windows.SystemParameters]::WorkArea.Height-60)-$script:settingsRoot.ActualHeight);$script:settingsSized=$true;$w.UpdateLayout()}
     $w.Topmost=$true;$null=$w.Activate();$w.Topmost=$false
     $hwnd=(New-Object Windows.Interop.WindowInteropHelper($w)).Handle
