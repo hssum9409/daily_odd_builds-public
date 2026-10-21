@@ -137,7 +137,7 @@ def main():
             'CFBundleIdentifier':'org.dailyoddbuilds.token-scale.installer',
             'CFBundleName':'Install Token Scale','CFBundleExecutable':'InstallTokenScale',
             'CFBundlePackageType':'APPL','CFBundleVersion':args.version,'LSUIElement':True,
-            'LSMinimumSystemVersion':'12.0','NSPrincipalClass':'NSApplication'}))
+            'LSMinimumSystemVersion':'14.0','NSPrincipalClass':'NSApplication'}))
         if args.platform=='macos':
             actual_arch=subprocess.check_output(['lipo','-archs',str(exe)],text=True).strip()
             assert actual_arch==('arm64' if args.arch=='arm64' else 'x86_64'), f'Compiler architecture mismatch: {actual_arch}'

@@ -55,6 +55,9 @@ version="$(cat "$package/version.txt")"
 expected="$(cat "$package/architecture.txt")"
 machine="$(uname -m)"
 [ "$expected" = "$machine" ] || { echo "This package requires $expected; your Mac is $machine." >&2; exit 1; }
+os_version="$(/usr/bin/sw_vers -productVersion)"
+os_major="${os_version%%.*}"
+[[ "$os_major" =~ ^[0-9]+$ ]] && [ "$os_major" -ge 14 ] || { echo 'This package requires macOS 14 or later.' >&2; exit 1; }
 cd "$package"
 echo 'Token Scale Is All You Need'
 echo 'Installs for your user only. Reads local Codex statistics; OpenAI credentials stay local.'
