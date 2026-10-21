@@ -139,9 +139,12 @@ def main():
             'CFBundlePackageType':'APPL','CFBundleVersion':args.version,'LSUIElement':True,
             'LSMinimumSystemVersion':'12.0','NSPrincipalClass':'NSApplication'}))
         if args.platform=='macos':
+            actual_arch=subprocess.check_output(['lipo','-archs',str(exe)],text=True).strip()
+            assert actual_arch==('arm64' if args.arch=='arm64' else 'x86_64'), f'Compiler architecture mismatch: {actual_arch}'
             run(['codesign','--force','--sign','-',exe])
             run(['codesign','--verify','--strict',exe])
             shutil.copyfile(exe,output/f'token-scale-macos-{args.arch}')
+            (output/f'token-scale-macos-{args.arch}').chmod(0o700)
         expected={'LICENSE','THIRD_PARTY_LICENSES.txt','README.txt','token-scale','Info.plist','TokenScaleOpen','host.sh','manage.sh','install.command','version.txt','architecture.txt','desktop-strings.json','status-menu.js','Setup.js','InstallTokenScale','Install Token Scale.app/Contents/Info.plist','Install Token Scale.app/Contents/MacOS/InstallTokenScale'}
         if args.platform=='macos-bootstrap':expected|={'collector.dill','runtime-version.txt','runtime-architecture.txt','runtime-sha256.txt'}
         files=package_files(stage,expected)
