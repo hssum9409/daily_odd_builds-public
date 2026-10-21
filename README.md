@@ -58,3 +58,13 @@ Chrome Extension Manifest V3 · PC 일반·마이너·미니 갤러리 지원 ·
 [다운로드 · 0.3.1 사전 배포](https://token-arena-hssum9409.web.app/download/) · [설치 안내·수집기 소스](day-004-token-scale/README.md) · [릴리스](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day004-cli-v0.3.1).
 Windows beta / macOS 14+ preview. 공식 서비스 공개는 정책 확인과 대상 기기 검증 후 진행합니다.
 <!-- day004-token-scale:end -->
+
+<!-- day006:start -->
+## Day 006 — DC 계정 인증 / SSO
+
+디시 계정 소유권을 외부 웹사이트의 기존 회원에게 연결하거나, DC 인증 신원으로 로그인할 수 있는 비공식 웹서비스입니다.
+
+[서비스 열기](https://dc-identity.web.app/) · [소개와 사용 방법](day-006-dc-identity/README.md) · [개발자 연동 가이드](https://dc-identity.web.app/?guide=1&section=examples) · [화면 체험](https://dc-identity.web.app/examples/) · [공개 MVP · 0.1.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day006-web-v0.1.0)
+
+Web · Google/아이디 로그인 · 계정 인증 API / OpenID Connect. 서비스와 안내·이미지만 공개하며 앱·서버 원본 소스와 운영 설정은 비공개입니다.
+<!-- day006:end -->
