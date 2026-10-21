@@ -54,5 +54,5 @@ OpenAI 인증과 Firebase 인증을 혼동하지 않습니다.
 
 ChatGPT 로그인은 계정 소유권 확인과 클라이언트 통계의 진위 확인을 분리해 검토합니다.
 현재 통계는 로그인 상태와 관계없이 `community_reported`입니다. 새 정식 로그인 제공
-범위와 중복 계정 연결의 개선 가능성은 [로그인 신뢰도 조사](chatgpt-login-trust.md)에
+범위와 중복 계정 연결의 개선 가능성은 [공개 인증 구조 안내](https://token-arena-hssum9409.web.app/about/?lang=ko#authentication)에
 기록했습니다. OpenAI 인증정보를 Firebase에 저장하는 구조는 추가하지 않았습니다.

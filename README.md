@@ -51,13 +51,15 @@ Chrome Extension Manifest V3 · PC 일반·마이너·미니 갤러리 지원 ·
 
 업무·휴식 시간 기록. [웹](https://bbi.hssum.kr/) · [Windows / macOS 다운로드](https://bbi.hssum.kr/download) · [안내·공개 소스](day-005-seongsilbbi/README.md). [릴리스 · 0.6.4](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day005-v0.6.5). Windows/Web beta, macOS preview.
 
-<!-- day004-token-scale:start -->
-## Day 004 · Token Scale Is All You Need
+<!-- day008-token-scale:start -->
+## Day 008 · 마 니 토큰 좀 쓰나?
 
-마 니 토큰 좀 쓰나? · 재미를 위한 Codex 토큰 랭킹.
-[다운로드 · 0.3.1 사전 배포](https://token-arena-hssum9409.web.app/download/) · [설치 안내·수집기 소스](day-004-token-scale/README.md) · [릴리스](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day004-cli-v0.3.1).
-Windows beta / macOS 14+ preview. 공식 서비스 공개는 정책 확인과 대상 기기 검증 후 진행합니다.
-<!-- day004-token-scale:end -->
+토큰은 썼고, 자랑할 곳은 필요하니까. Codex 통계를 닉네임 랭킹·업적 도감·조합형 아바타로 즐기는 커뮤니티입니다.
+
+[웹에서 보기](https://token-arena-hssum9409.web.app/) · [소개와 사용 방법](day-008-token-scale/README.md) · [Windows / macOS 다운로드](https://token-arena-hssum9409.web.app/download/) · [릴리스 · 0.4.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day004-cli-v0.4.0)
+
+30초 로컬 조회·변경분만 전송, 서버 랭킹 6시간 집계. Windows 실제 실행 확인 · macOS 실기기 미검증 preview. 비공식 재미용 community-reported 통계이며 공개 참가는 선택입니다.
+<!-- day008-token-scale:end -->
 
 <!-- day006:start -->
 ## Day 006 — DC 계정 인증 / SSO

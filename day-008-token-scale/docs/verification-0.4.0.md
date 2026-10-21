@@ -1,9 +1,10 @@
 # 0.4.0 변경분 수집 검증 · 2026-10-22 KST
 
 구현 계약: [stream-sync.md](stream-sync.md). 브랜치 `day_004_token_arena`.
-운영 API/RTDB Rules/시간별 집계/웹은 배포했다. 공개 다운로드와 GitHub 자동 업데이트
-릴리스는 아직 0.3.1이다. 새 Windows ZIP은 로컬에서 빌드·실행했으며 새 Mac 릴리스를
-빌드하거나 실기기에서 검증한 것으로 표시하지 않는다.
+운영 API/RTDB Rules/시간별 집계/웹은 배포했다. Windows ZIP은 로컬에서 빌드·실행했고,
+0.4.0 Mac Intel·Apple Silicon은 각각 실제 macOS CI에서 빌드·검증했다.
+공개 번호는 사용자 지시에 따라 Day 008이다. 기존 업데이트 호환 채널은
+`day004-cli-v`를 유지한다. macOS 실기기 검증은 수행하지 않았다.
 
 ## 실제 Windows / Google / Codex / Firebase
 
@@ -60,6 +61,13 @@
 | 패키지 매니페스트/합성 RPC 생성 회귀 | 3 통과 |
 | Flutter Web release | 성공. 기존 CupertinoIcons 미사용 폰트 경고 있음 |
 | Windows 0.4.0 AOT/ZIP | 빌드 및 실제 설치 엔진 실행 성공 |
+| 공개용 collector/core 스냅샷 | 별도 workspace 분석 문제 없음, 64개 테스트 통과 |
+| macOS 0.4.0 x64 / arm64 | 각 네이티브 CI의 분석·64 테스트·JXA fixture·3 패키징 테스트·빌드·16 패키지 검사·버전 실행·POSIX 분리 시험 통과 |
+
+네이티브 macOS CI: https://github.com/hssum9409/daily_odd_builds-public/actions/runs/39685452130.
+CI 소스 커밋은 `e7e68d82ec07471c24e99446fff2de1f7e7efa79`이다.
+POSIX 분리 시험은 통제된 셸 자식으로 수행했으며 Finder·실제 Keychain·메뉴 막대·
+Gatekeeper·로그인 시작의 물리 Mac 검증을 대신하지 않는다.
 
 재현 도구의 최종 재실행도 통과했다. 간격은 30.42초 / 32.15초, 응답 유실 후 재시도는
 61.14초였으며 동일 본문/순번, 전송 생략, 메타데이터만의 변경 및 Firestore 정정을 재확인했다.

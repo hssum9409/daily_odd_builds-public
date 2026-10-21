@@ -1,3 +1,5 @@
+> 현재 프로젝트의 공개 번호는 **Day 008**입니다. [최신 소개·설치·소스 스냅샷](../day-008-token-scale/README.md)을 확인하세요. 아래는 0.3.1의 과거 배포 기록입니다.
+
 # Token Scale Is All You Need · 0.3.1
 
 한국어: 마 니 토큰 좀 쓰나? · 日本語: トークン、それだけ？ｗ · 简体中文: 不是哥们，就烧这么点 Token？ · English: You Call That Token Burn?

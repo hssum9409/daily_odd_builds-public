@@ -1,0 +1,7 @@
+Use case: text-localization. Edit ONLY the nickname text regions of the supplied finished promotional image. Preserve its exact canvas size, composition, camera angle, original style, avatars, colors, background, lighting, card geometry, all other Korean and English text, numbers, selected controls, clock/schedule and mandatory example footer. Do not redesign or crop the image. The new names are playful FICTIONAL display names for this illustration, not real users or an endorsement by any person mentioned. Render the exact Korean syllables accurately. Fit names in their existing nickname column; use a slightly smaller font or wrap long names into two lines if needed. Never overlap token figures or avatars. Do not add a username prefix or quotation marks.
+Replace the three public ranking nicknames exactly:
+"예시 A" becomes "알트만훔쳐보는얀르쿤"
+"예시 B" becomes "티보네이놈"
+"예시 C" becomes "82세박춘자인생최후의초기화권"
+In the separate "내 순위" card, replace "예시 나" with "토큰은내가지갑은네가".
+Keep rank numbers 1, 2, 3 and 128위 and all token figures 12.8M, 8.4M, 3.2M, 1.2M exactly unchanged. Preserve headline "숫자는 같이, 순위는 여섯 시간마다.", period selector, clock, "6시간 서버 집계", UTC time annotation and footer. Only edit the four nickname text areas.

@@ -1,0 +1,26 @@
+{
+  "day": 8,
+  "name": "Token Scale Is All You Need",
+  "localizedNames": {
+    "ko": "마 니 토큰 좀 쓰나?",
+    "zh-CN": "不是哥们，就烧这么点 Token？",
+    "ja": "トークン、それだけ？ｗ",
+    "en": "You Call That Token Burn?"
+  },
+  "status": "released",
+  "license": "MIT",
+  "releaseDate": "2026-10-22",
+  "firstServicePublishedOn": "2026-10-21",
+  "portalRecordDate": "2026-10-19",
+  "url": "https://token-arena-hssum9409.web.app/",
+  "downloadUrl": "https://token-arena-hssum9409.web.app/download/",
+  "releaseUrl": "https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day004-cli-v0.4.0",
+  "collectorVersion": "0.4.0",
+  "minimumMacos": "14.0",
+  "compatibilityReleaseChannel": "day004-cli-v",
+  "platformVerification": {
+    "windows": "0.4.0 isolated install engine, browser pairing, immediate private real Codex/RTDB upload, unchanged polling and hourly Firestore flush verified. 177 owned-process samples with zero visible main windows. Synthetic corrections/retries passed on Windows with Firebase emulators. GUI install confirmation/SmartScreen and reboot remain unverified.",
+    "macos": "0.4.0 matching macOS Intel/Apple Silicon CI build, analysis/tests, native execution and package checks passed. Physical Finder/Keychain/menu/startup/Gatekeeper pending; preview.",
+    "linux": "CLI source implemented; native execution pending"
+  }
+}

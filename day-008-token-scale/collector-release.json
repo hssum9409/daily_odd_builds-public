@@ -1,0 +1,36 @@
+{
+  "day": 8,
+  "version": "0.4.0",
+  "tag": "day004-cli-v0.4.0",
+  "prerelease": false,
+  "officialServiceLaunchApproved": true,
+  "installers": [
+    {
+      "platform": "windows",
+      "arch": "x64",
+      "name": "Token-Scale-Install-Windows-x64-0.4.0.zip",
+      "bytes": 3392296,
+      "sha256": "59f56ced91ca4d5c761466e998452c55fc0f57f5a5534c0db5dd8c9a52140831"
+    },
+    {
+      "platform": "macos",
+      "arch": "arm64",
+      "name": "Token-Scale-macos-arm64-0.4.0.tar.gz",
+      "bytes": 3146045,
+      "sha256": "f0879f11b09e153a2a2013d7563663e92119bf94e9bd864195595e747ea19b3c",
+      "minimumMacos": "14.0"
+    },
+    {
+      "platform": "macos",
+      "arch": "x64",
+      "name": "Token-Scale-macos-x64-0.4.0.tar.gz",
+      "bytes": 3346835,
+      "sha256": "adc2e5c285e4f9441c0cccc753c306fa17b21d6b38f7bfa4bcc68f0602da42fd",
+      "minimumMacos": "14.0"
+    }
+  ],
+  "nativeMacosCi": "https://github.com/hssum9409/daily_odd_builds-public/actions/runs/39685452130",
+  "sourceCommit": "e7e68d82ec07471c24e99446fff2de1f7e7efa79",
+  "serviceLaunchedOn": "2026-10-21",
+  "day8PublishedOn": "2026-10-22"
+}

@@ -1,0 +1,68 @@
+{
+  "masterSha256": "87fdedaba8fb9d68da7298fe1b5f1075e5b4478a8935459cbbf66626a0570e1f",
+  "prefix": "token-scale-87fdedaba8fb",
+  "icons": [
+    {
+      "path": "icons/token-scale-87fdedaba8fb-16.png",
+      "width": 16,
+      "height": 16,
+      "sha256": "550e06150ecc3c6f0997d342df8991afed4f7603a850a56196584a305b850173"
+    },
+    {
+      "path": "icons/token-scale-87fdedaba8fb-32.png",
+      "width": 32,
+      "height": 32,
+      "sha256": "9ad79c466499302a0646068d61e933b767a4e513779d7736dbbbe8cd9b6665a6"
+    },
+    {
+      "path": "icons/token-scale-87fdedaba8fb-48.png",
+      "width": 48,
+      "height": 48,
+      "sha256": "72b5d246bb7d727fe56d380460d24bcb114c42aa974c2364c502b343bcf5a8dd"
+    },
+    {
+      "path": "icons/token-scale-87fdedaba8fb-144.png",
+      "width": 144,
+      "height": 144,
+      "sha256": "2e0c17639998114d393c33260211fc40bc945a4b8ba27db1667a0911455deaee"
+    },
+    {
+      "path": "icons/token-scale-87fdedaba8fb-152.png",
+      "width": 152,
+      "height": 152,
+      "sha256": "d0d2b813d03bda66c6903899f8b94df25b3af30b449a9b86559305beea234c8e"
+    },
+    {
+      "path": "icons/token-scale-87fdedaba8fb-167.png",
+      "width": 167,
+      "height": 167,
+      "sha256": "2cfe62c5015b8fd0f48cf2ae4461ab006c72649e1672adaa1d7b4b7deea1d5b2"
+    },
+    {
+      "path": "icons/token-scale-87fdedaba8fb-180.png",
+      "width": 180,
+      "height": 180,
+      "sha256": "449559050e330747d375dc9f046efdc62fda62ea76d8a9ebfc5236a12465db19"
+    },
+    {
+      "path": "icons/token-scale-87fdedaba8fb-192.png",
+      "width": 192,
+      "height": 192,
+      "sha256": "6165d7760a6d522f0c97d40f474b20e8f76a2ff75cc357a8e1b11ede2b4f8807"
+    },
+    {
+      "path": "icons/token-scale-87fdedaba8fb-512.png",
+      "width": 512,
+      "height": 512,
+      "sha256": "b4f82733e3d9841021fe3863ee09603d753e3de1dc18cc930396ec3eb5170a2d"
+    },
+    {
+      "path": "icons/token-scale-87fdedaba8fb-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "723c9cfbdb2d0c101b106f94c0300fbeaee2b3f577d1cbc14548d4f3b7d68fd5"
+    }
+  ],
+  "scope": "favicon including legacy URLs, PWA any/maskable, Apple touch, HTML loading splash",
+  "nativeInstallProof": false
+}
