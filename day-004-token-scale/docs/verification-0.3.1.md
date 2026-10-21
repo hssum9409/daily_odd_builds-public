@@ -15,6 +15,16 @@ No production synthetic users, destructive real-account deletion, paid certifica
 
 The operator authorized stable publication and the service launch. The prior policy-blocking wording was corrected: local Codex authentication and Google/Firebase statistics ingestion are separate; the documentation does not explicitly resolve this statistics-only architecture. There is no claim of OpenAI approval. Four-language privacy/terms/authentication information is linked from the website.
 
-Stable installers change only README text and checksum manifests. All executable/script bytes and Mac file modes match the previously verified packages. A fresh Windows installation from the stable ZIP passed the same tray/hidden-window/Codex/settings/removal checks; launcher return was 1219 ms, visible owned windows zero. CLI14, mocked JXA3, packaging2, server26 and Flutter analyze passed again; the shared 343-rule achievement catalog matched. Website release build and deployed browser/download checks are recorded below after final verification.
+Stable installers change only README text and checksum manifests. All executable/script bytes and Mac file modes match the previously verified packages. A fresh Windows installation from the stable ZIP passed the same tray/hidden-window/Codex/settings/removal checks; launcher return was 1219 ms, visible owned windows zero. CLI14, mocked JXA3, packaging2, server26 and Flutter analyze passed again; the shared 343-rule achievement catalog matched. Website release build passed. Deployed browser/download verification is recorded below.
 
 Physical Mac, actual OS reboot, fresh final-site Google pairing, and real mobile/Safari/Firefox remain unverified. Stable channel promotion does not certify those behaviors. The source tag/native collector binaries are unchanged; current documentation and stable installer READMEs were updated without rewriting published Git tags.
+
+### Final stable-site verification
+
+- GitHub release is non-draft/non-prerelease. All seven uploaded asset sizes/digests match; repository-wide Latest was preserved.
+- Actual HTTPS service in installed Chrome via Playwright (Browser plugin unavailable): desktop1440/mobile390, four locales plus English fallback, all four ranking tabs, dashboard→policies/download, privacy/terms/authentication text, and three anonymous installer downloads with matching SHA-256 passed. Zero page/console errors, no blank/error overlay or mobile horizontal overflow; screenshots inspected.
+- Actual public GitHub feed: Windows AOT and Mac arm64/x64 each select0.3.1 for0.3.0, download over HTTPS and match both asset digest and checksum manifest; same-version update skipped. This does not claim a new native OS replacement/restart/rollback test.
+- API production channel/non-expiring stable URL, Google auth configuration, ACTIVE state and minimum0/maximum2 instances confirmed; anonymous401, allowed CORS204, foreign Origin403. Production Rules still match tested local rules. Scheduler remains enabled at UTC six-hour intervals with successful recent delivery.
+- Existing profile/source binding and private visibility preserved. Personal rankings correctly retain the last scheduled cutoff until the next batch; source submissions are not immediate ranking publications.
+
+The operator released the service without claiming OpenAI approval, certified statistics, paid code signatures or validation on every target device. Original source tags/private Git history and other Days remain untouched.
