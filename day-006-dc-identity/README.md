@@ -1,6 +1,6 @@
 <h1 align="center">DC 계정 인증 / SSO</h1>
 
-<p align="center">내 서비스에 디시 계정 인증과 통합 로그인을 연결하세요.</p>
+<p align="center">내 사이트에도 디시 인증 로그인.<br>로그인을 붙이거나, 기존 회원에게 인증만 연결하거나.</p>
 
 <p align="center">
   <img alt="웹서비스 MVP" src="https://img.shields.io/badge/Web-MVP-3b4890?labelColor=17213b">
@@ -11,7 +11,7 @@
 
 <p align="center"><b><a href="https://dc-identity.web.app/">서비스 열기 →</a></b> · <a href="https://dc-identity.web.app/?guide=1&section=examples">개발자 연동 가이드</a> · <a href="https://dc-identity.web.app/examples/">화면 체험</a></p>
 
-![DC 계정 인증 / SSO 소개](docs/images/hero.webp)
+![내 사이트에도 디시 인증 로그인 — SSO와 계정 인증 API](docs/images/promo-cover.webp)
 
 <p align="center"><sub>기능 소개용 생성 이미지입니다. 실제 화면 예시와 검증 범위는 아래에서 구분해 안내합니다.</sub></p>
 
@@ -19,7 +19,9 @@
 
 사용자는 Google 또는 아이디·비밀번호로 로그인한 뒤 자신의 디시 계정을 연결합니다. 개발자는 기존 회원에게 디시 인증을 붙이거나, DC 인증 계정으로 로그인하는 기능을 제공할 수 있습니다.
 
-Day 006 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/). **서비스와 공개 안내·이미지를 배포하며 앱·서버 원본 소스와 운영 설정은 공개하지 않습니다.** DCInside의 공식 OAuth 서비스나 공식 제휴 제품은 아닙니다.
+디시 이용자를 위한 사이트를 만들 때, 계정 인증부터 매번 새로 만들 필요가 없도록 만들었습니다. 사이트의 회원 시스템은 그대로 두고 인증만 더해도 되고, 로그인 전체를 맡겨도 됩니다. 이용자는 자신의 계정을 확인하고, 어떤 정보를 보낼지 동의합니다.
+
+[daily_odd_builds 공개 포털 Day 007 · 2026-10-18](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-18)에 등록한 웹서비스입니다. **서비스와 공개 안내·이미지를 배포하며 앱·서버 원본 소스와 운영 설정은 공개하지 않습니다.** DCInside의 공식 OAuth 서비스나 공식 제휴 제품은 아닙니다.
 
 ## 시작하기
 
@@ -34,7 +36,7 @@ Day 006 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/). **서�
 
 ## 두 가지 연동 방식
 
-![SSO와 인증 API의 차이](docs/images/integration-intro.webp)
+![SSO 로그인, 기존 회원의 API 인증 연결, 제공 정보 선택](docs/images/feature-overview.webp)
 
 | | SSO / OIDC | 계정 인증 REST API |
 | --- | --- | --- |
@@ -45,6 +47,12 @@ Day 006 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/). **서�
 
 최초 DC 소유권 확인을 마친 사용자는 유효한 인증 상태를 다른 연동 서비스에서도 재사용합니다. 매 로그인마다 방명록 글을 다시 작성하는 방식은 아닙니다. 인증 유효기간이 지났거나 재확인이 필요한 경우에는 새 소유권 확인이 필요합니다.
 
+### 내 사이트에는 버튼 하나부터
+
+기본 **DC 인증 계정으로 로그인** 버튼을 놓고 로그인 페이지로 이동하거나, 별도 팝업으로 띄울 수 있습니다. 이미 사이트의 디자인이 있다면 자체 버튼·일반 링크를 연결해도 됩니다. 기본 버튼을 꼭 사용할 필요는 없습니다. 계정 입력과 정보 제공 동의 화면은 인증 서비스가 제공합니다.
+
+[기본 버튼으로 체험](https://dc-identity.web.app/examples/?case=1) · [팝업으로 체험](https://dc-identity.web.app/examples/?case=2) · [자체 버튼으로 체험](https://dc-identity.web.app/examples/?case=3)
+
 ### 필요한 정보만 선택하세요
 
 - **디시 인증 여부만 제공:** 서비스별 사용자 식별자, 인증 여부, 마지막 검증 시각을 받습니다. 디시 식별 코드는 제공하지 않습니다.
@@ -53,6 +61,8 @@ Day 006 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/). **서�
 처음 연결하거나 새 권한을 요청하면 사용자에게 제공 범위를 보여주고 동의를 받습니다. 외부 서비스의 신규 가입마다 동의를 다시 요청하는 방법도 가이드에 포함합니다. Google 이메일·비밀번호와 디시 비밀번호·세션 쿠키는 외부 서비스에 전달하지 않습니다.
 
 ## 소유권은 어떻게 확인하나요?
+
+![Google 또는 아이디 로그인, 일회용 코드 발급, 공개 방명록 작성, 소유권 확인](docs/images/verification-flow.webp)
 
 1. 서비스에 로그인하고 본인의 DC 식별 코드를 입력합니다.
 2. 발급된 일회용 코드를 안내된 인증용 공개 방명록에 **본인의 DC 로그인 계정으로** 새 공개 글로 작성합니다.
@@ -109,4 +119,16 @@ Client Secret은 본인 서버에만 저장하며 다운로드 예제에 포함�
 
 문의·오류 제보는 [공개 저장소 Issues](https://github.com/hssum9409/daily_odd_builds-public/issues)를 이용하세요. 비밀번호·Client Secret·토큰·인증 코드는 공개 제보에 적지 마세요.
 
-[이미지 제작 방식·검증 범위](docs/README-MEDIA.md) · [공개 MVP 릴리즈](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day006-web-v0.1.0)
+## 만든 기록
+
+<!-- usage:start -->
+**기록된 누적 토큰 314,135,620개** · 2026-10-22 07:30 KST 기준 · 주 작업과 보조 작업 5개 세션의 확인 가능한 로그를 집계했습니다. 캐시 입력을 포함하며, 재개된 세션은 중복 합산하지 않았습니다. [세부 수치와 집계 방법](docs/TOKEN-USAGE.md)
+<!-- usage:end -->
+
+Flutter Web·Firebase Authentication·Firestore·Cloud Functions를 사용하고, 외부 SSO는 검증된 OIDC 라이브러리 `oidc-provider`를 기반으로 제공합니다. Google 로그인과 아이디·비밀번호 로그인은 함께 사용할 수 있습니다.
+
+홍보·기능 이미지는 **GPT-6 Astra High 작업자가 non-fast 설정으로 내장 이미지 생성 도구를 직접 호출**해 만들었습니다. 파란색과 제품 카드 구성을 맞췄으며, 실제 동작 캡처와 설명용 그래픽을 구분합니다.
+
+만든 사람 [hssum9409](https://github.com/hssum9409) · 다른 결과물은 [Daily Odd Builds](https://daily-odd-builds-portal.web.app/)에서 볼 수 있습니다.
+
+[이미지 제작 방식·검증 범위](docs/README-MEDIA.md) · [토큰 집계 기준](docs/TOKEN-USAGE.md) · [공개 MVP 릴리즈](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day006-web-v0.1.0)

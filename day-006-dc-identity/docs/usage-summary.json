@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "snapshot_at": "2026-10-21T22:30:27.912078+00:00",
+  "snapshotDateKst": "2026-10-22",
+  "snapshot_label": "2026-10-22 07:30 KST",
+  "scope": "Recorded Codex usage for this project workspace and its child workspaces; resumed files deduplicated by session; available logs only",
+  "session_count": 5,
+  "main_session_total": 311272091,
+  "support_sessions_total": 2863529,
+  "totals": {
+    "input_tokens": 312886412,
+    "cached_input_tokens": 306859648,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 1249208,
+    "reasoning_output_tokens": 574181,
+    "total_tokens": 314135620
+  },
+  "cached_input_included_in_input": true,
+  "reasoning_output_included_in_output": true,
+  "method": "Use the latest cumulative total_token_usage once per distinct session, then sum sessions. Do not sum resumed file totals, cached input, or reasoning output again."
+}
