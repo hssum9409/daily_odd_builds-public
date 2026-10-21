@@ -28,3 +28,18 @@ Physical Mac, actual OS reboot, fresh final-site Google pairing, and real mobile
 - Existing profile/source binding and private visibility preserved. Personal rankings correctly retain the last scheduled cutoff until the next batch; source submissions are not immediate ranking publications.
 
 The operator released the service without claiming OpenAI approval, certified statistics, paid code signatures or validation on every target device. Original source tags/private Git history and other Days remain untouched.
+
+
+## New-user Windows onboarding and first-sync display · 21–22 October 2026
+
+This resolves the earlier fresh final-site Google-pairing limitation. The published Windows ZIP was downloaded through real Chrome and its SHA-256 verified. The published native installer engine used its supported isolated install-root/home/product-key options to preserve the existing installation and login. A genuinely new Firebase user signed in with Google; the human completed Google authentication. A new nickname was saved with public visibility OFF.
+
+On 21 October, connection completed at20:18:18 KST and real statistics reached production Firebase at20:18:22. No manual synchronization command was used for that first upload. Read-only server checks confirmed new account creation, a different UID from the existing user, Google provider, matching source binding, real summary/daily data, private visibility, and no public profile/ranking entry. No identifiers or actual token totals are published here.
+
+Owned-process inspection sampled440 times during install/first sync and found zero visible main windows. Background PowerShell/conhost processes are distinct from visible terminals. Exact Install.vbs GUI confirmation, SmartScreen, a new Windows OS account, clean-browser local-network permission, and OS reboot were not exercised in this isolated-engine test.
+
+The first upload revealed a web refresh omission: pairing succeeded while the page still said no usage. On22 October, the web was fixed to check only the owner's snapshot at most four times after connection, handle the initial-profile-read race, and allow forced personal refresh. Analyze/release build passed and Hosting was updated. Actual Chrome reconnection verified the reading indicator, completion, personal statistics and the real server timestamp without page reload. An additional12 owned-process samples found zero visible main windows. This reconnection regression check is separate from the original genuinely new-account first upload.
+
+Test installations, startup registrations and local Firebase login were cleaned up; the existing installation/login were preserved. The new cloud account and its real statistics remain private and were not deleted. Original native release binaries are unchanged; this display correction is web-only.
+
+Current collection: immediately after first connection and app startup, then local00/06/12/18 slots while running, plus manual requests; unchanged data is not uploaded. Ranking publication remains UTC00/06/12/18. Source-service aggregation delay is separate from collection cadence.
