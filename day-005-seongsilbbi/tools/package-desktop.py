@@ -34,8 +34,10 @@ def main():
                     data=('#!/bin/sh\nset -eu\nroot=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)\nexec /bin/sh "$root/desktop/macos/'+script+'" '+args+' "$@"\n').encode('utf-8')
             (folder/rel).write_bytes(data);manifest.append(rel)
         # PowerShell 5.1 also reads this file with the system code page in older installers.
-        (folder/'release.json').write_text(json.dumps({'product':'WorklogScripts','displayName':'성실삐🤖','day':'005','version':VERSION,'platform':platform,'runtime':'os-built-in','macDeviceVerified':False,'repository':'hssum9409/daily_odd_builds-public','tag':'day005-v'+VERSION},ensure_ascii=True,indent=2)+'\n',encoding='utf-8');manifest.append('release.json')
-        (folder/'payload.sha256').write_text(''.join(hashlib.sha256((folder/rel).read_bytes()).hexdigest()+'  '+rel+'\n' for rel in sorted(manifest)),encoding='ascii')
+        (folder/'release.json').write_bytes((json.dumps({'product':'WorklogScripts','displayName':'성실삐🤖','day':'005','version':VERSION,'platform':platform,'runtime':'os-built-in','macDeviceVerified':False,'repository':'hssum9409/daily_odd_builds-public','tag':'day005-v'+VERSION},ensure_ascii=True,indent=2)+'\n').encode('utf-8'));manifest.append('release.json')
+        # Text-mode writes on Windows silently turn LF into CRLF. Manifest bytes
+        # must be portable: POSIX read otherwise includes CR in the file name.
+        (folder/'payload.sha256').write_bytes(''.join(hashlib.sha256((folder/rel).read_bytes()).hexdigest()+'  '+rel+'\n' for rel in sorted(manifest)).encode('ascii'))
         archive=OUT/(folder.name+('.zip' if platform=='windows' else '-preview.zip'))
         update=OUT/('WorklogScripts-'+platform+'-update'+('-preview' if platform=='macos' else '')+'.zip')
         for destination,prefix in ((archive,''),(update,'WorklogScripts/')):
@@ -43,7 +45,7 @@ def main():
                 for rel in sorted(manifest+['payload.sha256']):
                     source=folder/rel;info=zipfile.ZipInfo(prefix+rel);info.create_system=3;info.external_attr=(0o100755 if source.suffix=='.command' else 0o100644)<<16;info.compress_type=zipfile.ZIP_DEFLATED;z.writestr(info,source.read_bytes())
             item={'platform':platform,'name':destination.name,'bytes':destination.stat().st_size,'sha256':hashlib.sha256(destination.read_bytes()).hexdigest()};artifacts.append(item);print(json.dumps(item))
-    (OUT/'SHA256SUMS.txt').write_text(''.join(item['sha256']+'  '+item['name']+'\n' for item in artifacts),encoding='ascii')
-    (OUT/'release-manifest.json').write_text(json.dumps({'product':'성실삐','day':'005','version':VERSION,'tag':'day005-v'+VERSION,'macDeviceVerified':False,'artifacts':artifacts},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    (OUT/'SHA256SUMS.txt').write_bytes(''.join(item['sha256']+'  '+item['name']+'\n' for item in artifacts).encode('ascii'))
+    (OUT/'release-manifest.json').write_bytes((json.dumps({'product':'성실삐','day':'005','version':VERSION,'tag':'day005-v'+VERSION,'macDeviceVerified':False,'artifacts':artifacts},ensure_ascii=False,indent=2)+'\n').encode('utf-8'))
 
 if __name__=='__main__':main()

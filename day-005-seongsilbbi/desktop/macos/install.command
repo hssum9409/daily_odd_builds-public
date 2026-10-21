@@ -28,7 +28,11 @@ if [ "$action" = uninstall ]; then
  safe_remove "$target"; committed=1; echo 'Removed. Account and local settings preserved.'; exit
 fi
 [ -f "$source_root/payload.sha256" ] || { echo 'Extract the complete packaged release' >&2; exit 1; }
+# Accept historical Windows-generated manifests without treating CR as a path
+# character. Apply the same parsing to validation and copying.
+manifest_cr=$(printf '\r')
 while IFS= read -r line; do
+ line=${line%"$manifest_cr"}
  hash=${line%%  *}; file=${line#*  }
  [ "${#hash}" -eq 64 ] || exit 1
  case "$hash" in *[!0-9a-f]*) exit 1 ;; esac
@@ -39,7 +43,7 @@ while IFS= read -r line; do
 done < "$source_root/payload.sha256"
 for required in desktop/macos/Runtime.js desktop/macos/Core.js desktop/macos/Widget.js desktop/macos/StartupConsent.js desktop/macos/ready.js desktop/macos/install.command desktop/macos/run.command desktop/macos/control.command config/firebase.json desktop/themes.json desktop/macos/Settings.js desktop/assets/Nunito-Bold.ttf desktop/assets/Nunito-ExtraBold.ttf desktop/assets/NanumSquareRoundR.ttf desktop/assets/NanumSquareRoundB.ttf desktop/assets/NanumSquareRoundEB.ttf desktop/assets/robot.png desktop/assets/LICENSE-Fluent-Emoji.txt desktop/assets/OFL-Nunito.txt desktop/assets/OFL-NanumSquareRound.txt release.json; do grep -F "  $required" "$source_root/payload.sha256" >/dev/null || { echo 'Incomplete payload' >&2; exit 1; }; done
 mkdir "$stage"
-while IFS= read -r line; do file=${line#*  }; mkdir -p "$stage/$(dirname -- "$file")"; cp "$source_root/$file" "$stage/$file"; done < "$source_root/payload.sha256"
+while IFS= read -r line; do line=${line%"$manifest_cr"}; file=${line#*  }; mkdir -p "$stage/$(dirname -- "$file")"; cp "$source_root/$file" "$stage/$file"; done < "$source_root/payload.sha256"
 cp "$source_root/payload.sha256" "$stage/payload.sha256"
 chmod +x "$stage"/*.command "$stage"/desktop/macos/*.command
 printf 'WorklogScripts\n%s\n%s\n' "$target" "$([ "$isolated" -eq 1 ] && echo isolated || echo standard)" > "$stage/installed.txt"

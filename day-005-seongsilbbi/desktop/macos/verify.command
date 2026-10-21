@@ -13,6 +13,13 @@ cleanup() { if [ -f "$target/desktop/macos/control.command" ]; then /bin/sh "$ta
 trap cleanup EXIT
 for file in "$root"/*.command "$root"/desktop/macos/*.command; do /bin/sh -n "$file"; done
 /bin/sh "$root/desktop/macos/install.command" --isolated
+# Regression: the 0.6.5 manifest used CRLF and failed with Unsafe payload.
+# Exercise the installed script with a duplicate-download folder name as well.
+crlf_source="$output/WorklogScripts preview (1)"
+mkdir "$crlf_source"
+cp -R "$target/." "$crlf_source/"
+awk '{ sub(/\r$/, ""); printf "%s\r\n", $0 }' "$target/payload.sha256" > "$crlf_source/payload.sha256"
+/bin/sh "$crlf_source/desktop/macos/install.command" --update --isolated
 /bin/sh "$target/desktop/macos/run.command" --diagnose >"$output/native-diagnostic.log" 2>&1
 [ -f "$WORKLOG_SCRIPTS_HOME/verification.json" ] || { echo "FAIL: see $output/native-diagnostic.log" >&2; exit 1; }
 grep '"passed":true' "$WORKLOG_SCRIPTS_HOME/verification.json" >/dev/null || { echo 'FAIL: native diagnostic' >&2; exit 1; }
@@ -30,5 +37,5 @@ WORKLOG_READY_ROOT="$target" /usr/bin/osascript -l JavaScript "$target/desktop/m
 /bin/sh "$target/desktop/macos/control.command" stop
 /bin/sh "$target/desktop/macos/install.command" --uninstall --isolated
 [ ! -e "$target" ] || { echo 'FAIL: uninstall' >&2; exit 1; }
-printf '{"passed":true,"platform":"macOS","os":"%s","architecture":"%s","liveRequested":%s,"checks":["native panel","Keychain","detached launch","update restart","uninstall"],"manualChecksRemaining":["Terminal app quit","Spaces/full screen","login startup","keyboard and drag"]}\n' "$(sw_vers -productVersion)" "$(uname -m)" "$(if [ "${1:-}" = --live ]; then echo true;else echo false;fi)" > "$output/verification.json"
+printf '{"passed":true,"platform":"macOS","os":"%s","architecture":"%s","liveRequested":%s,"checks":["LF and CRLF manifest install","spaces and duplicate-download folder name","native panel","Keychain","detached launch","update restart","uninstall"],"manualChecksRemaining":["Terminal app quit","Spaces/full screen","login startup","keyboard and drag"]}\n' "$(sw_vers -productVersion)" "$(uname -m)" "$(if [ "${1:-}" = --live ]; then echo true;else echo false;fi)" > "$output/verification.json"
 echo "PASS: $output/verification.json"

@@ -1,11 +1,12 @@
 {
   "name": "seongsilbbi-desktop-release",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "private": true,
   "type": "module",
   "scripts": {
     "package:desktop": "python tools/package-desktop.py",
     "test:updates": "node --test tools/updates.test.cjs",
-    "test:desktop": "node --test tools/desktop.test.cjs tools/updates.test.cjs"
+    "test:desktop": "node --test tools/desktop.test.cjs tools/updates.test.cjs",
+    "test:package": "python tools/package_desktop_test.py"
   }
 }
