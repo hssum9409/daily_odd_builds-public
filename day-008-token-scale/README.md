@@ -24,7 +24,7 @@
 
 백그라운드 수집기가 로컬 Codex에서 통계를 읽으면 웹에서 내 기록을 볼 수 있습니다. 공개 랭킹에 참여할지는 별도로 고릅니다. 아바타를 꾸미고 배지를 내걸면 제법 그럴듯합니다. 생산성이 올라가는지는 각자 알아서 증명해주세요.
 
-Day 008 of [Daily Odd Builds](https://daily-odd-builds-portal.web.app/). **OpenAI가 제작·승인한 공식 서비스가 아니며, 토큰 소비량은 생산성이나 실력의 지표가 아닙니다.**
+Day 008 · **2026-10-19 공개 기록** · [Daily Odd Builds](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-19). **OpenAI가 제작·승인한 공식 서비스가 아니며, 토큰 소비량은 생산성이나 실력의 지표가 아닙니다.**
 
 <details>
 <summary>정사각 소개 카드 보기</summary>
@@ -32,6 +32,14 @@ Day 008 of [Daily Odd Builds](https://daily-odd-builds-portal.web.app/). **OpenA
 <img src="docs/images/social-card.webp" width="640" alt="Day 008 정사각 홍보 카드. 가상 랭킹과 아바타를 사용한 설명용 연출">
 
 </details>
+
+## 만드는 데도 토큰 좀 썼습니다
+
+토큰 쓴 걸 자랑하는 사이트를 만들겠다고 **276,674,216토큰**을 썼습니다. 수집할 숫자를 늘려버리는 개발... 이거 맞나.
+
+**2026-10-22 07:46 KST** 기준, 주 작업과 소개·이미지 보조 작업의 확인 가능한 2개 세션을 집계한 **프로젝트 제작 토큰**입니다. 캐시 입력을 포함하고 재개된 세션은 중복으로 더하지 않았습니다. 계정의 전체 사용량이나 랭킹 점수가 아닙니다. [세부 집계와 기준](docs/TOKEN-USAGE.md) · [JSON](docs/usage-summary.json)
+
+포털의 Day 008 기록일은 **2026-10-19**이며, 0.3.1 웹 서비스는 2026-10-21, 이 README의 0.4.0 수집기와 소개 이미지는 2026-10-22에 공개했습니다.
 
 ## 시작하기
 

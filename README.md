@@ -59,6 +59,8 @@ Chrome Extension Manifest V3 · PC 일반·마이너·미니 갤러리 지원 ·
 [웹에서 보기](https://token-arena-hssum9409.web.app/) · [소개와 사용 방법](day-008-token-scale/README.md) · [Windows / macOS 다운로드](https://token-arena-hssum9409.web.app/download/) · [릴리스 · 0.4.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day004-cli-v0.4.0)
 
 30초 로컬 조회·변경분만 전송, 서버 랭킹 6시간 집계. Windows 실제 실행 확인 · macOS 실기기 미검증 preview. 비공식 재미용 community-reported 통계이며 공개 참가는 선택입니다.
+
+공개 포털 **Day 008 · 2026-10-19** · [포털 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-19) · 제작 누적 **276,674,216토큰** (2026-10-22 07:46 KST, 캐시 입력 포함). [집계 기준](day-008-token-scale/docs/TOKEN-USAGE.md)
 <!-- day008-token-scale:end -->
 
 <!-- day006:start -->

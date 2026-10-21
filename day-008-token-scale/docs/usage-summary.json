@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "snapshot_at": "2026-10-21T22:46:11.854401+00:00",
+  "snapshotDateKst": "2026-10-22",
+  "snapshot_label": "2026-10-22 07:46 KST",
+  "scope": "Recorded project development usage from the main Codex session and its confirmed introduction/artwork support session; available local logs only",
+  "session_count": 2,
+  "main_session_total": 269104866,
+  "support_sessions_total": 7569350,
+  "totals": {
+    "input_tokens": 275328836,
+    "cached_input_tokens": 268566272,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 1345380,
+    "reasoning_output_tokens": 600448,
+    "total_tokens": 276674216
+  },
+  "cached_input_included_in_input": true,
+  "reasoning_output_included_in_output": true,
+  "method": "Use the latest cumulative total_token_usage once per distinct session. Do not sum resumed file totals, cached input, or reasoning output again.",
+  "not_account_lifetime_usage": true,
+  "image_generation_not_converted_to_text_tokens": true
+}

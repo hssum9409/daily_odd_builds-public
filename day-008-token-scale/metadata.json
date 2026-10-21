@@ -22,5 +22,12 @@
     "windows": "0.4.0 isolated install engine, browser pairing, immediate private real Codex/RTDB upload, unchanged polling and hourly Firestore flush verified. 177 owned-process samples with zero visible main windows. Synthetic corrections/retries passed on Windows with Firebase emulators. GUI install confirmation/SmartScreen and reboot remain unverified.",
     "macos": "0.4.0 matching macOS Intel/Apple Silicon CI build, analysis/tests, native execution and package checks passed. Physical Finder/Keychain/menu/startup/Gatekeeper pending; preview.",
     "linux": "CLI source implemented; native execution pending"
-  }
+  },
+  "developmentTokenUsage": {
+    "totalTokens": 276674216,
+    "snapshotAt": "2026-10-21T22:46:11.854401+00:00",
+    "sessionCount": 2,
+    "summaryPath": "docs/usage-summary.json"
+  },
+  "portalUrl": "https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-19"
 }
