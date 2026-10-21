@@ -1,0 +1,45 @@
+name: Day 004 CLI native release validation
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            arch: x64
+          - runner: macos-15
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: day-004-token-scale/source
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.6'
+          channel: stable
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: flutter pub get
+      - run: dart analyze cli_collector
+      - run: dart test cli_collector/test
+      - run: node --test cli_collector/test/macos_bridge.test.cjs
+      - run: python3 tools/test_cli_packaging.py
+      - run: python3 tools/build_cli.py --platform macos --arch ${{ matrix.arch }} --defines cli_collector/public-config.json
+      - run: python3 tools/verify_macos_installer.py --archive dist/Token-Scale-macos-${{ matrix.arch }}-0.3.1.tar.gz
+      - run: ./dist/token-scale-macos-${{ matrix.arch }} version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: day004-native-macos-${{ matrix.arch }}-0.3.1
+          if-no-files-found: error
+          path: |
+            day-004-token-scale/source/dist/token-scale-macos-${{ matrix.arch }}
+            day-004-token-scale/source/dist/Token-Scale-macos-${{ matrix.arch }}-0.3.1.tar.gz
