@@ -26,6 +26,6 @@ class ArenaConfig {
       : emulator
       ? 'https://$projectId-default-rtdb.firebaseio.com'
       : '';
-  // Requires a fresh policy review before this may be enabled for a release.
+  // Operator-controlled launch switch; this does not imply OpenAI approval.
   static const releaseApproved = bool.fromEnvironment('ARENA_RELEASE_APPROVED');
 }

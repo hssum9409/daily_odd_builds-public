@@ -1,33 +1,34 @@
 {
   "version": "0.3.1",
   "tag": "day004-cli-v0.3.1",
-  "prerelease": true,
-  "officialServiceLaunchApproved": false,
+  "prerelease": false,
+  "officialServiceLaunchApproved": true,
   "installers": [
     {
       "platform": "windows",
       "arch": "x64",
       "name": "Token-Scale-Install-Windows-x64-0.3.1.zip",
-      "bytes": 3382392,
-      "sha256": "b8c0c3b47608ca4951ff028fb1fd453bde0750b5c04c0ccdaa308db118ac71d4"
+      "bytes": 3382445,
+      "sha256": "0daab88f29724cd5937addffbab8f91f15b0b759eee23819e5370b239c1355c4"
     },
     {
       "platform": "macos",
       "arch": "arm64",
       "name": "Token-Scale-macos-arm64-0.3.1.tar.gz",
-      "bytes": 3136812,
-      "sha256": "c27f3819e561be6f5e4717ba03fc67cfdff4147a3fac78198d1ff9adb56e26ee",
+      "bytes": 3136901,
+      "sha256": "c12293d35912ca125ee6bd62c213f64707d8c0a469c5e2cfcc9a19a66f49ea44",
       "minimumMacos": "14.0"
     },
     {
       "platform": "macos",
       "arch": "x64",
       "name": "Token-Scale-macos-x64-0.3.1.tar.gz",
-      "bytes": 3338818,
-      "sha256": "ea931ae49424870e0096f2fdbf73dd0ec5ce91a1110ab288962568f545426f73",
+      "bytes": 3338895,
+      "sha256": "3f2a0319c665acfccdb28b64501ef1a9ba7160c59e30724589e1f6696dafb728",
       "minimumMacos": "14.0"
     }
   ],
   "nativeMacosCi": "https://github.com/hssum9409/daily_odd_builds-public/actions/runs/39577792743",
-  "sourceCommit": "7c21b23b70db9bf74639aca6c9bcce3220a01184"
+  "sourceCommit": "7c21b23b70db9bf74639aca6c9bcce3220a01184",
+  "serviceLaunchedOn": "2026-10-21"
 }

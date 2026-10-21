@@ -65,7 +65,9 @@ def main():
     (stage/'THIRD_PARTY_LICENSES.txt').write_text(notices(),encoding='utf-8')
     (stage/'README.txt').write_text(
         'Token Scale Is All You Need '+args.version+'\n\n'
-        'Development collector; official service/public release is pending policy clarification.\n'
+        'Stable collector. Service: https://token-arena-hssum9409.web.app/\n'
+        'OpenAI authentication stays in local Codex; the website receives statistics using Google/Firebase.\n'
+        'Independent community service; no claim of OpenAI approval or verified statistics.\n'
         'Requires Codex and its existing local ChatGPT login. Google/Firebase identifies the website account.\n'
         'Install once and approve the browser connection. A tray/menu-bar daemon runs without a terminal.\n'
         'Windows: open Install.vbs for a console-free installer; install.cmd is a terminal fallback.\n'

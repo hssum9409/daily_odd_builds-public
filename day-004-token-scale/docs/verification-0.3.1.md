@@ -9,6 +9,12 @@ Release assets were published at 2026-10-21T09:37:58Z. All seven GitHub asset si
 - Deployed HTTPS website: four languages, language selection, desktop 1440/mobile 390 layouts, dashboard-to-download navigation and all three links passed in installed Google Chrome controlled by Playwright. No page or console errors. Screenshots were inspected. This is not physical-mobile or Safari/Firefox QA.
 - Connection endpoint returned 200 with a stable non-expiring development URL; missing authentication returned 401; allowed CORS preflight 204 and a foreign origin 403. Google provider/domain settings and the enabled UTC six-hour ranking scheduler were checked.
 
-No production synthetic users, destructive real-account deletion, paid certificates, global OS-policy changes or private-history transfer were used. The current website remains a development candidate with noindex; the release is prerelease and excluded from automatic updates. Its public Mac packages are native and require macOS 14+, without a separate Dart SDK install.
+No production synthetic users, destructive real-account deletion, paid certificates, global OS-policy changes or private-history transfer were used. Native Mac packages require macOS 14+ and no separate Dart SDK.
 
-Official service launch remains pending OpenAI policy-scope clarification, final operator terms/privacy policy, and target-device first-pairing/reboot/Mac checks. Data-use information on the download page is not legal compliance certification. See the release notes for those conditions.
+## Stable release and public launch · 21 October 2026
+
+The operator authorized stable publication and the service launch. The prior policy-blocking wording was corrected: local Codex authentication and Google/Firebase statistics ingestion are separate; the documentation does not explicitly resolve this statistics-only architecture. There is no claim of OpenAI approval. Four-language privacy/terms/authentication information is linked from the website.
+
+Stable installers change only README text and checksum manifests. All executable/script bytes and Mac file modes match the previously verified packages. A fresh Windows installation from the stable ZIP passed the same tray/hidden-window/Codex/settings/removal checks; launcher return was 1219 ms, visible owned windows zero. CLI14, mocked JXA3, packaging2, server26 and Flutter analyze passed again; the shared 343-rule achievement catalog matched. Website release build and deployed browser/download checks are recorded below after final verification.
+
+Physical Mac, actual OS reboot, fresh final-site Google pairing, and real mobile/Safari/Firefox remain unverified. Stable channel promotion does not certify those behaviors. The source tag/native collector binaries are unchanged; current documentation and stable installer READMEs were updated without rewriting published Git tags.
