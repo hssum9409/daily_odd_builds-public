@@ -141,7 +141,7 @@ Windows 설치 폴더는 `%LOCALAPPDATA%/Programs/Token Scale`, 데이터 폴더
 
 Mac의 네이티브 빌드와 패키지 검사는 실제 설치·Finder·Keychain·메뉴 막대·Gatekeeper·재로그인 동작을 대신하지 않습니다. macOS는 실기기 미검증 preview입니다. 제품의 정식 Authenticode / Developer ID 서명·Apple 공증은 제공하지 않으며, 체크섬이 OS 서명을 대신하지 않습니다.
 
-[0.4.0 검증 기록](docs/verification-0.4.0.md) · [이미지 출처와 표현 범위](docs/README-MEDIA.md)
+[0.4.0 검증 기록](docs/verification-0.4.0.md) · [공개 후 최종 확인](docs/release-readiness-0.4.0.md) · [이미지 출처와 표현 범위](docs/README-MEDIA.md)
 
 </details>
 
