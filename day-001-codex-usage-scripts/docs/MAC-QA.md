@@ -1,3 +1,9 @@
+## 2026-10-21 파일 목록 줄바꿈 회귀 검사
+
+공개 1.4.11의 Mac ZIP 3개에는 파일 목록 CRLF 생성 오류가 없었다. 다만 목록만 CRLF로 바꾸면 원본 설치기가 신규 설치·갱신에서 `Unsafe manifest`로 실패했다. 1.4.12 설치기는 잠금 폴더의 정규화 사본을 검증·필수 파일 확인·복사에 함께 사용한다. 원본 파일 목록은 그대로 보존한다.
+
+`tests/mac_manifest.py`는 실제 Mac ZIP 3종의 설치·갱신·복원·제거와 거부/보존 경로를 Windows Git Bash에서 실행한다. 이것은 POSIX 파일 처리의 증거이며, Mac AppKit·launchd·로그온·Gatekeeper나 실제 UI/자동 업데이트 전체 흐름을 확인한 결과는 아니다. Mac preview와 아래 실기기 미확인 항목을 유지한다.
+
 ## 2026-10-15 진단 v6 실기기 결과: 사용량 응답 수신, 설정창 갱신 오류
 
 macOS 14.6.1 / arm64 사용자 로그에서 `/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex`를 발견하고 실행했다. `rpc-initialized`, `rpc-account-response-received`, `usage-response-received`가 확인됐다. CLI 발견·초기화·계정 응답·사용량 응답 수신의 실제 장치 증거다. 모든 사용량 필드의 화면 정확성이나 Pet 부착 성공까지 확인된 것은 아니다.

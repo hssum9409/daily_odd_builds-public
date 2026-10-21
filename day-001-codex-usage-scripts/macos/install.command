@@ -18,6 +18,8 @@ lock="${target}.install-lock"
 if ! mkdir "$lock" 2>/dev/null; then echo 'Another installation is running.' >&2; exit 1; fi
 stage="${target}.stage-$$"
 backup="${target}.backup-$$"
+# 설치 잠금 폴더에만 정규화 사본을 둔다. 다운로드 원본의 파일 목록은 수정하지 않는다.
+manifest="$lock/payload.sha256"
 committed=0
 running=0
 startup=0
@@ -38,6 +40,7 @@ cleanup() {
         if [ "$running" -eq 1 ]; then "$target/macos/run.command"; fi
     fi
     safe_remove "$stage"
+    rm -f -- "$manifest"
     rmdir "$lock"
     exit "$code"
 }
@@ -70,6 +73,12 @@ if [ "${1:-}" = '--uninstall' ]; then
     exit 0
 fi
 [ -f "$source_root/payload.sha256" ] || { echo 'Use the complete packaged release.' >&2; exit 1; }
+# 줄 끝의 CR 하나만 제거한다. 파일명 내부의 CR이나 잘못된 경로는 검증에서 거부한다.
+# 검증·필수 파일 확인·복사는 이 사본을 함께 읽어 LF/CRLF 처리 차이를 없앤다.
+manifest_cr=$(printf '\r')
+while IFS= read -r line || [ -n "$line" ]; do
+    printf '%s\n' "${line%"$manifest_cr"}"
+done < "$source_root/payload.sha256" > "$manifest"
 while IFS= read -r line; do
     hash=${line%%  *}; file=${line#*  }
     [ "${#hash}" -eq 64 ] || exit 1
@@ -77,15 +86,16 @@ while IFS= read -r line; do
     case "$file" in /*|*..*|windows/*|*[!a-zA-Z0-9_./-]*) echo 'Unsafe manifest' >&2; exit 1 ;; esac
     actual=$(shasum -a 256 "$source_root/$file"); actual=${actual%% *}
     [ "$hash" = "$actual" ] || { echo "Checksum mismatch: $file" >&2; exit 1; }
-done < "$source_root/payload.sha256"
+done < "$manifest"
 for required in macos/Monitor.js macos/install.command assets/gp-chan-face.png assets/gp-chan-monitor.png defaults.json; do
-    grep -E "  $required\$" "$source_root/payload.sha256" >/dev/null || { echo 'Incomplete payload' >&2; exit 1; }
+    # 앞에서 경로의 공백을 금지했으므로 두 번째 필드가 파일명이다. 정규식이 아닌 정확한 이름으로 비교한다.
+    awk -v required="$required" '$2 == required { found=1 } END { exit !found }' "$manifest" || { echo 'Incomplete payload' >&2; exit 1; }
 done
 if [ -e "$target" ]; then owned_install "$target" || { echo 'Existing folder is not owned by Scripts edition.' >&2; exit 1; }; fi
 mkdir "$stage"
 while IFS= read -r line; do
     file=${line#*  }; mkdir -p "$stage/$(dirname -- "$file")"; cp -- "$source_root/$file" "$stage/$file"
-done < "$source_root/payload.sha256"
+done < "$manifest"
 cp -- "$source_root/payload.sha256" "$stage/payload.sha256"
 chmod +x "$stage"/macos/*.command
 printf 'CodexUsageMonitorScripts\n%s\n' "$target" > "$stage/installed.txt"

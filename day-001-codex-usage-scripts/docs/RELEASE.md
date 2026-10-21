@@ -1,6 +1,14 @@
-# Codex Usage Monitor Scripts 1.4.11 — 배포 안내
+# Codex Usage Monitor Scripts 1.4.12 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.11은 Windows/Mac 설정창의 위치 선택 표시를 현재 실행 모드와 동기화합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.12는 Mac 설치기의 파일 목록 줄바꿈 처리를 보강합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+
+## 1.4.12 변경 사항
+
+Mac 설치기의 파일 목록 검증·필수 파일 확인·복사가 같은 정규화 사본을 사용합니다. LF·CRLF·혼합 줄바꿈과 마지막 개행이 없는 목록을 처리하며, 다운로드 원본은 수정하지 않습니다. 필요한 파일은 정확한 이름으로 비교합니다. 설치 잠금 폴더의 임시 목록은 성공·실패 시 함께 정리합니다.
+
+잘못된 경로·파일명 내부의 CR·손상된 파일은 계속 거부하고 기존 설치와 설정을 보존합니다. 설치형·포터블·업데이트 ZIP의 같은 설치기를 대상으로 CRLF 신규 설치, LF 갱신, CRLF 복원, 표준/별도 설치 경로와 제거 회귀 검사를 추가했습니다. 검증은 Windows Git Bash의 POSIX 파일 작업과 모의 JXA 범위이며 Mac 실기기 검증을 대신하지 않습니다.
+
+배포 체크섬·manifest는 빌드 OS와 관계없이 LF로 생성합니다. 내부 파일 목록은 원시 바이트부터 검사해 CRLF 생성 회귀를 감지합니다. Windows/Mac 설치형·포터블·자동 업데이트 파일을 모두 1.4.12로 갱신하며 Mac preview 표시는 유지합니다.
 
 ## 1.4.11 변경 사항
 
@@ -68,10 +76,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.11-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.4.11-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.11-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.11-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.12-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.4.12-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.12-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.12-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 
