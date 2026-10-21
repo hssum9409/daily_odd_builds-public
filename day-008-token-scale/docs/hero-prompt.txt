@@ -1,0 +1,36 @@
+Create ONE polished Korean product launch hero for Day 008 of Daily Odd Builds. Wide landscape 16:9 composition, approximately 1600 x 900 or higher. This is an original promotional illustration for a playful, unofficial Codex token statistics community named "마 니 토큰 좀 쓰나?", with the smaller English project name "Token Scale Is All You Need". It lets people view token rankings, collect achievement badges, and customize built-in avatars. The result must be elegant, readable, tactile, and lightly mischievous: an independent software launch poster, not a generic AI dashboard.
+
+COMPOSITION
+Use generous clean negative space, approximately 46 percent left for typography and 54 percent right for the product still life. Left typography is nearly front-facing, perfectly crisp Korean in bold substantial sans-serif. Right contains one substantial white ranking card, a smaller profile tile partially layered in front, and four small collectible badge tiles arranged thoughtfully around it. Give these UI-inspired objects a subtle physical thickness, matte ceramic / soft enamel materials, precise edges, very soft daylight shadows, and restrained perspective. They represent promotional UI, not screenshots. Let the big Korean title dominate the hierarchy. No photograph of a monitor, phone, laptop, human, desk, or room is needed.
+
+PALETTE FROM THE REAL PRODUCT
+White #FFFFFF and pale mint #E5F5EE background; primary emerald #087F5B; dark charcoal text #202323; muted supporting text #596975; fine borders #E1E7E4. A small amount of warm orange #FFB85C for avatar bodies and badge accents. Keep emerald strong and purposeful. Use a very subtle white-to-mint background gradient with one soft mint oval stage under the objects. Do not make it a dark neon tech poster. Avoid blue-purple gradients, glossy chrome, cream/brown interiors, confetti overload, tropical plants, or arbitrary glowing particles.
+
+EXACT VISIBLE TEXT
+Top-left small widely spaced label: "DAY 008 · DAILY ODD BUILDS"
+Large Korean headline in two lines exactly:
+"마 니 토큰"
+"좀 쓰나?"
+Smaller English subtitle below: "Token Scale Is All You Need"
+Supporting Korean line: "토큰은 썼고, 자랑할 곳은 필요하니까."
+Near bottom-left: "토큰 랭킹 · 업적 도감 · 나만의 프로필"
+Small discreet but readable status label: "30초 조회 · 6시간 랭킹 집계"
+Bottom-right footnote must be clearly visible: "수치 예시 · 홍보용 연출"
+Preserve exact spelling, spacing, punctuation. If layout is tight, make the supporting line smaller, never remove or crop the footnote or headline. The Korean title should be the main visual focus.
+
+RANKING / PROFILE OBJECTS
+Main white card header "토큰 랭킹". Exactly three clean ranking rows, with small original avatar icons and columns:
+"1"   "예시 A"   "12.8M"
+"2"   "예시 B"   "8.4M"
+"3"   "예시 C"   "3.2M"
+These are explicitly fictional example values. No real user names, email addresses, URLs, user IDs, profile photos, credentials, private statistics, graphs copied from users, or repository paths. A small emerald selected tab "전체" is enough; do not invent dense controls or tiny paragraphs.
+
+The front profile tile uses an original warm orange flame-shaped avatar with charcoal dot eyes, a simple smile, and a tiny emerald crown. The avatar sits on a pale-mint rounded-square background. It is a stylized interpretation of this project's built-in geometric avatar system, not a mascot from another product. Two other row avatars may use a round body and a squircle body, one with small headphones, one with a sprout accessory. Keep the faces simple, charming, and independent; no OpenAI logo, no cat, no robot, no existing cartoon character.
+
+Badges should be small original enamel-like pictograms for a flame, a star, a clock, and a simple trophy, all in this emerald / mint / orange palette. They illustrate the achievement collection; do not show counts claiming every achievement can be earned. No coin currency symbols, gambling imagery, cash rewards, "verified" checkmarks, official seals, superiority claims, or productivity score. The trophy is decorative, not proof of an implemented ranking-win achievement.
+
+QUALITY AND BOUNDARIES
+The hierarchy should read instantly at README width: huge Korean name, small English name, physical ranking / avatar objects, then short features. Refined editorial typography, generous margin, accurate Korean, restrained high-end 3D rendering, subtle humor. No real OS chrome. Do not copy Day 001's character, Day 002's phone interface, Day 003's browser panel, or Day 005's robot / timer widgets. This is a new product with its own art. No claims of official OpenAI endorsement, tamper-proof statistics, live public rankings, guaranteed productivity, universal platform testing, or real-user screenshots. Do not add any text other than the requested text and ranking rows.
+
+OPTIONAL SECOND ASSET — DO NOT GENERATE UNLESS SEPARATELY REQUESTED
+For a later square social card, use the completed hero as the visual reference and recompose it to 1:1. Keep the exact Korean title in the upper third, the same white ranking card and orange avatar centered, the English project name beneath the title, the feature line at the bottom, and the legible "수치 예시 · 홍보용 연출" footnote. Retain the same fictional ranking values and palette. A square version is optional; the requested primary asset is the single wide hero.

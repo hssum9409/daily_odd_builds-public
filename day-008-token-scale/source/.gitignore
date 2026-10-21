@@ -1,0 +1,6 @@
+.dart_tool/
+build/
+dist/
+.local/
+__pycache__/
+*.log
