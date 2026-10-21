@@ -60,11 +60,11 @@ Windows beta / macOS 14+ preview. 공식 서비스 공개는 정책 확인과 �
 <!-- day004-token-scale:end -->
 
 <!-- day006:start -->
-## Day 006 — DC 계정 인증 / SSO
+## DC 계정 인증 / SSO · 공개 포털 Day 007
 
-디시 계정 소유권을 외부 웹사이트의 기존 회원에게 연결하거나, DC 인증 신원으로 로그인할 수 있는 비공식 웹서비스입니다.
+내 사이트에도 디시 인증 로그인. SSO로 로그인받거나, 기존 회원에게 계정 인증만 연결할 수 있는 비공식 웹서비스입니다.
 
-[서비스 열기](https://dc-identity.web.app/) · [소개와 사용 방법](day-006-dc-identity/README.md) · [개발자 연동 가이드](https://dc-identity.web.app/?guide=1&section=examples) · [화면 체험](https://dc-identity.web.app/examples/) · [공개 MVP · 0.1.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day006-web-v0.1.0)
+[서비스 열기](https://dc-identity.web.app/) · [소개와 기능 이미지](day-006-dc-identity/README.md) · [개발자 연동 가이드](https://dc-identity.web.app/?guide=1&section=examples) · [화면 체험](https://dc-identity.web.app/examples/) · [공개 포털](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-18)
 
-Web · Google/아이디 로그인 · 계정 인증 API / OpenID Connect. 서비스와 안내·이미지만 공개하며 앱·서버 원본 소스와 운영 설정은 비공개입니다.
+Web · Google/아이디 로그인 · 계정 인증 API / OpenID Connect · 기록된 누적 토큰 **314,135,620** (2026-10-22, 캐시 입력 포함). 서비스와 안내·이미지만 공개하며 앱·서버 원본 소스와 운영 설정은 비공개입니다.
 <!-- day006:end -->
