@@ -45,7 +45,7 @@ Day 008 · **2026-10-19 공개 기록** · [Daily Odd Builds](https://daily-odd-
 
 1. 컴퓨터의 **Codex에 ChatGPT 계정으로 로그인**합니다.
 2. [다운로드 페이지](https://token-arena-hssum9409.web.app/download/)에서 운영체제에 맞는 수집기를 받아 **전부 압축 해제**합니다.
-3. Windows는 **`Install.vbs`**, Mac은 **`Install Token Scale.app`**을 실행합니다. Mac 설치 앱과 같은 폴더의 파일도 함께 유지하세요.
+3. Windows는 **`Install.vbs`**, Mac은 `Install Token Scale.app`을 실행합니다. Mac 설치 앱과 같은 폴더의 파일도 함께 유지하세요.
 4. 처음 열리는 웹에서 **Google 로그인 → 이 수집기 연결**을 누릅니다. 브라우저가 로컬 네트워크 접근을 물으면 연결을 허용합니다.
 5. 닉네임과 프로필을 정하고 내 통계를 확인합니다. 원하면 **공개 랭킹 참가**를 켭니다. 기본값은 비공개이며 기존 설정은 유지합니다.
 
@@ -149,7 +149,7 @@ Windows 설치 폴더는 `%LOCALAPPDATA%/Programs/Token Scale`, 데이터 폴더
 
 Mac의 네이티브 빌드와 패키지 검사는 실제 설치·Finder·Keychain·메뉴 막대·Gatekeeper·재로그인 동작을 대신하지 않습니다. macOS는 실기기 미검증 preview입니다. 제품의 정식 Authenticode / Developer ID 서명·Apple 공증은 제공하지 않으며, 체크섬이 OS 서명을 대신하지 않습니다.
 
-[0.4.0 검증 기록](docs/verification-0.4.0.md) · [공개 후 최종 확인](docs/release-readiness-0.4.0.md) · [이미지 출처와 표현 범위](docs/README-MEDIA.md)
+[0.4.0 검증 기록](docs/verification-0.4.0.md) · [공개 후 최종 확인](docs/release-readiness-0.4.0.md) · [2026-10-22 배포·포털 재점검](docs/release-review-2026-10-22.md) · [이미지 출처와 표현 범위](docs/README-MEDIA.md)
 
 </details>
 
