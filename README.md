@@ -72,3 +72,11 @@ Chrome Extension Manifest V3 · PC 일반·마이너·미니 갤러리 지원 ·
 
 Web · Google/아이디 로그인 · 계정 인증 API / OpenID Connect · 기록된 누적 토큰 **314,135,620** (2026-10-22, 캐시 입력 포함). 서비스와 안내·이미지만 공개하며 앱·서버 원본 소스와 운영 설정은 비공개입니다.
 <!-- day006:end -->
+
+<!-- day010-gpichan:start -->
+## Day 010 · 지피쨩
+
+책상 옆 Android 파트너를 쓰다듬고, 기존 Codex Desktop 대화에 피드백을 보내세요. [소개와 기능 이미지](day-010-gpichan/README.md) · [다운로드 · 0.5.1 공개 베타](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day010-gpichan-v0.5.1) · [설치·연결](day-010-gpichan/QUICKSTART.md) · [포털 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-21)
+
+Windows/Android beta, macOS 실기기 미검증 preview. 창 없는 CLI 호스트와 Android 2D 파트·메시 캐릭터. 전체 개발 소스는 비공개입니다. 포털 Day 010 기록일 2026-10-21 · 실제 공개 2026-10-22. [검증 범위](day-010-gpichan/VERIFICATION.md) · [제작 누적 토큰](day-010-gpichan/TOKEN-USAGE.md).
+<!-- day010-gpichan:end -->
