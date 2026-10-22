@@ -1,0 +1,31 @@
+{
+  "day": 11,
+  "date": "2026-10-22",
+  "release_date": "2026-10-23",
+  "name": "던전 하청업자 생존기",
+  "version": "0.13.0",
+  "status": "live",
+  "slug": "dungeon-subcontract",
+  "category": "web",
+  "platform": [
+    "Web"
+  ],
+  "technologies": [
+    "TypeScript",
+    "React",
+    "Phaser 3",
+    "Zustand",
+    "Vite"
+  ],
+  "live_url": "https://daily-odd-builds-dungeon.web.app/",
+  "release_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day011-dungeon-v0.13.0",
+  "download_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/download/day011-dungeon-v0.13.0/dungeon-subcontract-0.13.0-web.zip",
+  "source_visibility": "private",
+  "artifact": {
+    "filename": "dungeon-subcontract-0.13.0-web.zip",
+    "bytes": 2991128,
+    "sha256": "12ae424c60d02015bf3ae7a777e93526ea2a84e4c869018ded7b7b636cd9ee64"
+  },
+  "token_usage": 188302132,
+  "token_snapshot_kst": "2026-10-23T01:02:07+09:00"
+}

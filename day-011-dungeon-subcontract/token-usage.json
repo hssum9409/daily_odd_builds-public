@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "day": 11,
+  "product": "던전 하청업자 생존기",
+  "snapshotUtc": "2026-10-22T16:02:07.299Z",
+  "snapshotKst": "2026-10-23T01:02:07+09:00",
+  "uniqueSessionCount": 5,
+  "scope": "main development/release session and four relevant art workers through snapshot; later maintenance excluded",
+  "method": "Latest cumulative event_msg token_count total_token_usage per unique session; deduplicate resumed files. Cached input is a subset of input; reasoning is a subset of output. Do not double-add subsets. Text session usage only, no cost estimate or separate image-tool billing.",
+  "totals": {
+    "input_tokens": 187100625,
+    "cached_input_tokens": 181899008,
+    "output_tokens": 1201507,
+    "reasoning_output_tokens": 543708,
+    "total_tokens": 188302132
+  },
+  "roles": [
+    {
+      "role": "main",
+      "total_tokens": 179090993
+    },
+    {
+      "role": "architecture_art",
+      "total_tokens": 6740365
+    },
+    {
+      "role": "directional_art",
+      "total_tokens": 726711
+    },
+    {
+      "role": "app_icon_art",
+      "total_tokens": 798999
+    },
+    {
+      "role": "day011_release_art",
+      "total_tokens": 945064
+    }
+  ]
+}

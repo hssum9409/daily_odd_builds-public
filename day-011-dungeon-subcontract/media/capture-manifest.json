@@ -1,0 +1,56 @@
+[
+  {
+    "file": "media/editor.webp",
+    "width": 1440,
+    "height": 1000,
+    "bytes": 60642,
+    "sha256": "d15b1257e5fce61e5044a2e891d1fc3bf96ed3d90847c564a31a6cff2a2ed75f",
+    "type": "actual-ui-capture",
+    "data": "QA save fixture"
+  },
+  {
+    "file": "media/personnel.webp",
+    "width": 1440,
+    "height": 1000,
+    "bytes": 40546,
+    "sha256": "8ebc6d36e9c9d5e8f542065c50c5702a0aae53e239f57c8909cd8946592587d4",
+    "type": "actual-ui-capture",
+    "data": "QA save fixture"
+  },
+  {
+    "file": "media/battle.webp",
+    "width": 1440,
+    "height": 1000,
+    "bytes": 49696,
+    "sha256": "c7a57b1a8fe6cd46b039b0645518c8b5c8f5e942c467a4428ce0c7e225df446b",
+    "type": "actual-ui-capture",
+    "data": "QA save fixture"
+  },
+  {
+    "file": "media/mobile-editor.webp",
+    "width": 390,
+    "height": 844,
+    "bytes": 24054,
+    "sha256": "b6af12348391cacd0a016df6b44bf4fc7aa546a241fb17337da2e7095ad4f581",
+    "type": "actual-ui-capture",
+    "data": "QA save fixture"
+  },
+  {
+    "file": "media/title.webp",
+    "width": 1440,
+    "height": 1000,
+    "bytes": 19750,
+    "sha256": "bab811a10f7e3118bbfb5d8d3148466aca055843b9dbc5fefc5c6f6114d32f2a",
+    "type": "actual-ui-capture",
+    "data": "fresh title screen"
+  },
+  {
+    "file": "media/dungeon.webp",
+    "width": 1440,
+    "height": 1000,
+    "bytes": 53552,
+    "sha256": "354e25b981c50bc6d6e3e136692a5ee04c1913f9295e67b91b6c55577f21684e",
+    "type": "actual-ui-capture",
+    "data": "QA save fixture"
+  }
+]
