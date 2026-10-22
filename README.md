@@ -80,3 +80,13 @@ Web · Google/아이디 로그인 · 계정 인증 API / OpenID Connect · 기�
 
 Windows/Android beta, macOS 실기기 미검증 preview. 창 없는 CLI 호스트와 Android 2D 파트·메시 캐릭터. 전체 개발 소스는 비공개입니다. 포털 Day 010 기록일 2026-10-21 · 실제 공개 2026-10-22. [검증 범위](day-010-gpichan/VERIFICATION.md) · [제작 누적 토큰](day-010-gpichan/TOKEN-USAGE.md).
 <!-- day010-gpichan:end -->
+
+<!-- day011-dungeon:start -->
+## Day 011 · 던전 하청업자 생존기
+
+던전도 하청의 시대. 한 던전을 설계·증축하고 몬스터 직원들과 여러 원청의 침입을 막는 도트 경영·자동 방어 게임입니다. 급여·산재·위약금까지 사장님 몫입니다.
+
+[게임 시작](https://daily-odd-builds-dungeon.web.app/) · [소개·기능 이미지](day-011-dungeon-subcontract/README.md) · [0.13.0 웹 배포 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day011-dungeon-v0.13.0) · [처음 시작하기](day-011-dungeon-subcontract/QUICKSTART.md) · [포털 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-22)
+
+Web / 싱글플레이 MVP · 7×11부터 30×30까지 · 명시적 초안 저장·자동 영업·몬스터 인사카드·로컬 저장 코드·오프라인 영업. 포털 Day 011 기록일 2026-10-22, 실제 공개 2026-10-23. [제작 토큰 집계](day-011-dungeon-subcontract/TOKEN-USAGE.md) · [검증 범위](day-011-dungeon-subcontract/VERIFICATION.md). 개발 원본과 이력은 비공개입니다.
+<!-- day011-dungeon:end -->

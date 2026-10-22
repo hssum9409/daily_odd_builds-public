@@ -1,0 +1,32 @@
+[
+  {
+    "file": "media/hero.webp",
+    "width": 1440,
+    "height": 810,
+    "bytes": 388158,
+    "sha256": "698ad6a023942c79c059160f3dddc2d88ce395bc8b6db756b65750a6dbd65ca3",
+    "type": "AI promotional illustration; not gameplay screenshot",
+    "authoring": "GPT-6 Astra / High worker, native image_gen; separate HTML title for hero",
+    "encoding": "WebP q94, original preserved"
+  },
+  {
+    "file": "media/features-shared-dungeon.webp",
+    "width": 1440,
+    "height": 810,
+    "bytes": 379464,
+    "sha256": "7c54a19a09db21cefd784e01ae45c0e2fcde620895f794d8abea1f46093a2f39",
+    "type": "AI promotional illustration; not gameplay screenshot",
+    "authoring": "GPT-6 Astra / High worker, native image_gen; separate HTML title for hero",
+    "encoding": "WebP q94, original preserved"
+  },
+  {
+    "file": "media/features-personnel.webp",
+    "width": 1440,
+    "height": 810,
+    "bytes": 264134,
+    "sha256": "b2218e0186ce00451463e4e069d47664aff689018ae2f4823ca2029e2716d10a",
+    "type": "AI promotional illustration; not gameplay screenshot",
+    "authoring": "GPT-6 Astra / High worker, native image_gen; separate HTML title for hero",
+    "encoding": "WebP q94, original preserved"
+  }
+]
