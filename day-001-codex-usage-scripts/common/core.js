@@ -123,7 +123,10 @@ var MonitorCore = (function () {
         var a = payload && payload.data && payload.data.scheduled_reset;
         // 예고가 있으면 우선한다. 조짐의 유효기간은 초기화 예정 시각으로 쓰지 않는다.
         if (a && a.status === 'scheduled' && /^[a-z0-9_-]{1,64}$/i.test(a.id || '') && ['regular', 'banked'].indexOf(a.reset_type) >= 0) {
-            return {id: a.id, type: a.reset_type, at: utcSeconds(a.scheduled_for), url: resetSource(a.source)};
+            var announced = utcSeconds(a.announced_at), latest = payload.data.latest_reset;
+            var done = utcSeconds(latest && latest.announced_at);
+            if (finite(announced) && finite(done) && done >= announced && latest.reset_type === a.reset_type) return null;
+            return {id: a.id, type: a.reset_type, at: utcSeconds(a.scheduled_for), url: resetSource(a.source), announcedAt: announced};
         }
         var w = payload && payload.data && payload.data.active_watch;
         if (!w) return null;
@@ -142,21 +145,61 @@ var MonitorCore = (function () {
         return source && source.author === 'thsottiaux' && /^https:\/\/(?:x|twitter)\.com\/thsottiaux\/status\/\d+(?:\?.*)?$/.test(source.url || '') ? source.url : '';
     }
     function noticeActive(a, now) {
-        return !!a && (a.type !== 'watch' || (finite(a.until) && now < a.until));
+        if (!a) return false;
+        if (a.type === 'watch') return finite(a.until) && now < a.until;
+        // 예정 시각은 보장이 아니다. 6시간은 '확인 중'으로 두고, 무기한 예고를 방지한다.
+        if (finite(a.at)) return now < a.at + 21600;
+        var since = finite(a.announcedAt) ? a.announcedAt : a.seenAt;
+        return !finite(since) || now < since + 172800;
     }
     function noticeTitle(a, now, words) {
         // forecast_window는 최초 범위다. 캐시된 응답도 매 렌더링마다 종료 시각에서 남은 시간을 계산한다.
         if (a && a.type === 'watch') return words.reset_watch + ' · ' + (finite(a.until) && a.until > now ? words.watch_within.replace('{value}', forecastUntil(a.until, now, words)) : words.watch_pending);
-        return (a && a.type === 'banked' ? words.reset_stored : words.reset_normal) + ' ' + words.notice_reset + ' · ' + words.notice_after.replace('{value}', forecast(a, now, words)) + ' ' + words.estimated;
+        var detail = a && finite(a.at) && now >= a.at ? words.reset_verifying : words.notice_after.replace('{value}', forecast(a, now, words)) + ' ' + words.estimated;
+        return (a && a.type === 'banked' ? words.reset_stored : words.reset_normal) + ' ' + words.notice_reset + ' · ' + detail;
     }
     function reminderKey(a, now, minutes) {
         if (!noticeActive(a, now)) return '';
         // 조짐에는 실제 예정 시각이 없다. 설정된 간격에만 다시 알리고 시각 임계값은 적용하지 않는다.
         if (a.type === 'watch') return a.id + ':watch:' + Math.floor(now / (minutes * 60));
-        if (!finite(a.at)) return a.id + ':pending';
+        if (!finite(a.at)) return a.id + ':pending:' + Math.floor(now / (minutes * 60));
         var remain = Math.max(0, a.at - now), milestones = [3600, 1800, 600, 300, 60, 0], key = Math.ceil(remain / (minutes * 60));
-        for (var i = 0; i < milestones.length; i++) if (remain <= milestones[i]) key = 'm' + milestones[i];
+        // 선택 주기와 필수 임계값을 결합한다. 임계값으로 주기를 덮어쓰면 50/40/20분이 빠진다.
+        var milestone = null;
+        for (var i = 0; i < milestones.length; i++) if (remain <= milestones[i]) milestone = milestones[i];
+        if (milestone !== null) key += ':m' + milestone;
         return a.id + ':' + key;
+    }
+    function legacyReminderKey(a, now, minutes) {
+        if (!noticeActive(a, now)) return '';
+        if (a.type === 'watch') return reminderKey(a, now, minutes);
+        if (!finite(a.at)) return a.id + ':pending';
+        var remain = Math.max(0, a.at - now), key = Math.ceil(remain / (minutes * 60));
+        [3600,1800,600,300,60,0].forEach(function (m) { if (remain <= m) key = 'm' + m; });
+        return a.id + ':' + key;
+    }
+    function feedValue(payload, now, previous) {
+        var d = payload && payload.data, own = Object.prototype.hasOwnProperty;
+        if (!d || typeof d !== 'object' || Array.isArray(d) || (!own.call(d, 'scheduled_reset') && !own.call(d, 'active_watch'))) throw new Error('feed_schema');
+        var a = d.scheduled_reset, w = d.active_watch;
+        if (a != null && (typeof a !== 'object' || !/^[a-z0-9_-]{1,64}$/i.test(a.id || '') || ['regular','banked'].indexOf(a.reset_type) < 0 || ['scheduled','completed','cancelled'].indexOf(a.status) < 0 || !resetSource(a.source) || (a.scheduled_for != null && !finite(utcSeconds(a.scheduled_for))))) throw new Error('feed_schema');
+        if (w != null && (typeof w !== 'object' || !resetSource(w.source) || !finite(utcSeconds(w.expires_at)))) throw new Error('feed_schema');
+        var value = scheduled(payload, now);
+        if (value) value.seenAt = previous && previous.id === value.id && finite(previous.seenAt) ? previous.seenAt : now;
+        return value;
+    }
+    function feedCache(record, now) {
+        if (!record || record.version !== 1 || !finite(record.checkedAt) || record.checkedAt > now + 300 || now - record.checkedAt >= 172800 || !Object.prototype.hasOwnProperty.call(record, 'announcement')) return null;
+        var a = record.announcement;
+        if (a !== null && (!a || typeof a !== 'object' || !/^[a-z0-9_-]{1,80}$/i.test(a.id || '') || ['regular','banked','watch'].indexOf(a.type) < 0 || !resetSource({author:'thsottiaux',url:a.url}) || (a.type === 'watch' ? !finite(a.until) : a.at !== null && !finite(a.at)))) return null;
+        return {version:1, checkedAt:record.checkedAt, etag:typeof record.etag === 'string' && record.etag.length <= 512 && !/[\r\n]/.test(record.etag) ? record.etag : '', announcement:a};
+    }
+    function noticeReason(a, checkedAt, now, enabled, show, dismissed) {
+        if (!enabled) return 'disabled';
+        if (!show) return 'monitor-hidden';
+        if (!noticeActive(a, now)) return 'inactive';
+        if (!finite(checkedAt) || checkedAt <= 0 || now - checkedAt >= 172800) return 'cache-expired';
+        return dismissed ? 'dismissed' : 'visible';
     }
     function forecast(a, now, words) {
         return forecastUntil(a && a.at, now, words);
@@ -213,6 +256,29 @@ var MonitorCore = (function () {
         var side = preferred === 'above' ? (fitsTop ? 'above' : fitsBottom ? 'below' : null) : (fitsBottom ? 'below' : fitsTop ? 'above' : null);
         return side ? {x: x, y: side === 'above' ? top : bottom, side: side} : null;
     }
-    return {finite: finite, wrapFooter: wrapFooter, styleInk: styleInk, normalize: normalize, buckets: buckets, pro: pro, duration: duration, credit: credit, tickets: tickets, render: render, scheduled: scheduled, noticeActive: noticeActive, noticeTitle: noticeTitle, reminderKey: reminderKey, forecast: forecast, creditEvent: creditEvent, retryDelay: retryDelay, lifecycle: lifecycle, positionSelection: positionSelection, place: place, speedPreset: speedPreset, reactionInterval: reactionInterval};
+    function fallbackLayout(pet, blockers, screen, sizes, preferred, gap) {
+        // 합친 높이가 안 맞을 때 각 카드를 화면 안의 빈 영역으로 나눈다. 선호 설정은 변경하지 않는다.
+        var occupied = (blockers || []).slice(), result = {}, overlap = false;
+        if (pet) occupied.push(pet);
+        ['main','reset','credit'].forEach(function (kind) {
+            var size = sizes[kind]; if (!size) return;
+            var w = Math.min(size.w, screen.w), h = Math.min(size.h, screen.h), anchor = result.main || pet || screen;
+            var xs = [anchor.x + anchor.w / 2 - w / 2, anchor.x, screen.x, screen.x + screen.w - w];
+            var ys = preferred === 'below' ? [anchor.y + anchor.h + gap, anchor.y - h - gap] : [anchor.y - h - gap, anchor.y + anchor.h + gap];
+            ys.push(screen.y, screen.y + screen.h - h);
+            occupied.forEach(function (b) { xs.push(b.x - w - gap, b.x + b.w + gap); ys.push(b.y - h - gap, b.y + b.h + gap); });
+            var candidates = [];
+            xs.forEach(function (x) { ys.forEach(function (y) {
+                x = Math.max(screen.x, Math.min(screen.x + screen.w - w, x)); y = Math.max(screen.y, Math.min(screen.y + screen.h - h, y));
+                var collisions = occupied.filter(function (b) { return x < b.x+b.w && x+w > b.x && y < b.y+b.h && y+h > b.y; }).length;
+                candidates.push({x:x,y:y,w:w,h:h,collisions:collisions,score:Math.pow(x+w/2-anchor.x-anchor.w/2,2)+Math.pow(y+h/2-anchor.y-anchor.h/2,2)});
+            }); });
+            candidates.sort(function(a,b) { return a.collisions-b.collisions || a.score-b.score; });
+            var chosen = candidates[0]; overlap = overlap || chosen.collisions > 0;
+            result[kind] = chosen; occupied.push(chosen);
+        });
+        result.overlap = overlap; return result;
+    }
+    return {finite: finite, wrapFooter: wrapFooter, styleInk: styleInk, normalize: normalize, buckets: buckets, pro: pro, duration: duration, credit: credit, tickets: tickets, render: render, scheduled: scheduled, noticeActive: noticeActive, noticeTitle: noticeTitle, reminderKey: reminderKey, legacyReminderKey:legacyReminderKey, feedValue:feedValue, feedCache:feedCache, noticeReason:noticeReason, fallbackLayout:fallbackLayout, forecast: forecast, creditEvent: creditEvent, retryDelay: retryDelay, lifecycle: lifecycle, positionSelection: positionSelection, place: place, speedPreset: speedPreset, reactionInterval: reactionInterval};
 }());
 if (typeof module !== 'undefined') module.exports = MonitorCore;

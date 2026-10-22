@@ -29,12 +29,20 @@ namespace UsageScripts {
         public string Executable;
         // 기본은 Codex stdio 서버다. 격리 전송 QA는 OS 내장 스크립트 서버로 대체한다.
         public string ServerArguments = "app-server --listen stdio://";
-        public string ClientVersion = "1.4.12";
+        public string ClientVersion = "1.4.13";
         public int TimeoutMilliseconds = 20000;
         public int OwnedPid { get { return process == null ? 0 : process.Id; } }
         public Rpc(string path) { Executable = path; }
         void Start() { lock (gate) {
             if (disposed) throw new ObjectDisposedException("Rpc");
+            // .NET Framework의 stdin writer는 Console.InputEncoding을 따른다.
+            // UTF-8 BOM이 첫 JSON 앞에 붙지 않도록 모니터 프로세스의 입력 인코딩을 고정한다.
+            try { Console.InputEncoding = new UTF8Encoding(false); }
+            catch (IOException ex) {
+                // 콘솔에서 분리된 WPF에서는 SetConsoleCP가 ERROR_INVALID_HANDLE을 반환한다.
+                // 허용된 요청은 ASCII 고정 필드뿐이므로 기존 파이프 입력 경로를 유지한다.
+                if ((ex.HResult & 0xffff) != 6) throw;
+            }
             var p = new Process();
             p.StartInfo = new ProcessStartInfo(Executable, ServerArguments) {
                 UseShellExecute = false, CreateNoWindow = true,
@@ -120,7 +128,7 @@ namespace UsageScripts {
     public sealed class Feed {
         volatile HttpWebRequest activeRequest;
         public volatile bool Busy;
-        public string Result, Error, ETag;
+        public string Result, Error, ETag, ResponseETag;
         public int Status, RetrySeconds = 60;
         public static int RetryDelay(string header,int previous) {
             int delay;DateTimeOffset date;
@@ -131,7 +139,7 @@ namespace UsageScripts {
         public void Cancel() { var r=activeRequest; if (r!=null) r.Abort(); Result=null; }
         public void Refresh() {
             if (Busy) return;
-            Busy = true; Result = null; Error = null; Status = 0;
+            Busy = true; Result = null; Error = null; Status = 0; ResponseETag = null;
             Task.Run(delegate {
                 try {
                     ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
@@ -143,7 +151,8 @@ namespace UsageScripts {
                     using (var response = (HttpWebResponse)request.GetResponse()) {
                         Status = (int)response.StatusCode;
                         if (response.ContentLength > 2097152) throw new IOException("size");
-                        ETag = response.Headers["ETag"];
+                        // 검증되지 않은 본문과 ETag를 함께 확정하면 손상 응답 뒤 304에서 복구할 수 없다.
+                        ResponseETag = response.Headers["ETag"];
                         using (var stream = response.GetResponseStream()) using (var output = new MemoryStream()) {
                             byte[] buffer = new byte[8192]; int count;
                             while ((count = stream.Read(buffer, 0, buffer.Length)) > 0) { output.Write(buffer, 0, count); if (output.Length > 2097152) throw new IOException("size"); }
@@ -155,10 +164,10 @@ namespace UsageScripts {
                     using (var response = ex.Response as HttpWebResponse) {
                         if (response != null) {
                             Status = (int)response.StatusCode;
-                            RetrySeconds=RetryDelay(response.Headers["Retry-After"],RetrySeconds);
+                            RetrySeconds = Status == 304 ? 60 : RetryDelay(response.Headers["Retry-After"],RetrySeconds);
                         }
                     }
-                    if (Status != 304) Error = "feed";
+                    if (Status != 304) { Error = Status == 0 ? "network" : "http"; if (Status == 0) RetrySeconds = Math.Min(900, Math.Max(60, RetrySeconds * 2)); }
                 } catch { Error = "feed"; RetrySeconds = Math.Min(900, Math.Max(60, RetrySeconds * 2)); }
                 finally { activeRequest=null; Busy = false; }
             });

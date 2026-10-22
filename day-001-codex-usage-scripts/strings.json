@@ -227,7 +227,9 @@
     "install_startup_help": "codex 가 켜지는지 백그라운드에서 확인만 진행합니다. 시작 프로그램에 등록하지 않을 경우, 매번 따로 실행해야 하는 번거로움이 있습니다. Codex 비활성 시 CPU 작업을 최소화해 대기하며 런타임 메모리는 유지됩니다.",
     "reset_watch": "리셋 조짐",
     "watch_within": "{value} 이내 가능성",
-    "watch_pending": "리셋 가능성 감지"
+    "watch_pending": "리셋 가능성 감지",
+    "feed_delayed": "소식 갱신 지연",
+    "reset_verifying": "예상 시각 경과 · 확인 중"
   },
   "en": {
     "style": "Style",
@@ -457,7 +459,9 @@
     "install_startup_help": "In the background, the monitor only checks whether Codex has started. Without startup registration, you must launch it separately each time. CPU work is minimal while Codex is inactive; runtime memory remains allocated.",
     "reset_watch": "Reset watch",
     "watch_within": "Possible reset within {value}",
-    "watch_pending": "Possible reset detected"
+    "watch_pending": "Possible reset detected",
+    "feed_delayed": "News update delayed",
+    "reset_verifying": "Expected time passed · checking"
   },
   "zh": {
     "style": "样式",
@@ -687,7 +691,9 @@
     "install_startup_help": "后台仅检查 Codex 是否已启动。如果不设为开机启动，每次都需要单独运行监视器。Codex 未运行时以最少的 CPU 工作待机，运行时内存仍会保留。",
     "reset_watch": "重置迹象",
     "watch_within": "可能在{value}内重置",
-    "watch_pending": "检测到重置迹象"
+    "watch_pending": "检测到重置迹象",
+    "feed_delayed": "消息更新延迟",
+    "reset_verifying": "预计时间已过 · 确认中"
   },
   "ja": {
     "style": "スタイル",
@@ -917,6 +923,8 @@
     "install_startup_help": "バックグラウンドではCodexが起動したかだけを確認します。自動起動に登録しない場合は、毎回別途起動する必要があります。Codexが非アクティブな間はCPU処理を最小限にして待機しますが、ランタイムのメモリは保持されます。",
     "reset_watch": "リセットの兆候",
     "watch_within": "{value}以内にリセットの可能性",
-    "watch_pending": "リセットの可能性を検知"
+    "watch_pending": "リセットの可能性を検知",
+    "feed_delayed": "情報の更新が遅れています",
+    "reset_verifying": "予定時刻を経過 · 確認中"
   }
 }

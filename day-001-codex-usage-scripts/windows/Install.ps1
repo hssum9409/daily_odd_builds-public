@@ -35,7 +35,7 @@ function Remove-ProfileData {
     # 명시적 설정 삭제 때만 알려진 파일을 지운다. 임의 파일이나 연결된 외부 폴더는 보존한다.
     if(-not (Test-Path -LiteralPath $profile)){return}
     if((Get-Item -LiteralPath $profile).Attributes -band [IO.FileAttributes]::ReparsePoint){Write-Warning 'Linked profile was kept.';return}
-    foreach($name in @('settings.json','notices.json','instance.json')) {
+    foreach($name in @('settings.json','notices.json','instance.json','feed-cache.json','feed-diagnostic.json')) {
         $path=Join-Path $profile $name
         if([IO.File]::Exists($path)){Remove-Item -LiteralPath $path -Force}
     }

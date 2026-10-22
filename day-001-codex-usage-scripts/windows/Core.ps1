@@ -84,7 +84,9 @@ function Get-Scheduled($Payload, [double]$Now = ([DateTimeOffset]::UtcNow.ToUnix
     $a = $Payload.data.scheduled_reset
     # 유효한 예고를 우선한다. 조짐 유효기간은 초기화 예정 시각과 분리한다.
     if ($a -and $a.status -eq 'scheduled' -and $a.id -match '^[a-zA-Z0-9_-]{1,64}$' -and $a.reset_type -in @('regular', 'banked')) {
-        return @{id = $a.id; type = $a.reset_type; at = (Get-ResetTimestamp $a.scheduled_for); url = (Get-ResetSource $a.source)}
+        $announced=Get-ResetTimestamp $a.announced_at;$latest=$Payload.data.latest_reset;$done=Get-ResetTimestamp $latest.announced_at
+        if ((Test-Finite $announced) -and (Test-Finite $done) -and $done -ge $announced -and $latest.reset_type -eq $a.reset_type) {return $null}
+        return @{id = $a.id; type = $a.reset_type; at = (Get-ResetTimestamp $a.scheduled_for); url = (Get-ResetSource $a.source); announcedAt=$announced}
     }
     $watch = $Payload.data.active_watch
     if (-not $watch) { return $null }
@@ -96,7 +98,12 @@ function Get-Scheduled($Payload, [double]$Now = ([DateTimeOffset]::UtcNow.ToUnix
     return @{id = "watch-$post"; type = 'watch'; at = $null; until = $until; url = $url}
 }
 function Test-NoticeActive($Announcement, [double]$Now) {
-    return [bool]($Announcement -and ($Announcement.type -ne 'watch' -or ((Test-Finite $Announcement.until) -and $Now -lt $Announcement.until)))
+    if (-not $Announcement) {return $false}
+    if ($Announcement.type -eq 'watch') {return ((Test-Finite $Announcement.until) -and $Now -lt $Announcement.until)}
+    # 예정 시각이 지나도 완료로 단정하지 않고, 6시간 동안 확인 중으로 유지한다.
+    if (Test-Finite $Announcement.at) {return $Now -lt $Announcement.at+21600}
+    $since=if(Test-Finite $Announcement.announcedAt){$Announcement.announcedAt}else{$Announcement.seenAt}
+    return (-not (Test-Finite $since) -or $Now -lt $since+172800)
 }
 function Get-NoticeTitle($Announcement, [double]$Now, $Words) {
     if ($Announcement.type -eq 'watch') {
@@ -105,16 +112,52 @@ function Get-NoticeTitle($Announcement, [double]$Now, $Words) {
         return $Words.reset_watch + ' · ' + $hint
     }
     $kind = if ($Announcement.type -eq 'banked') { $Words.reset_stored } else { $Words.reset_normal }
-    return "$kind $($Words.notice_reset) · $($Words.notice_after.Replace('{value}', (Get-Forecast $Announcement $Now $Words))) $($Words.estimated)"
+    $detail=if ((Test-Finite $Announcement.at) -and $Now -ge $Announcement.at) {$Words.reset_verifying} else {$Words.notice_after.Replace('{value}', (Get-Forecast $Announcement $Now $Words))+' '+$Words.estimated}
+    return "$kind $($Words.notice_reset) · $detail"
 }
 function Get-ReminderKey($Announcement, [double]$Now, [int]$Minutes) {
     if (-not (Test-NoticeActive $Announcement $Now)) { return '' }
     if ($Announcement.type -eq 'watch') { return $Announcement.id + ':watch:' + [Math]::Floor($Now / ($Minutes * 60)) }
-    if (-not (Test-Finite $Announcement.at)) { return $Announcement.id + ':pending' }
+    if (-not (Test-Finite $Announcement.at)) { return $Announcement.id + ':pending:' + [Math]::Floor($Now/($Minutes*60)) }
     $remain = [Math]::Max(0, $Announcement.at - $Now)
     $key = [string][Math]::Ceiling($remain / ($Minutes * 60))
-    foreach ($m in @(3600, 1800, 600, 300, 60, 0)) { if ($remain -le $m) { $key = "m$m" } }
+    $milestone=$null
+    foreach ($m in @(3600, 1800, 600, 300, 60, 0)) { if ($remain -le $m) { $milestone=$m } }
+    if($null -ne $milestone){$key+=':m'+$milestone}
     return $Announcement.id + ':' + $key
+}
+function Get-LegacyReminderKey($Announcement,[double]$Now,[int]$Minutes){
+    if(-not (Test-NoticeActive $Announcement $Now)){return ''}
+    if($Announcement.type -eq 'watch'){return Get-ReminderKey $Announcement $Now $Minutes}
+    if(-not (Test-Finite $Announcement.at)){return $Announcement.id+':pending'}
+    $remain=[Math]::Max(0,$Announcement.at-$Now);$key=[string][Math]::Ceiling($remain/($Minutes*60))
+    foreach($m in @(3600,1800,600,300,60,0)){if($remain -le $m){$key='m'+$m}}
+    return $Announcement.id+':'+$key
+}
+function Get-FeedValue($Payload,[double]$Now,$Previous){
+    $d=$Payload.data
+    if(-not $d -or $d -is [array] -or -not ($d.PSObject.Properties.Name -contains 'scheduled_reset' -or $d.PSObject.Properties.Name -contains 'active_watch')){throw 'feed_schema'}
+    $a=$d.scheduled_reset;$w=$d.active_watch
+    if($null -ne $a -and ($a.id -notmatch '^[a-zA-Z0-9_-]{1,64}$' -or $a.reset_type -notin @('regular','banked') -or $a.status -notin @('scheduled','completed','cancelled') -or -not (Get-ResetSource $a.source) -or ($null -ne $a.scheduled_for -and -not (Test-Finite (Get-ResetTimestamp $a.scheduled_for))))){throw 'feed_schema'}
+    if($null -ne $w -and (-not (Get-ResetSource $w.source) -or -not (Test-Finite (Get-ResetTimestamp $w.expires_at)))){throw 'feed_schema'}
+    $value=Get-Scheduled $Payload $Now
+    if($value){$value.seenAt=if($Previous.id -eq $value.id -and (Test-Finite $Previous.seenAt)){$Previous.seenAt}else{$Now}}
+    return $value
+}
+function Get-FeedCache($Record,[double]$Now){
+    if(-not $Record -or $Record.version -ne 1 -or -not (Test-Finite $Record.checkedAt) -or $Record.checkedAt -gt $Now+300 -or $Now-$Record.checkedAt -ge 172800 -or $Record.PSObject.Properties.Name -notcontains 'announcement'){return $null}
+    $a=$Record.announcement
+    if($null -ne $a -and ($a.id -notmatch '^[a-zA-Z0-9_-]{1,80}$' -or $a.type -notin @('regular','banked','watch') -or -not (Get-ResetSource @{author='thsottiaux';url=$a.url}) -or $(if($a.type -eq 'watch'){-not (Test-Finite $a.until)}else{$null -ne $a.at -and -not (Test-Finite $a.at)}))){return $null}
+    $etag=if($Record.etag -is [string] -and $Record.etag.Length -le 512 -and $Record.etag -notmatch '[\r\n]'){$Record.etag}else{''}
+    return @{version=1;checkedAt=$Record.checkedAt;etag=$etag;announcement=$a}
+}
+function Get-NoticeReason($Announcement,$CheckedAt,[double]$Now,[bool]$Enabled,[bool]$Show,[bool]$Dismissed){
+    if(-not $Enabled){return 'disabled'}
+    if(-not $Show){return 'monitor-hidden'}
+    if(-not (Test-NoticeActive $Announcement $Now)){return 'inactive'}
+    if(-not (Test-Finite $CheckedAt) -or $CheckedAt -le 0 -or $Now-$CheckedAt -ge 172800){return 'cache-expired'}
+    if($Dismissed){return 'dismissed'}
+    return 'visible'
 }
 function Get-Forecast($Announcement, [double]$Now, $Words) {
     return Get-ForecastUntil $Announcement.at $Now $Words
@@ -174,6 +217,30 @@ function Get-Placement($Pet, $Blockers, $Screen, [double]$Width, [double]$Height
     $side = if ($Preferred -eq 'above') { if ($fitsTop) { 'above' } elseif ($fitsBottom) { 'below' } } else { if ($fitsBottom) { 'below' } elseif ($fitsTop) { 'above' } }
     if (-not $side) { return $null }
     return @{x = $x; y = $(if ($side -eq 'above') { $top } else { $bottom }); side = $side}
+}
+function Get-FallbackLayout($Pet,$Blockers,$Screen,$Sizes,[string]$Preferred,[double]$Gap){
+    # 합산 높이가 맞지 않으면 카드별로 빈 공간을 찾는다. 사용자 선호 위치는 그대로 둔다.
+    $occupied=New-Object 'Collections.Generic.List[object]'
+    foreach($b in $Blockers){$occupied.Add($b)};if($Pet){$occupied.Add($Pet)}
+    $result=@{};$overlap=$false
+    foreach($kind in @('main','reset','credit')){
+        $size=$Sizes[$kind];if(-not $size){continue}
+        $w=[Math]::Min($size.w,$Screen.w);$h=[Math]::Min($size.h,$Screen.h)
+        $anchor=if($result.main){$result.main}elseif($Pet){$Pet}else{$Screen}
+        $xs=@(($anchor.x+$anchor.w/2-$w/2),$anchor.x,$Screen.x,($Screen.x+$Screen.w-$w))
+        $ys=if($Preferred -eq 'below'){@(($anchor.y+$anchor.h+$Gap),($anchor.y-$h-$Gap))}else{@(($anchor.y-$h-$Gap),($anchor.y+$anchor.h+$Gap))}
+        $ys+=@($Screen.y,($Screen.y+$Screen.h-$h))
+        foreach($b in $occupied){$xs+=@(($b.x-$w-$Gap),($b.x+$b.w+$Gap));$ys+=@(($b.y-$h-$Gap),($b.y+$b.h+$Gap))}
+        $best=$null
+        foreach($candidateX in $xs){foreach($candidateY in $ys){
+            $x=[Math]::Max($Screen.x,[Math]::Min($Screen.x+$Screen.w-$w,$candidateX));$y=[Math]::Max($Screen.y,[Math]::Min($Screen.y+$Screen.h-$h,$candidateY))
+            $collisions=0;foreach($b in $occupied){if($x -lt $b.x+$b.w -and $x+$w -gt $b.x -and $y -lt $b.y+$b.h -and $y+$h -gt $b.y){$collisions++}}
+            $score=[Math]::Pow($x+$w/2-$anchor.x-$anchor.w/2,2)+[Math]::Pow($y+$h/2-$anchor.y-$anchor.h/2,2)
+            if(-not $best -or $collisions -lt $best.collisions -or ($collisions -eq $best.collisions -and $score -lt $best.score)){$best=@{x=$x;y=$y;w=$w;h=$h;collisions=$collisions;score=$score}}
+        }}
+        $overlap=$overlap -or $best.collisions -gt 0;$result[$kind]=$best;$occupied.Add($best)
+    }
+    $result.overlap=$overlap;return $result
 }
 function Get-Normalized($Raw, $Defaults) {
     $s = $Defaults | ConvertTo-Json -Depth 10 | ConvertFrom-Json

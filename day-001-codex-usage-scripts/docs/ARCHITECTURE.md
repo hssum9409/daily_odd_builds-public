@@ -24,6 +24,8 @@ codex-resets.com/api/v1/status → 제3자 초기화 예고 / 리셋 조짐
 
 ## 분리 기준
 
+1.4.13부터 예고 상태는 프로필의 `feed-cache.json`에 검증된 본문·ETag·확인 시각을 함께 저장합니다. 유효한 캐시가 있어야 304로 확인 시각을 연장할 수 있습니다. 파싱 실패는 정상 데이터를 지우지 않고 ETag를 해제합니다. 정상적인 예고 없음 응답은 캐시와 화면을 함께 비웁니다. 최대 48시간 캐시, 조짐 유효기간, 정식 예고의 6시간 지연 유예를 독립적으로 적용합니다. `notices.json`의 닫기 이력은 별도로 유지합니다. `feed-diagnostic.json`에는 마지막 HTTP 상태·오류 코드·다음 재시도·표시 사유만 기록합니다.
+
 - `common/core.js`: macOS 순수 상태/표시/레이아웃 로직. OS 없이 Node 테스트 가능하다.
 - `windows/Core.ps1`: Windows 계산 로직. 같은 fixture와 기대값으로 비교한다.
 - `windows/Native.cs`: UIA/Win32 읽기, 비동기 RPC/HTTP. 자체 exe를 만들지 않는다. 인증 정보/오류 원문을 로그로 내보내지 않는다.
