@@ -16,6 +16,8 @@ var settingsSync = null;
 var updateTask = null, nextUpdate = 0;
 var nextUpdateStatus=0;
 var nextLogicAt=0,lastPointerState=false;
+var feedValidated=false, feedError=null, feedHttpStatus=0, feedReason='inactive', layoutFallback=false, lastFeedDiagnostic='';
+var feedRecoveryPending=false;
 function startUpdate(force) {
     if(!alive || (updateTask && updateTask.running))return;
     var cache=readJSON(home+'/updates.json')||{};
@@ -30,6 +32,22 @@ function textFile(path) { var v = $.NSString.stringWithContentsOfFileEncodingErr
 function readJSON(path) { try { return JSON.parse(textFile(path)); } catch (_) { return null; } }
 function writeJSON(path, value) {
     if (!$(JSON.stringify(value, null, 2)).writeToFileAtomicallyEncodingError($(path), true, $.NSUTF8StringEncoding, null)) throw new Error('Cannot save settings');
+}
+function saveFeedCache() {
+    try { writeJSON(home+'/feed-cache.json',{version:1,checkedAt:lastFeed,etag:feedETag,announcement:announcement}); }
+    catch (_) { feedError='cache-write'; }
+}
+function initializeFeedCache() {
+    var cache=core.feedCache(readJSON(home+'/feed-cache.json'),now());
+    if(cache){announcement=cache.announcement;lastFeed=cache.checkedAt;feedETag=cache.etag;feedValidated=true;}
+    else if(readJSON(home+'/feed-cache.json'))feedError='cache-read';
+}
+function writeFeedDiagnostic() {
+    try {
+        var state={httpStatus:feedHttpStatus,error:feedError,checkedAt:lastFeed,nextRetryAt:nextFeed,reason:feedReason,mode:mode,layoutFallback:layoutFallback,hasAnnouncement:!!announcement};
+        var signature=JSON.stringify(state);if(signature===lastFeedDiagnostic)return;
+        lastFeedDiagnostic=signature;state.recordedAt=now();writeJSON(home+'/feed-diagnostic.json',state);
+    } catch (_) { /* 계정 응답·토큰·원문은 기록하지 않는다. */ }
 }
 function queueCommand(command) {
     var id = unwrap($.NSUUID.UUID.UUIDString);
@@ -193,18 +211,27 @@ function finishFeed() {
     if (!feedTask || feedTask.running) return;
     var ok = Number(feedTask.terminationStatus) === 0; feedTask = null;
     var headers = textFile(home + '/feed.headers'), statuses = headers.match(/HTTP\/\S+\s+(\d+)/g) || [], status = statuses.length ? Number(statuses[statuses.length - 1].split(/\s+/)[1]) : 0;
-    if (ok && status === 304) { lastFeed = now(); feedDelay = 60; }
+    feedHttpStatus=status;
+    if (ok && status === 304) {
+        feedDelay=60;
+        if(feedValidated){lastFeed=now();feedError=null;saveFeedCache();}
+        else {feedETag='';feedError='body-missing';}
+    }
     else if (ok && status === 200) {
         var body = textFile(home + '/feed.response');
         if (body.length <= 2097152) {
-            try { announcement = core.scheduled(JSON.parse(body), now()); lastFeed = now(); feedDelay = 60; } catch (_) { feedDelay = Math.min(900, feedDelay * 2); }
-        } else feedDelay = Math.min(900, feedDelay * 2);
-        var tag = /(?:^|\n)etag:\s*([^\r\n]+)/i.exec(headers); feedETag = tag ? tag[1] : '';
+            try {
+                var value=core.feedValue(JSON.parse(body),now(),announcement),tag=/(?:^|\n)etag:\s*([^\r\n]+)/i.exec(headers);
+                announcement=value;lastFeed=now();feedDelay=60;feedETag=tag?tag[1]:'';feedValidated=true;feedRecoveryPending=false;feedError=null;saveFeedCache();
+            } catch (_) { feedError='parse';feedETag='';feedDelay=Math.min(900,feedDelay*2); }
+        } else {feedError='size';feedETag='';feedDelay=Math.min(900,feedDelay*2);}
     } else {
+        feedError=status?'http':'network';
         var retry = /(?:^|\n)retry-after:\s*([^\r\n]+)/i.exec(headers);
         feedDelay = core.retryDelay(retry ? retry[1] : '', now(), feedDelay);
     }
     nextFeed = now() + feedDelay;
+    if(feedError==='body-missing'){nextFeed=feedRecoveryPending?now()+60:0;feedRecoveryPending=true;}
     ['feed.headers', 'feed.response'].forEach(function (f) { $.NSFileManager.defaultManager.removeItemAtPathError($(home + '/' + f), null); });
 }
 function desktopApps() {
@@ -366,13 +393,15 @@ function moveCard(card, x, y, animate, screen) {
     card.x = x; card.y = y;
 }
 function placeCards() {
+    layoutFallback=false;
     var main = cards.main, rh = resetVisible && cards.reset.window.visible ? cards.reset.height - 20 + settings.noticeGap : 0, ch = creditVisible && cards.credit.window.visible ? cards.credit.height - 20 + settings.noticeGap : 0;
     var screen = screenFor(pet || {x: settings.x || 80, y: settings.y || 80}), side = 'above', x, y;
     if (pet && (mode === 'above' || mode === 'below')) {
         var location = core.place(pet, blockers, screen, main.width, main.height + rh + ch, mode, {top: 16, bottom: 4}, settings);
-        if (!location) { Object.keys(cards).forEach(function (k) { cards[k].window.orderOut(null); }); return; }
+        if (!location) { placeFallback(screen);return; }
         side = location.side; x = location.x; y = location.y + (side === 'above' ? rh + ch : 0);
     } else {
+        if(main.height+rh+ch>screen.h){placeFallback(screen);return;}
         var f = main.window.frame;
         // 별도 표시 상태의 드래그 좌표를 현재 NSPanel에서 읽어 덮어쓰지 않는다.
         x = main.x === null && settings.x !== null ? settings.x : Number(f.origin.x);
@@ -383,6 +412,16 @@ function placeCards() {
     moveCard(main, x, y, false, screen);
     moveCard(cards.reset, x, side === 'above' ? y - rh - ch : y + main.height - 20 + settings.noticeGap, true, screen);
     moveCard(cards.credit, x, side === 'above' ? y - ch : y + main.height + rh - 20 + settings.noticeGap, true, screen);
+}
+function placeFallback(screen) {
+    var sizes={};
+    ['main','reset','credit'].forEach(function(k){var c=cards[k];if(k==='main'||c.window.visible){
+        if(c.width>screen.w){c.forceWidth=screen.w;displayCard(c,c.lastLines,true);}
+        sizes[k]={w:c.width,h:c.height};
+    }});
+    var layout=core.fallbackLayout(pet,blockers,screen,sizes,mode,settings.noticeGap);
+    ['main','reset','credit'].forEach(function(k){if(layout[k])moveCard(cards[k],layout[k].x,layout[k].y,true,screen);});
+    layoutFallback=true;
 }
 function dismissResetNotice() {
     // 표시 이력과 X 닫기를 구분한다. 닫은 구간만 재실행 후에도 숨긴다.
@@ -398,10 +437,13 @@ function render(force) {
     if (!pressed && petDragging) { petDragging = false; scanAt = 0; }
     if (petDragging && (mode === 'above' || mode === 'below')) show = false;
     if (lastData && now() - lastData > 60) lines.push(t('stale'));
-    var activeNotice = core.noticeActive(announcement, now());
-    if (!settings.resetNotice || !activeNotice || now() - lastFeed >= 1800) resetVisible = false;
     var key = core.reminderKey(announcement, now(), settings.resetMinutes);
-    if (show && settings.resetNotice && activeNotice && now() - lastFeed < 1800) {
+    var legacy=core.legacyReminderKey(announcement,now(),settings.resetMinutes);
+    if(key!==legacy && legacy && noticeState.lastKey===legacy){
+        if(noticeState.dismissedKey===legacy)noticeState.dismissedKey=key;noticeState.lastKey=key;writeJSON(home+'/notices.json',noticeState);
+    }
+    feedReason=core.noticeReason(announcement,lastFeed,now(),settings.resetNotice,show,key===noticeState.dismissedKey);
+    if (feedReason==='visible') {
         if (key !== noticeState.lastKey) {
             if (!resetVisible) play('reset'); resetVisible = true;
             noticeState.lastKey = key; noticeState.dismissedKey = ''; writeJSON(home + '/notices.json', noticeState);
@@ -409,16 +451,18 @@ function render(force) {
             // 업데이트/재실행으로 사라졌던 알림은 소리 없이 복원한다.
             resetVisible = true;
         }
-    }
+    } else resetVisible=false;
     if (!settings.creditNotice) creditVisible = false;
     displayCard(cards.main, lines, show);
     var title = core.noticeTitle(announcement, now(), words);
+    if(resetVisible && (now()-lastFeed>=1800 || feedError))title+=' · '+t('feed_delayed');
     displayCard(cards.reset, [title, t('reset_disclaimer')], show && resetVisible);
     displayCard(cards.credit, [t('credit_started'), t('balance') + ' ' + core.credit(view.balance)], show && creditVisible);
     var sharedWidth=350;
     Object.keys(cards).forEach(function(k){if(cards[k].window.visible)sharedWidth=Math.max(sharedWidth,cards[k].naturalWidth);});
     Object.keys(cards).forEach(function(k){var c=cards[k];if(c.window.visible && c.forceWidth!==sharedWidth){c.forceWidth=sharedWidth;displayCard(c,c.lastLines,true);}});
     if (show) placeCards();
+    writeFeedDiagnostic();
     var mouse = $.NSEvent.mouseLocation, screen = screens()[0], pos = {x: Number(mouse.x), y: screen.primaryTop - Number(mouse.y)};
     Object.keys(cards).forEach(function (k) { var c = cards[k], hover = c.window.visible && pos.x >= c.x && pos.x <= c.x + c.width && pos.y >= c.y && pos.y <= c.y + c.height; c.close.hidden = !hover; c.more.hidden = !hover; });
     var overTickets = show && lastData && (settings.tickets || settings.expiry) && pos.x >= cards.main.x && pos.x <= cards.main.x + cards.main.width && pos.y >= cards.main.y + 34 && pos.y <= cards.main.y + 59;
@@ -567,6 +611,7 @@ function run(argv) {
     if (!$.NSFileManager.defaultManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError($(home), true, $(), $())) throw new Error('Cannot create profile directory');
     if (!$.NSFileManager.defaultManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError($(home + '/commands'), true, $(), $())) throw new Error('Cannot create commands directory');
     settings = core.normalize(readJSON(home + '/settings.json'), defaults); words = strings[settings.language]; noticeState = readJSON(home + '/notices.json') || {};
+    initializeFeedCache();
     delegate = $.UsageScriptsDelegate.alloc.init; once = argv.indexOf('--once') >= 0;
     if (argv.indexOf('--register-startup') >= 0) { setStartup(true); return 'Startup registered'; }
     if (argv.indexOf('--remove-startup') >= 0) { setStartup(false); return 'Startup removed'; }

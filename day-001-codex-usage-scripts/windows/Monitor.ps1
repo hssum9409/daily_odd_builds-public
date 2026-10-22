@@ -65,12 +65,49 @@ $data = $null; $lastData = 0.0; $announcement = $null; $lastFeed = 0.0; $nextFee
 $alive = $false; $mode = 'idle'; $life = @{missingSince=$null}; $creditState = @{previous=$null;consuming=$false;cycle=''}
 $noticeState = Read-Json $stateFile; $lastKey = if ($noticeState) { $noticeState.lastKey } else { '' }
 $dismissedResetKey = if ($noticeState) { [string]$noticeState.dismissedKey } else { '' }
+$feedCacheFile=Join-Path $profile 'feed-cache.json';$feedDiagnosticFile=Join-Path $profile 'feed-diagnostic.json'
+$feedValidated=$false;$feedError=$null;$feedHttpStatus=0;$feedReason='inactive';$layoutFallback=$false;$feedRecoveryPending=$false
 $updateProcess=$null;$nextUpdate=0.0
 $resetVisible = $false; $creditVisible = $false; $quit = $false; $uiLoaded = $false; $settingsWindow = $null; $tray = $null
 $started = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() / 1000.0
 $loopCpu=0.0
 $report = [ordered]@{version=$defaults.version;runtime=$PSVersionTable.PSVersion.ToString();passed=$false;settingsOpened=$false;usageRead=$false;petDetected=$false;feedRead=$false;ownedServerStopped=$false}
 function Now { return [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() / 1000.0 }
+function Save-FeedCache {
+    try {Write-Json $script:feedCacheFile @{version=1;checkedAt=$script:lastFeed;etag=$script:feed.ETag;announcement=$script:announcement}}
+    catch {$script:feedError='cache-write'} # 저장 실패가 화면 복원을 막지 않게 한다.
+}
+function Initialize-FeedCache {
+    $cache=Get-FeedCache (Read-Json $script:feedCacheFile) (Now)
+    if($cache){$script:announcement=$cache.announcement;$script:lastFeed=$cache.checkedAt;$script:feed.ETag=$cache.etag;$script:feedValidated=$true}
+    elseif(Test-Path -LiteralPath $script:feedCacheFile){$script:feedError='cache-read'}
+}
+function Write-FeedDiagnostic {
+    try {
+        $state=[ordered]@{httpStatus=$script:feedHttpStatus;error=$script:feedError;checkedAt=$script:lastFeed;nextRetryAt=$script:nextFeed;reason=$script:feedReason;mode=$script:mode;layoutFallback=$script:layoutFallback;hasAnnouncement=[bool]$script:announcement}
+        $signature=$state|ConvertTo-Json -Compress
+        if($signature -eq $script:lastFeedDiagnostic){return}
+        $script:lastFeedDiagnostic=$signature;$state.recordedAt=Now;Write-Json $script:feedDiagnosticFile $state
+    } catch { } # 계정 응답·토큰·원문을 기록하지 않는다.
+}
+function Receive-Feed([double]$Now) {
+    if($script:feed.Busy){return}
+    $status=$script:feed.Status
+    if($status){$script:feedHttpStatus=$status}
+    if($script:feed.Result){
+        try {
+            $value=Get-FeedValue ($script:feed.Result|ConvertFrom-Json) $Now $script:announcement
+            $script:announcement=$value;$script:lastFeed=$Now;$script:feed.ETag=$script:feed.ResponseETag
+            $script:feedValidated=$true;$script:feedRecoveryPending=$false;$script:feedError=$null;$script:report.feedRead=$true;Save-FeedCache
+        } catch {$script:feedError='parse';$script:feed.ETag=''}
+        $script:feed.Result=$null
+    } elseif($status -eq 304){
+        if($script:feedValidated){$script:lastFeed=$Now;$script:feedError=$null;Save-FeedCache}
+        else {$script:feed.ETag='';$script:nextFeed=if($script:feedRecoveryPending){$Now+60}else{0};$script:feedRecoveryPending=$true;$script:feedError='body-missing'}
+    } elseif($status -eq 200){$script:feedError='parse';$script:feed.ETag=''}
+    if($script:feed.Error){$script:feedError=$script:feed.Error;$script:nextFeed=[Math]::Max($script:nextFeed,$Now+$script:feed.RetrySeconds);$script:feed.Error=$null}
+    $script:feed.Status=0
+}
 function Dismiss-ResetNotice {
     # 표시 이력과 사용자가 닫은 이력을 구분해야 업데이트 후에도 표시 중이던 알림을 복원할 수 있다.
     $script:resetVisible=$false;$script:dismissedResetKey=$script:lastKey
@@ -336,6 +373,7 @@ function Screen-Box($Frame) {
 }
 function Position-Cards($Frame) {
     $main=$script:mainCard.window
+    $script:layoutFallback=$false
     # 각 카드의 투명 여백을 빼고 설정한 본체 간격을 한 번만 더한다.
     $rh=if ($script:resetVisible -and $script:resetCard.window.IsVisible) {$script:resetCard.border.ActualHeight+$script:config.noticeGap} else {0}
     $ch=if ($script:creditVisible -and $script:creditCard.window.IsVisible) {$script:creditCard.border.ActualHeight+$script:config.noticeGap} else {0}
@@ -346,7 +384,7 @@ function Position-Cards($Frame) {
         $blockers=@($Frame.Blockers | ForEach-Object {@{x=$_.x/$script:scale;y=$_.y/$script:scale;w=$_.w/$script:scale;h=$_.h/$script:scale}})
         $bodyInsets=@{top=$script:mainCard.border.Margin.Top;bottom=$script:mainCard.border.Margin.Bottom}
         $place=Get-Placement $pet $blockers $screen $main.Width ($main.ActualHeight+$rh+$ch) $script:mode $bodyInsets $script:config
-        if (-not $place) { $main.Hide();$script:resetCard.window.Hide();$script:creditCard.window.Hide(); return }
+        if (-not $place) {Position-Fallback $pet $blockers $screen;return}
         $side=$place.side; $mx=$place.x; $my=if ($side -eq 'above') {$place.y+$rh+$ch} else {$place.y}
         # 드래그는 즉시 따라가고 크롬/설정에 따른 높이 변화만 짧게 보간한다.
         $drag=($script:lastPetX -ne $pet.x -or $script:lastPetY -ne $pet.y)
@@ -356,12 +394,24 @@ function Position-Cards($Frame) {
         $mx=if (Test-Finite $script:config.x) {$script:config.x} elseif (-not [double]::IsNaN($main.Left)) {$main.Left} else {$work.Right-$main.Width-18}
         $my=if (Test-Finite $script:config.y) {$script:config.y} elseif (-not [double]::IsNaN($main.Top)) {$main.Top} else {$work.Top+40}
         $screen=[Windows.Forms.Screen]::FromPoint((New-Object Drawing.Point([int]$mx,[int]$my))).WorkingArea
+        if($main.ActualHeight+$rh+$ch -gt $screen.Height){Position-Fallback $null @() @{x=$screen.Left;y=$screen.Top;w=$screen.Width;h=$screen.Height};return}
         $mx=[Math]::Max($screen.Left,[Math]::Min($screen.Right-$main.Width,$mx));$my=[Math]::Max($screen.Top+$rh+$ch,[Math]::Min($screen.Bottom-$main.ActualHeight,$my))
         Move-Card $script:mainCard $mx $my $false
         if ($my-$rh-$ch -lt $screen.Top) {$side='below'}
     }
     if ($side -eq 'above') { $cy=$my-$ch; $ry=$cy-$rh } else { $ry=$my+$script:mainCard.border.ActualHeight+$script:config.noticeGap; $cy=$ry+$rh }
     Move-Card $script:resetCard $mx $ry $true; Move-Card $script:creditCard $mx $cy $true
+}
+function Position-Fallback($Pet,$Blockers,$Screen){
+    foreach($kind in @('main','reset','credit')){
+        $card=Get-Variable -Name ($kind+'Card') -ValueOnly -Scope Script
+        if($card.window.IsVisible -and $card.window.Width -gt $Screen.w){$card.forceWidth=$Screen.w;Fill-Card $card $card.lastLines $true}
+    }
+    $sizes=@{main=@{w=$script:mainCard.window.Width;h=$script:mainCard.window.ActualHeight}}
+    foreach($kind in @('reset','credit')){$card=Get-Variable -Name ($kind+'Card') -ValueOnly -Scope Script;if($card.window.IsVisible){$sizes[$kind]=@{w=$card.window.Width;h=$card.window.ActualHeight}}}
+    $layout=Get-FallbackLayout $Pet $Blockers $Screen $sizes $script:mode $script:config.noticeGap
+    foreach($kind in @('main','reset','credit')){if($layout[$kind]){$card=Get-Variable -Name ($kind+'Card') -ValueOnly -Scope Script;Move-Card $card $layout[$kind].x $layout[$kind].y $true}}
+    $script:layoutFallback=$true
 }
 function Render {
     if (-not $script:uiLoaded) { return }
@@ -381,8 +431,14 @@ function Render {
     if (-not $script:config.resetNotice) {$script:resetVisible=$false}
     if (-not $script:config.creditNotice) {$script:creditVisible=$false}
     $key=Get-ReminderKey $script:announcement $now $script:config.resetMinutes
+    $legacy=Get-LegacyReminderKey $script:announcement $now $script:config.resetMinutes
+    if($key -ne $legacy -and $legacy -and $script:lastKey -eq $legacy){
+        if($script:dismissedResetKey -eq $legacy){$script:dismissedResetKey=$key};$script:lastKey=$key
+        Write-Json $stateFile @{lastKey=$key;dismissedKey=$script:dismissedResetKey}
+    }
     $activeNotice=Test-NoticeActive $script:announcement $now
-    if ($show -and $script:config.resetNotice -and $activeNotice -and $now-$script:lastFeed -lt 1800) {
+    $script:feedReason=Get-NoticeReason $script:announcement $script:lastFeed $now $script:config.resetNotice $show ($key -eq $script:dismissedResetKey)
+    if ($script:feedReason -eq 'visible') {
         if ($key -ne $script:lastKey) {
             if (-not $script:resetVisible) {Play-Notice 'reset'}
             $script:resetVisible=$true;$script:lastKey=$key;$script:dismissedResetKey=''
@@ -391,8 +447,9 @@ function Render {
             # 같은 구간의 재실행/연결 복구는 화면만 복원한다. 이미 낸 소리는 반복하지 않는다.
             $script:resetVisible=$true
         }
-    } elseif (-not $activeNotice -or $now-$script:lastFeed -ge 1800) {$script:resetVisible=$false}
+    } else {$script:resetVisible=$false}
     $title=Get-NoticeTitle $script:announcement $now $script:words
+    if($script:resetVisible -and ($now-$script:lastFeed -ge 1800 -or $script:feedError)){$title+=' · '+(T 'feed_delayed')}
     Fill-Card $script:resetCard @($title, (T 'reset_disclaimer')) ($show -and $script:resetVisible)
     Fill-Card $script:creditCard @((T 'credit_started'), ((T 'balance')+' '+(Format-Credit $view.balance))) ($show -and $script:creditVisible)
     $cards=@($script:mainCard,$script:resetCard,$script:creditCard)
@@ -401,6 +458,7 @@ function Render {
         if ($card.window.IsVisible -and $card.forceWidth -ne $sharedWidth) {$card.forceWidth=$sharedWidth;Fill-Card $card $card.lastLines $true}
     }
     if ($show) { Position-Cards $frame }
+    Write-FeedDiagnostic
 }
 . "$PSScriptRoot\Settings.ps1"
 function Sync-ReactionTimer {
@@ -408,6 +466,7 @@ function Sync-ReactionTimer {
 }
 
 try {
+    if(-not $FixturePath -and -not $Once){Initialize-FeedCache}
     if ($Once) {
         Start-Rpc;$rpc.Refresh();$watch=[Diagnostics.Stopwatch]::StartNew()
         while ($rpc.Busy -and $watch.Elapsed.TotalSeconds -lt 65) {Start-Sleep -Milliseconds 50}
@@ -733,10 +792,7 @@ try {
                     if ($now -ge $script:nextUsage -or $script:rpc.Dirty) {$script:rpc.Refresh();$script:nextUsage=$now+$script:config.pollSeconds}
                 }
                 if ($script:config.resetNotice -and -not $script:feed.Busy) {
-                    if ($script:feed.Result) {try {$script:announcement=Get-Scheduled ($script:feed.Result|ConvertFrom-Json);$script:lastFeed=$now;$script:report.feedRead=$true} catch {$script:announcement=$null};$script:feed.Result=$null}
-                    if ($script:feed.Status -eq 304) {$script:lastFeed=$now;$script:feed.Status=0}
-                    if ($script:feed.Error) {$script:nextFeed=[Math]::Max($script:nextFeed,$now+$script:feed.RetrySeconds);$script:feed.Error=$null}
-                    $script:feed.Status=0
+                    Receive-Feed $now
                     if ($now -ge $script:nextFeed) {$script:feed.Refresh();$script:nextFeed=$now+[Math]::Max(60,$script:feed.RetrySeconds)}
                 }
             }

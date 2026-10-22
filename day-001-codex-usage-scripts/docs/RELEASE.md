@@ -1,6 +1,18 @@
-# Codex Usage Monitor Scripts 1.4.12 — 배포 안내
+# Codex Usage Monitor Scripts 1.4.13 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.12는 Mac 설치기의 파일 목록 줄바꿈 처리를 보강합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.13은 초기화 안내의 재실행 복원·통신 복구·재알림·공간 부족 배치를 보강합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+
+## 1.4.13 변경 사항
+
+Windows/Mac 모두 마지막 정상 예고와 확인 시각을 로컬에 저장합니다. 표시 중 종료한 알림은 재실행 직후 무음으로 복원하고, X로 닫은 알림과 알림 OFF 설정은 유지합니다. 조회가 30분 이상 지연되면 안내를 없애는 대신 ‘소식 갱신 지연’을 표시합니다. 캐시는 마지막 정상 확인 후 최대 48시간 보관하며 조짐 유효기간과 완료 확인을 우선합니다. 정식 예고의 예상 시각이 지나면 최대 6시간 ‘확인 중’으로 표시하고 종료합니다. 시각 미정 예고도 발표·최초 발견 후 최대 48시간까지만 유지합니다.
+
+손상 JSON과 잘못된 응답 구조에서는 마지막 정상 정보를 보존합니다. 검증된 본문과 ETag·확인 시각을 함께 저장하고, 대응하는 본문 없이 304를 받으면 조건 없는 재조회로 복구합니다. Windows에서 정상 304 때문에 재시도 간격이 증가하던 문제를 수정했습니다. HTTP 상태·오류 종류·다음 조회 시각·숨김 사유는 프로필의 `feed-diagnostic.json`에 기록하며 계정 응답·토큰·원문은 포함하지 않습니다.
+
+Windows App Server 입력도 BOM 없는 UTF-8로 고정합니다. 실행 환경의 콘솔 인코딩에 따라 첫 JSON 앞에 BOM 문자가 붙어 연결이 실패할 수 있는 경로를 막고, 해당 조건을 명시적으로 재현하는 전송 회귀 검사를 추가했습니다.
+
+10분 간격의 50분·40분·20분 전 재알림 누락과 시각 미정 예고를 닫은 뒤 반복되지 않던 문제를 수정했습니다. 구버전 닫기 기록을 이행하고 표시 중인 창은 추가 팝업·소리 없이 갱신합니다. 패널 전체를 한쪽에 놓을 공간이 없으면 메인·리셋·크레딧 카드를 화면 안의 별도 영역에 나누어 표시하며, 사용자의 위/아래 선호 설정은 바꾸지 않습니다.
+
+Windows/Mac 설치형·포터블·자동 업데이트 ZIP에 같은 변경을 적용합니다. Windows 실제 패키지/WPF 프로세스 재실행·로컬 HTTP 오류 주입과 Mac 모의 AppKit·피드 함수, 양 플랫폼 계산 비교를 검사합니다. Mac의 설치·Pet 추적·실제 업데이트 등 전체 장치 검증은 완료하지 않았으므로 preview를 유지합니다.
 
 ## 1.4.12 변경 사항
 
@@ -76,10 +88,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.12-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.4.12-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.12-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.12-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.13-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.4.13-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.13-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.13-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 
