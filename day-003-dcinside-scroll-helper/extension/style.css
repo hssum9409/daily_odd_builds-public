@@ -40,6 +40,17 @@ fieldset > :not(legend) { clear: both; }
 .positions label { display: flex; align-items: center; gap: 3px; padding: 6px 3px; font-size: 11px; border: 1px solid #dce2ec; border-radius: 7px; cursor: pointer; white-space: nowrap; }
 input[type="radio"] { accent-color: #3b4890; margin: 0; }
 .hint { font-size: 11px; color: #758097; margin: 0 0 8px; line-height: 1.6; }
+.shortcut-settings summary { padding: 8px 10px; border-radius: 7px; background: #f3f5fc; color: #3b4890; cursor: pointer; font-size: 12px; }
+.shortcut-settings summary:focus-visible { outline: 3px solid #93b4fc; outline-offset: 2px; }
+.shortcut-help { margin-top: 10px; }
+.shortcut-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) 26px; align-items: center; gap: 6px; min-height: 42px; border-bottom: 1px solid #eef0f5; }
+.shortcut-label { min-width: 0; overflow-wrap: anywhere; font-size: 12px; }
+.shortcut-key { min-width: 0; min-height: 30px; padding: 5px 6px; border: 1px solid #d9dfeb; border-radius: 6px; background: #f7f9fc; color: #35415b; font: 11px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+.shortcut-key[data-recording="true"] { border-color: #3b4890; background: #e9ecfb; color: #3b4890; box-shadow: inset 0 0 0 1px #3b4890; }
+.shortcut-clear { width: 26px; min-height: 30px; padding: 0; border: 0; border-radius: 5px; background: transparent; color: #65718a; font-size: 19px; }
+.shortcut-clear:hover:not(:disabled) { color: #b3261e; background: #fff0ef; }
+.shortcut-clear:disabled { opacity: .35; cursor: default; }
+.shortcut-tools { display: flex; gap: 6px; margin-top: 10px; }
 .button-layout { display: flex; flex-direction: column; gap: 2px; }
 .layout-row { position: relative; display: flex; align-items: center; gap: 6px; min-height: 38px; border-bottom: 1px solid #f0f2f6; }
 .layout-row[data-drop="before"]::before, .layout-row[data-drop="after"]::after { content: ''; position: absolute; left: 0; right: 0; height: 2px; background: #3b4890; }

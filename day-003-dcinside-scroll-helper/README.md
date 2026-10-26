@@ -12,13 +12,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.4.0"><img alt="버전 1.4.0" src="https://img.shields.io/badge/version-1.4.0-3b4890?labelColor=17213b"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.5.0"><img alt="버전 1.5.0" src="https://img.shields.io/badge/version-1.5.0-3b4890?labelColor=17213b"></a>
   <a href="https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff"><img alt="Chrome 웹 스토어 게시" src="https://img.shields.io/badge/Chrome_Web_Store-published-3b4890?labelColor=17213b"></a>
   <img alt="Manifest V3" src="https://img.shields.io/badge/Manifest-V3-3b4890?labelColor=17213b">
   <a href="LICENSE"><img alt="코드 라이선스 MIT" src="https://img.shields.io/badge/code-MIT-3b4890?labelColor=17213b"></a>
 </p>
 
-<p align="center"><b><a href="https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff">Chrome에 추가하기 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.4.0">릴리즈와 ZIP</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/dcinside-scroll-helper">개인정보처리방침</a></p>
+<p align="center"><b><a href="https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff">Chrome에 추가하기 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.5.0">릴리즈와 ZIP</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/dcinside-scroll-helper">개인정보처리방침</a></p>
 
 ![디시 스크롤 도우미 — 목적지 추적, 자유로운 배치, 기기에만 저장을 소개하는 홍보 일러스트](docs/images/feature-poster1280x800.png)
 
@@ -29,6 +29,8 @@
 댓글, 댓글 쓰기, 글 목록, 맨 위와 맨 아래로 빠르고 부드럽게 이동합니다. 이미지가 뒤늦게 로드되어 목적지가 밀리면 이동 중 위치를 다시 확인합니다. 긴 글을 줄여주진 않습니다. 내려가는 수고를 줄입니다.
 
 Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개인용으로 쓰던 확장을 배포 가능한 도구로 다듬었습니다. **DCInside가 제작·승인·운영하는 공식 제품은 아닙니다.**
+
+1.5.0 실행 ZIP과 공개 소스를 제공합니다. 이번 버전의 Chrome 웹 스토어 업데이트는 아직 제출하지 않았습니다. 스토어 설치본의 버전은 스토어 등록정보에서 확인해 주세요.
 
 ## 설치
 
@@ -41,7 +43,7 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 <details>
 <summary>ZIP 또는 공개 소스로 직접 설치하기</summary>
 
-1. [1.4.0 실행 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day003-v1.4.0/dcinside-scroll-helper-1.4.0.zip)을 받아 **전부 압축 해제**합니다.
+1. [1.5.0 실행 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day003-v1.5.0/dcinside-scroll-helper-1.5.0.zip)을 받아 **전부 압축 해제**합니다.
 2. Chrome 주소창에 `chrome://extensions`를 입력하고 **개발자 모드**를 켭니다.
 3. **압축해제된 확장 프로그램을 로드합니다**에서 `manifest.json`이 있는 폴더를 선택합니다. 이 저장소를 내려받았다면 `day-003-dcinside-scroll-helper/extension/`을 선택하세요.
 4. 디시인사이드 페이지를 새로고침합니다.
@@ -70,6 +72,27 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 
 다른 이동 버튼을 누르면 앞선 이동을 취소합니다. **Esc**, 휠·터치 스크롤 또는 스크롤 키로도 멈출 수 있습니다. 하나의 이동 작업만 실행되므로 댓글로 가다가 맨 위를 눌러도 서로 끌어당기지 않습니다.
 
+## 키보드로도 이동합니다
+
+입력창 밖에서 아래 키를 누르면 같은 버튼 동작을 실행합니다. 기본 영문 키는 Shift 없이 누릅니다.
+
+| 동작 | 기본 키 |
+| --- | --- |
+| 설정 | S |
+| 현재 갤러리 홈 | V |
+| 댓글보기 / 댓글쓰기 | C / W |
+| 글 목록 보기 | L |
+| 맨위로 / 맨밑으로 | T / B |
+| 갤로그 가기 | G |
+| 갤러리 목록 / 마이너 갤러리 목록 | D / M |
+| 커스텀 갤러리 1–9 / 10 | 1–9 / 0 |
+
+**설정 → 키보드 단축키 → 단축키 보기 · 변경**에서 키를 클릭하고 새 키 조합을 누르세요. Ctrl·Alt·Shift·⌘ 조합도 지정할 수 있습니다. 예를 들어 Ctrl+Alt+E를 사용할 수 있습니다. 중복 조합과 대표적인 브라우저 예약키는 안내 후 저장하지 않습니다.
+
+`×`로 해당 키를 해제하고 **모두 해제**로 전부 끌 수 있습니다. **기본 키로**는 모양과 갤러리 설정을 유지한 채 키만 되돌립니다. 키를 모두 꺼도 설정 버튼은 클릭할 수 있습니다. 변경은 이 기기에 저장되고 새로고침 후에도 유지됩니다.
+
+댓글·검색 입력창, 편집 영역이나 한글 조합 중에는 실행하지 않습니다. 설정창 안에서도 전역 단축키를 멈춥니다. 숨긴 버튼, 로그아웃 상태의 갤로그, 미설정 커스텀 슬롯은 키로도 실행되지 않습니다. 숫자 패드는 Num Lock으로 숫자를 입력할 때 같은 슬롯에 연결됩니다. 다른 확장이나 OS가 먼저 처리하는 조합은 사용할 수 없을 수 있습니다.
+
 ## 작은 패널, 내 취향대로
 
 기본값은 **파란 배경 · 흰색 아이콘 · 불투명도 70% · 아이콘 16px · 우측 하단 가로 배치**입니다.
@@ -88,7 +111,7 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 
 가로 배치의 줄은 왼쪽·가운데·오른쪽 위치를 따라 정렬합니다. 세로 배치의 열은 위·중앙·아래 위치를 따라 정렬합니다. 줄마다 버튼 수가 달라도 기준선은 유지합니다.
 
-모양과 버튼 배치는 자동 저장됩니다. **기본값으로**를 누르면 모양·버튼·커스텀 설정을 초기화합니다. 최근 갤러리 기록은 별도로 지워야 합니다.
+모양·버튼 배치·단축키는 자동 저장됩니다. **기본값으로**를 누르면 모양·버튼·커스텀 설정을 초기화합니다. 최근 갤러리 기록은 별도로 지워야 합니다.
 
 ### 자주 가는 갤러리는 최대 10개
 
@@ -154,7 +177,7 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 
 ## 소스와 라이선스
 
-이 폴더는 **1.4.0 출시 버전의 실행 소스 스냅샷**입니다. `extension/` 전체를 Chrome에서 로드하면 빌드 없이 실행할 수 있습니다. 개발 이력, 세션 로그와 내부 작업 자료는 포함하지 않습니다.
+이 폴더는 **1.5.0 출시 버전의 실행 소스 스냅샷**입니다. `extension/` 전체를 Chrome에서 로드하면 빌드 없이 실행할 수 있습니다. 개발 이력, 세션 로그와 내부 작업 자료는 포함하지 않습니다.
 
 코드는 [MIT](LICENSE)입니다. 포함된 로고·아이콘·홍보 이미지의 출처와 사용 범위는 [ARTWORK.md](docs/ARTWORK.md)에 기록했습니다. [구조 설명](docs/ARCHITECTURE.md)
 

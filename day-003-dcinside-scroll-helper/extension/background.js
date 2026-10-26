@@ -1,5 +1,5 @@
 'use strict';
-importScripts('page-context.js', 'settings.js');
+importScripts('page-context.js', 'shortcuts.js', 'settings.js');
 const ns = globalThis.DCScrollHelper;
 // Serialize writes across tabs. No tabs/history/cookies permissions or network calls.
 let writes = Promise.resolve();

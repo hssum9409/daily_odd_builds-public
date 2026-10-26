@@ -19,6 +19,7 @@
   ]);
   function createPanel({ api, onAction, onPatch, onClearHistory, onOpen }) {
     let settings = ns.normalizeSettings(), caps = {}, customLabels = [], toastTimer, toolbarKey, editorKey, drag = null;
+    let shortcutEditorKey, capturingShortcut = null;
     const host = document.createElement('dc-scroll-helper');
     host.id = 'dc-scroll-helper-host';
     host.style.cssText = 'all:initial;position:fixed;display:block;z-index:2147483646';
@@ -67,12 +68,76 @@
         <label class="field range-field"><span>아이콘 크기</span><input type="range" name="iconSize" min="10" max="40"><output data-value="iconSize"></output></label>
         <fieldset><legend>버튼 정렬</legend><div class="segments"><label><input type="radio" name="orientation" value="horizontal"><span>가로</span></label><label><input type="radio" name="orientation" value="vertical"><span>세로</span></label></div></fieldset>
         <fieldset><legend>버튼 위치</legend><div class="positions"></div></fieldset>
+        <fieldset class="shortcut-settings"><legend>키보드 단축키</legend><p class="hint">입력창 밖에서만 작동합니다. 커스텀 1~10은 숫자 1~9·0입니다. 숨긴 버튼은 실행하지 않습니다.</p><details><summary>단축키 보기 · 변경</summary><p class="hint shortcut-help">버튼 옆의 키를 누른 뒤 원하는 키 조합을 입력하세요. Ctrl·Alt·Shift·⌘ 조합도 지원합니다. Esc 취소 · Tab 다음 항목. 다른 확장이나 OS가 먼저 처리하는 조합은 작동하지 않을 수 있습니다.</p><div class="shortcut-list"></div><div class="shortcut-tools"><button type="button" class="text-button" data-reset-shortcuts>기본 키로</button><button type="button" class="text-button" data-clear-shortcuts>모두 해제</button></div></details></fieldset>
         <fieldset><legend>표시할 버튼</legend><p class="hint">핸들을 끌어 순서를 바꾸세요. 구분선은 가로에서 새 줄, 세로에서 새 열을 만듭니다. 설정은 항상 표시됩니다.</p><div class="button-layout"></div></fieldset>
         <fieldset><legend>커스텀 갤러리 <output class="slot-count" aria-label="커스텀 슬롯 수"></output></legend><p class="hint">+로 최대 10개까지 추가하세요. 직전 갤러리는 한 슬롯에 지정할 수 있습니다.</p><div class="custom-slots"></div><button type="button" class="add-slot" data-add-slot aria-label="커스텀 갤러리 슬롯 추가">+ 슬롯 추가</button></fieldset>
-        <div class="settings-footer"><p class="hint">모양과 버튼 변경은 자동 저장됩니다.</p><p class="hint">직전 갤러리 이동을 위해 최근 갤러리 두 곳을 이 기기에만 저장합니다. 기록은 아래 버튼으로 지울 수 있으며, 이후 방문하면 다시 저장됩니다.</p><button type="button" class="text-button" data-reset>기본값으로</button><button type="button" class="text-button" data-clear-history>방문 기록 지우기</button></div>
+        <div class="settings-footer"><p class="hint">모양·버튼·단축키 변경은 자동 저장됩니다.</p><p class="hint">직전 갤러리 이동을 위해 최근 갤러리 두 곳을 이 기기에만 저장합니다. 기록은 아래 버튼으로 지울 수 있으며, 이후 방문하면 다시 저장됩니다.</p><button type="button" class="text-button" data-reset>기본값으로</button><button type="button" class="text-button" data-clear-history>방문 기록 지우기</button></div>
       </div><p class="settings-message" role="status" aria-live="polite"></p>`;
     const controls = new Map(), slots = [];
     function message(text, error = false) { const node = dialog.querySelector('.settings-message'); node.textContent = text; node.dataset.error = String(error); }
+    const shortcutList = dialog.querySelector('.shortcut-list');
+    function stopShortcutCapture() {
+      capturingShortcut = null;
+      syncShortcuts();
+    }
+    async function saveShortcut(action, binding) {
+      const conflict = ns.shortcutConflict(settings.shortcuts, binding, action);
+      if (conflict) {
+        message(`${ns.shortcutLabel(binding)}는 ${ACTIONS.find(([id]) => id === conflict)[1]}에 지정되어 있습니다. 먼저 해당 키를 해제하세요.`, true);
+        return;
+      }
+      stopShortcutCapture();
+      if (await onPatch({ shortcuts: { [action]: binding } }, true)) message(binding ? '단축키를 저장했습니다.' : '단축키를 해제했습니다.');
+    }
+    function syncShortcuts() {
+      const actions = ACTIONS.filter(([id]) => !id.startsWith('custom') || Number(id.slice(6)) < settings.customSlotCount);
+      const key = actions.map(([id]) => id).join('|');
+      if (key !== shortcutEditorKey) {
+        capturingShortcut = null; shortcutEditorKey = key; shortcutList.replaceChildren();
+        for (const [action, label] of actions) {
+          const row = document.createElement('div'); row.className = 'shortcut-row'; row.dataset.shortcut = action;
+          const name = document.createElement('span'); name.className = 'shortcut-label'; name.textContent = label;
+          const assign = document.createElement('button'); assign.type = 'button'; assign.className = 'shortcut-key'; assign.setAttribute('aria-label', `${label} 단축키 변경`);
+          assign.addEventListener('click', () => { capturingShortcut = action; syncShortcuts(); message('사용할 키 조합을 누르세요. Esc로 취소합니다.'); });
+          assign.addEventListener('blur', () => { if (capturingShortcut === action) stopShortcutCapture(); });
+          assign.addEventListener('keydown', event => {
+            if (capturingShortcut !== action) return;
+            if (event.key === 'Tab') { stopShortcutCapture(); return; }
+            event.preventDefault(); event.stopPropagation();
+            if (event.key === 'Escape') { stopShortcutCapture(); message('단축키 변경을 취소했습니다.'); return; }
+            if (event.repeat || event.isComposing || event.keyCode === 229 || event.getModifierState('AltGraph') ||
+                ['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) return;
+            const binding = ns.shortcutFromEvent(event), problem = ns.shortcutProblem(binding);
+            if (problem) { message(problem, true); return; }
+            saveShortcut(action, ns.normalizeShortcut(binding));
+          });
+          const clear = document.createElement('button'); clear.type = 'button'; clear.className = 'shortcut-clear'; clear.textContent = '×';
+          clear.setAttribute('aria-label', `${label} 단축키 해제`); clear.title = '단축키 해제';
+          clear.addEventListener('click', () => saveShortcut(action, null));
+          row.append(name, assign, clear); shortcutList.append(row);
+        }
+      }
+      for (const [action, label] of actions) {
+        const row = shortcutList.querySelector(`[data-shortcut="${action}"]`), button = row.querySelector('.shortcut-key');
+        const slot = action.startsWith('custom') ? settings.customGalleries[Number(action.slice(6))] : null;
+        row.querySelector('.shortcut-label').textContent = slot?.name || label;
+        button.textContent = capturingShortcut === action ? '키를 누르세요…' : ns.shortcutLabel(settings.shortcuts[action]);
+        button.dataset.recording = String(capturingShortcut === action);
+        button.setAttribute('aria-pressed', String(capturingShortcut === action));
+        row.querySelector('.shortcut-clear').disabled = !settings.shortcuts[action];
+      }
+    }
+    dialog.querySelector('[data-reset-shortcuts]').addEventListener('click', async () => {
+      stopShortcutCapture();
+      if (await onPatch({ shortcuts: ns.DEFAULT_SHORTCUTS }, true)) message('기본 단축키로 되돌렸습니다.');
+    });
+    dialog.querySelector('[data-clear-shortcuts]').addEventListener('click', async () => {
+      stopShortcutCapture();
+      if (await onPatch({ shortcuts: Object.fromEntries(ns.BUTTON_IDS.map(id => [id, null])) }, true)) message('모든 단축키를 해제했습니다.');
+    });
+    dialog.querySelector('.shortcut-settings details').addEventListener('toggle', () => {
+      if (!dialog.querySelector('.shortcut-settings details').open) stopShortcutCapture();
+    });
     function preview(patch) { settings = ns.mergeSettings(settings, patch); applyTheme(); renderButtons(); syncBasic(); onPatch(patch); }
     for (const name of ['backgroundColor', 'iconColor', 'opacity', 'iconSize']) {
       const input = dialog.querySelector(`[name="${name}"]`); controls.set(name, input);
@@ -238,6 +303,7 @@
     });
     function syncBasic() {
       renderLayoutEditor();
+      syncShortcuts();
       for (const name of ['backgroundColor', 'iconColor', 'opacity', 'iconSize']) {
         controls.get(name).value = settings[name]; dialog.querySelector(`[data-value="${name}"]`).textContent = `${settings[name]}${name === 'opacity' ? '%' : name === 'iconSize' ? 'px' : ''}`;
       }
@@ -301,6 +367,11 @@
           button.title = label;
           setIcon(button, icon);
         }
+        const shortcut = settings.shortcuts[action];
+        if (shortcut) {
+          button.title += ` (${ns.shortcutLabel(shortcut)})`;
+          button.setAttribute('aria-keyshortcuts', ns.shortcutLabel(shortcut, true));
+        } else button.removeAttribute('aria-keyshortcuts');
         if (button.hidden !== !visible) button.hidden = !visible;
       }
       const visible = new Set([...buttons].filter(([, button]) => !button.hidden).map(([id]) => id));
@@ -312,6 +383,7 @@
       placeDialog();
     }
     function toggleSettings(open) {
+      stopShortcutCapture();
       dialog.hidden = !open; buttons.get('settings').setAttribute('aria-expanded', String(open));
       if (open) { onOpen(); syncBasic(); syncSlots(); placeDialog(); dialog.querySelector('[data-close]').focus(); } else buttons.get('settings').focus();
     }
@@ -329,6 +401,8 @@
     applyTheme(); syncBasic(); syncSlots(); renderButtons();
     return {
       connected: () => host.isConnected && popoverHost.isConnected,
+      isSettingsOpen: () => !dialog.hidden,
+      toggleSettings,
       update(value, capabilities, labels) { settings = value; caps = capabilities; customLabels = labels; applyTheme(); syncBasic(); syncSlots(); renderButtons(); },
       notice(text, error = false) { message(text, error); status.textContent = text; },
       state(state) {

@@ -39,9 +39,10 @@
     return groups;
   }
   const DEFAULT_SETTINGS = Object.freeze({
-    schemaVersion: 3, backgroundColor: '#3b4890', iconColor: '#ffffff', opacity: 70,
+    schemaVersion: 4, backgroundColor: '#3b4890', iconColor: '#ffffff', opacity: 70,
     iconSize: 16, orientation: 'horizontal', position: 'bottom-right',
     toolbarLayout: BUTTON_IDS,
+    shortcuts: ns.DEFAULT_SHORTCUTS,
     buttons: Object.freeze({ gallery: true, comments: true, commentWrite: true, boardList: true, top: true, bottom: true,
       gallog: false, directory: false, minorDirectory: false }),
     customSlotCount: 1,
@@ -98,7 +99,7 @@
       slot.mode !== 'off' || slot.name || slot.url || slot.icon !== 'default' || slot.emoji ? index + 1 : last, 1);
     const customSlotCount = Math.max(lastConfigured, number(value.customSlotCount, 1, 1, MAX_CUSTOM_GALLERIES));
     return {
-      schemaVersion: 3,
+      schemaVersion: 4,
       backgroundColor: color(value.backgroundColor, DEFAULT_SETTINGS.backgroundColor),
       iconColor: color(value.iconColor, DEFAULT_SETTINGS.iconColor),
       opacity: number(value.opacity, DEFAULT_SETTINGS.opacity, 20, 100),
@@ -106,13 +107,15 @@
       orientation: value.orientation === 'vertical' ? 'vertical' : 'horizontal',
       position: POSITIONS.includes(value.position) ? value.position : DEFAULT_SETTINGS.position,
       toolbarLayout: normalizeToolbarLayout(value.toolbarLayout),
+      shortcuts: ns.normalizeShortcuts(value.shortcuts),
       buttons: Object.fromEntries(Object.entries(DEFAULT_SETTINGS.buttons).map(([key, fallback]) =>
         [key, typeof value.buttons?.[key] === 'boolean' ? value.buttons[key] : fallback])),
       customSlotCount, customGalleries,
     };
   }
   function mergeSettings(current, patch = {}) {
-    return normalizeSettings({ ...current, ...patch, buttons: { ...current.buttons, ...patch.buttons } });
+    return normalizeSettings({ ...current, ...patch, buttons: { ...current.buttons, ...patch.buttons },
+      shortcuts: { ...current.shortcuts, ...patch.shortcuts } });
   }
   function normalizeHistory(value) {
     const result = [];

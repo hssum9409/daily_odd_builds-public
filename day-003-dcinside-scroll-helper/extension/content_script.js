@@ -69,7 +69,8 @@
   }
   function queuePatch(patch, immediate = false) {
     pendingPatch = { ...pendingPatch, ...patch,
-      ...(patch.buttons ? { buttons: { ...pendingPatch.buttons, ...patch.buttons } } : {}) };
+      ...(patch.buttons ? { buttons: { ...pendingPatch.buttons, ...patch.buttons } } : {}),
+      ...(patch.shortcuts ? { shortcuts: { ...pendingPatch.shortcuts, ...patch.shortcuts } } : {}) };
     window.clearTimeout(saveTimer);
     if (immediate) return flushPatch();
     saveTimer = window.setTimeout(flushPatch, 220);
@@ -97,13 +98,22 @@
     if (editable && event.key !== 'Escape') return;
     navigator?.cancel(event.type === 'keydown' && event.key === 'Escape' ? 'escape' : 'manual-scroll');
   }
+  function onKeyDown(event) {
+    const action = panel && !panel.isSettingsOpen() && document.designMode !== 'on'
+      ? ns.shortcutAction(event, visibleSettings(), id => actionCapabilities()[id]) : null;
+    if (action) {
+      event.preventDefault(); event.stopPropagation();
+      if (action === 'settings') panel.toggleSettings(true);
+      else performAction(action);
+    } else cancelOnInput(event);
+  }
   const observer = new MutationObserver(scheduleRefresh);
   observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true,
     attributeFilter: ['class', 'style', 'disabled', 'readonly', 'href', 'onclick'] });
   window.addEventListener('popstate', scheduleRefresh);
   window.addEventListener('hashchange', scheduleRefresh);
   window.navigation?.addEventListener('currententrychange', scheduleRefresh);
-  document.addEventListener('keydown', cancelOnInput, true);
+  document.addEventListener('keydown', onKeyDown, true);
   document.addEventListener('wheel', cancelOnInput, { capture: true, passive: true });
   document.addEventListener('touchstart', cancelOnInput, { capture: true, passive: true });
   function onPageHide() { navigator?.cancel('page-hidden'); flushPatch(); }
@@ -116,7 +126,7 @@
     window.clearTimeout(refreshTimer); flushPatch(); store.dispose();
     window.removeEventListener('popstate', scheduleRefresh); window.removeEventListener('hashchange', scheduleRefresh);
     window.navigation?.removeEventListener('currententrychange', scheduleRefresh);
-    document.removeEventListener('keydown', cancelOnInput, true);
+    document.removeEventListener('keydown', onKeyDown, true);
     document.removeEventListener('wheel', cancelOnInput, true); document.removeEventListener('touchstart', cancelOnInput, true);
     document.removeEventListener('visibilitychange', onVisibility);
     window.removeEventListener('pagehide', onPageHide); window.removeEventListener('pageshow', onPageShow); removePanel();
