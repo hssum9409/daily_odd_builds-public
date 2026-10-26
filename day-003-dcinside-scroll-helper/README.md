@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.5.0"><img alt="버전 1.5.0" src="https://img.shields.io/badge/version-1.5.0-3b4890?labelColor=17213b"></a>
-  <a href="https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff"><img alt="Chrome 웹 스토어 게시" src="https://img.shields.io/badge/Chrome_Web_Store-published-3b4890?labelColor=17213b"></a>
+  <a href="https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff"><img alt="Chrome 웹 스토어 1.5.0 심사 대기" src="https://img.shields.io/badge/Chrome_Web_Store-1.5.0_pending_review-d79b35?labelColor=17213b"></a>
   <img alt="Manifest V3" src="https://img.shields.io/badge/Manifest-V3-3b4890?labelColor=17213b">
   <a href="LICENSE"><img alt="코드 라이선스 MIT" src="https://img.shields.io/badge/code-MIT-3b4890?labelColor=17213b"></a>
 </p>
@@ -30,7 +30,7 @@
 
 Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개인용으로 쓰던 확장을 배포 가능한 도구로 다듬었습니다. **DCInside가 제작·승인·운영하는 공식 제품은 아닙니다.**
 
-1.5.0 실행 ZIP과 공개 소스를 제공합니다. 이번 버전의 Chrome 웹 스토어 업데이트는 아직 제출하지 않았습니다. 스토어 설치본의 버전은 스토어 등록정보에서 확인해 주세요.
+**1.5.0은 2026-10-27 Chrome 웹 스토어 심사에 제출했으며 승인·게시 대기 중입니다.** 제출 완료는 사용자 확인을 기준으로 기록했습니다. GitHub의 1.5.0 실행 ZIP과 공개 소스는 지금 사용할 수 있습니다. 스토어에서 1.5.0이 게시되었는지는 등록정보의 버전을 확인해 주세요. [업데이트 상태와 검증 기록](docs/RELEASE.md#chrome-웹-스토어-업데이트-상태)
 
 ## 설치
 

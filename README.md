@@ -43,7 +43,7 @@ Web / PWA · Google 로그인 · 개인 Chrome Push 실제 수신/클릭 확인.
 
 [Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff) · [소개와 사용 방법](day-003-dcinside-scroll-helper/README.md) · [릴리즈 · 1.5.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.5.0) · [개인정보처리방침](https://daily-odd-builds-portal.web.app/privacy/dcinside-scroll-helper)
 
-1.5.0 ZIP·소스 공개 / 스토어 업데이트 미제출 · Chrome Extension Manifest V3 · PC 일반·마이너·미니 갤러리 지원 · 설정과 최근 갤러리는 로컬 저장. 출시 버전 소스 공개, 코드 MIT. DCInside 비공식 도구입니다.
+1.5.0 ZIP·소스 공개 / 스토어 심사 제출 완료·승인 대기 (2026-10-27 사용자 확인) · Chrome Extension Manifest V3 · PC 일반·마이너·미니 갤러리 지원 · 설정과 최근 갤러리는 로컬 저장. 출시 버전 소스 공개, 코드 MIT. DCInside 비공식 도구입니다.
 <!-- day003:end -->
 
 

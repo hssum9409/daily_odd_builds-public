@@ -20,7 +20,10 @@
   "release_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.5.0",
   "version": "1.5.0",
   "source_path": "day-003-dcinside-scroll-helper/extension",
-  "store_update_status": "not_submitted",
+  "store_update_status": "submitted_pending_review",
   "last_verified_store_version": "1.4.0",
-  "last_verified_store_on": "2026-10-27"
+  "last_verified_store_on": "2026-10-27",
+  "store_submitted_on": "2026-10-27",
+  "store_submission_evidence": "user_reported",
+  "store_update_published": false
 }
