@@ -100,3 +100,14 @@ Web / 싱글플레이 MVP · 7×11부터 30×30까지 · 명시적 초안 저장
 
 Web / Mobile Web MVP · 로그인 없이 익명 참가 · 정각 전후 3초, 익명 신원당 1회 · 우승자만 이미지 전송. 포털 Day 012 기록일 2026-10-23, 실제 공개일은 제품 안내를 따릅니다. 원본 소스와 개발 이력은 비공개입니다. [제작 토큰 집계](day-012-oclock-catcher/TOKEN-USAGE.md).
 <!-- day012-oclock:end -->
+
+
+<!-- day013-community-game-badges:start -->
+## Day 013 · 커뮤니티 게임 배지 · 출시 준비 중
+
+DCInside 작성자 닉네임 옆에 공개 동의한 LoL 솔로 랭크 티어·LP를 표시하는 Chrome 확장을 준비하고 있습니다. **실제 Riot API는 아직 연동하지 않았습니다.**
+
+[출시 준비 안내](https://community-game-badges-20261022.web.app/) · [소개와 사용 방법](day-013-community-game-badges/README.md) · [설치 후보 · 0.6.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day013-extension-v0.6.0) · [포털 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-24)
+
+Chrome Manifest V3 · 설치 후보 사전 공개 · 실제 게임 인증/티어 제공 및 Chrome 웹스토어 공개 전. 설치용 실행 번들과 사용 안내·소개 이미지만 공개하며 개발 소스·서버 코드·운영 설정은 비공개입니다. 포털 기록일 2026-10-24, 사전 공개 2026-10-27.
+<!-- day013-community-game-badges:end -->
