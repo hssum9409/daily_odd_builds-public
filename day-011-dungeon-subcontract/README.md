@@ -1,14 +1,36 @@
-# Day 011 · 던전 하청업자 생존기
+<p align="right"><sub>AI로 작성되었습니다. 슬롭 같으면 님 말이 맞음.</sub></p>
+
+<h1 align="center">던전 하청업자 생존기</h1>
+
+<p align="center">원청은 영원하고,<br>계약금은 유한하다.</p>
+
+<p align="center">
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day011-dungeon-v0.13.0"><img alt="버전 0.13.0" src="https://img.shields.io/badge/version-0.13.0-c6a562?labelColor=211c28"></a>
+  <img alt="싱글플레이 Web MVP" src="https://img.shields.io/badge/Web-MVP-c6a562?labelColor=211c28">
+  <img alt="원본 소스 비공개" src="https://img.shields.io/badge/source-private-767676?labelColor=211c28">
+</p>
+
+<p align="center"><b><a href="https://daily-odd-builds-dungeon.web.app/">게임 시작 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day011-dungeon-v0.13.0">웹 배포 ZIP</a> · <a href="QUICKSTART.md">처음 시작하기</a></p>
 
 ![던전 하청업자 생존기 홍보 이미지](media/hero.webp)
 
-**원청은 영원하고, 계약금은 유한하다.**
+<p align="center"><sub>게임 세계를 소개하는 생성 일러스트입니다. 실제 게임 UI와 검수용 저장 데이터로 촬영한 화면은 아래에서 구분합니다.</sub></p>
 
-작은 던전 하나로 외주 방어업을 시작하세요. 통로와 방을 설계하고, 몬스터 직원을 고용하고, 여러 원청의 차원문 계약을 함께 운영하는 고전 도트 경영·자동 방어 웹게임입니다. 공사비·급여·치료비와 위약금까지 대체로 사장님 몫입니다.
+**통로와 방을 설계하고, 몬스터 직원을 고용해 여러 원청의 침입을 막는 도트 경영·자동 방어 웹게임입니다.**
 
-[게임 시작](https://daily-odd-builds-dungeon.web.app/) · [웹 배포 ZIP · 0.13.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day011-dungeon-v0.13.0) · [처음 시작하기](QUICKSTART.md) · [Day 011 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-22)
+작은 던전 하나로 외주 방어업을 시작하세요. 공사비·급여·치료비와 위약금까지 대체로 사장님 몫입니다.
 
-포털 기록일 **2026-10-22** · 실제 공개 **2026-10-23** · 버전 **0.13.0 MVP**. 포털 시작일(2026-10-12) 기준 Day 011입니다.
+[Daily Odd Builds 공개 포털 Day 011](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-22) · 기록일 **2026-10-22** · 실제 공개 **2026-10-23** · **0.13.0 MVP**. 포털 시작일(2026-10-12) 기준 Day 011입니다.
+
+## 시작하기
+
+1. 게임에서 **새 사업 시작**을 누릅니다. 7×11 던전과 1,200G로 시작합니다.
+2. **직원**에서 코볼트와 오크를 채용하고 **배치 / 이동**으로 중앙 몬스터 방의 대기석에 놓습니다.
+3. **계약**에서 첫 의뢰를 수주하고 입구·출구 차원문을 지정합니다. 자동으로 진행하는 방어와 주간 정산을 살펴보세요.
+
+채용 비용·배치 위치와 저장 코드 사용법은 [처음 시작하기](QUICKSTART.md)에 정리했습니다.
+
+## 어떤 걸 할 수 있나요?
 
 | 할 일 | 게임에서 일어나는 일 |
 | --- | --- |
@@ -82,4 +104,13 @@ PC 마우스 조작을 우선하며 모바일 레이아웃과 터치 입력을 �
 
 게임 진행은 해당 브라우저에 저장하며 게임에 로그인·분석·광고 SDK나 플레이 데이터를 전송하는 서버 기능을 넣지 않았습니다. 공개되는 것은 이 안내·이미지·정적 웹 배포물이며 개발 원본 소스와 제작 도구·작업 이력은 비공개입니다. 의존 라이브러리 고지는 배포 ZIP의 `THIRD_PARTY_LICENSES.txt`와 `PROJECT_NOTICES.md`를 확인하세요.
 
-[제작 토큰 집계](TOKEN-USAGE.md) · [문제 제보](https://github.com/hssum9409/daily_odd_builds-public/issues)
+## 만든놈
+
+### [hssum9409](https://github.com/hssum9409)
+
+매일 한개씩 잡동사니 만드는 사람.<br>
+그 외 잡동사니는 [Daily Odd Builds](https://daily-odd-builds-portal.web.app/)에서 볼 수 있습니다.
+
+문의·오류 제보는 [GitHub Issues](https://github.com/hssum9409/daily_odd_builds-public/issues)를 이용하세요.
+
+[제작 토큰 집계](TOKEN-USAGE.md)

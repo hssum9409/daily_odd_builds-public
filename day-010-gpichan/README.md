@@ -1,15 +1,37 @@
+<p align="right"><sub>AI로 작성되었습니다. 슬롭 같으면 님 말이 맞음.</sub></p>
+
 <h1 align="center">지피쨩</h1>
-<p align="center"><b>코딩은 컴퓨터에서. 응원은 책상 옆 작은 파트너에게.</b><br>Gpichan · Daily Odd Builds Day 010 · 0.5.1 public beta</p>
+
+<p align="center">코딩은 컴퓨터에서.<br>응원은 책상 옆 작은 파트너에게.</p>
+
+<p align="center">
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day010-gpichan-v0.5.1"><img alt="버전 0.5.1" src="https://img.shields.io/badge/version-0.5.1-08a9e9?labelColor=1d2e51"></a>
+  <img alt="Windows / Android beta" src="https://img.shields.io/badge/Windows_Android-beta-08a9e9?labelColor=1d2e51">
+  <img alt="macOS 실기기 미검증 preview" src="https://img.shields.io/badge/macOS-preview-e8be69?labelColor=1d2e51">
+  <img alt="원본 소스 비공개" src="https://img.shields.io/badge/source-private-767676?labelColor=1d2e51">
+</p>
+
+<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day010-gpichan-v0.5.1/Gpichan-android-0.5.1.apk">Android APK 받기 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day010-gpichan-v0.5.1">컴퓨터 호스트 다운로드</a> · <a href="QUICKSTART.md">설치·연결</a> · <a href="PRIVACY.md">개인정보처리방침</a></p>
 
 ![지피쨩과 기존 Codex Desktop을 연결하는 홍보 일러스트](assets/hero.webp)
+
+<p align="center"><sub>홍보용 생성 일러스트입니다. 실제 앱 화면이나 이번 버전의 기기 연결 증거가 아닙니다.</sub></p>
 
 **Android 휴대폰에 지피쨩을 두고, 쓰다듬으며 컴퓨터의 기존 Codex 대화와 연결하는 파트너 앱입니다.**
 
 머리를 쓰다듬거나 코를 콕 찔러 보세요. 캐릭터는 바로 반응하고, 연결을 켜 두면 상호작용을 모아 **컴퓨터에서 이미 진행 중인 Codex Desktop 대화**에 전달합니다. 작업을 새 AI 채팅으로 옮기지 않습니다.
 
-[Android APK · 다운로드](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day010-gpichan-v0.5.1/Gpichan-android-0.5.1.apk) · [컴퓨터 호스트 · 다운로드](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day010-gpichan-v0.5.1) · [설치·연결 가이드](QUICKSTART.md) · [개인정보처리방침](PRIVACY.md)
-
 공개 포털의 **Day 010 기록일은 2026-10-21**이며, 이 배포물은 **2026-10-22**에 공개했습니다. OpenAI가 제작하거나 승인한 공식 앱은 아닙니다. Windows/Android 베타이며 **macOS는 실기기 미검증 preview**입니다. Google Play에 출시된 앱이 아니라 직접 설치하는 APK입니다.
+
+## 시작하기
+
+1. 컴퓨터에서 로그인한 기존 Codex Desktop을 실행합니다.
+2. Windows용 호스트 또는 Mac preview를 설치하고 `gpichan start`를 실행합니다. 컴퓨터 호스트에는 별도의 앱 창이나 트레이 UI가 없습니다.
+3. 컴퓨터와 Android를 같은 Wi-Fi에 연결하고 Android APK를 설치합니다.
+4. 컴퓨터의 `gpichan pair` QR을 Android에서 스캔합니다. `gpichan pending`으로 요청을 확인하고 `gpichan approve <요청-ID>`로 직접 승인합니다.
+5. 휴대폰에서 사용할 기존 대화를 선택합니다. 처음에는 중요한 작업 대신 테스트 대화로 전달을 확인하세요.
+
+[실제 명령·중단·삭제·자동 시작 안내](QUICKSTART.md)
 
 ## 어떤 걸 할 수 있나요?
 
@@ -49,16 +71,6 @@
 
 </details>
 
-## 시작하기
-
-1. 컴퓨터에서 로그인한 기존 Codex Desktop을 실행합니다.
-2. Windows용 호스트 또는 Mac preview를 설치하고 `gpichan start`를 실행합니다. 컴퓨터 호스트에는 별도의 앱 창이나 트레이 UI가 없습니다.
-3. 컴퓨터와 Android를 같은 Wi-Fi에 연결하고 Android APK를 설치합니다.
-4. 컴퓨터의 `gpichan pair` QR을 Android에서 스캔합니다. `gpichan pending`으로 요청을 확인하고 `gpichan approve <요청-ID>`로 직접 승인합니다.
-5. 휴대폰에서 사용할 기존 대화를 선택합니다. 처음에는 중요한 작업 대신 테스트 대화로 전달을 확인하세요.
-
-[실제 명령·중단·삭제·자동 시작 안내](QUICKSTART.md)
-
 ## 지원과 확인 범위
 
 | 환경 | 제공 형태 | 확인 범위 |
@@ -80,6 +92,13 @@ Windows SmartScreen의 ‘추가 정보 → 실행’은 정책이 허용할 때
 앱·호스트의 전체 개발 소스와 비공개 커밋 이력은 공개하지 않습니다. 실행에 필요한 helper 스크립트, 제3자 라이선스와 안내는 배포물에 포함합니다. [라이선스 안내](LICENSE-NOTICE.md)
 
 위 hero와 기능 이미지는 **AI로 제작한 홍보용 컨셉 일러스트**이며 실제 화면 캡처나 연결 성공 증거가 아닙니다. [이미지 제작 안내](ARTWORK.md)
+
+## 만든놈
+
+### [hssum9409](https://github.com/hssum9409)
+
+매일 한개씩 잡동사니 만드는 사람.<br>
+그 외 잡동사니는 [Daily Odd Builds](https://daily-odd-builds-portal.web.app/)에서 볼 수 있습니다.
 
 문의: [GitHub Issues](https://github.com/hssum9409/daily_odd_builds-public/issues). 비밀번호·연결 QR·토큰·개인 대화 원문을 첨부하지 마세요.
 

@@ -1,12 +1,27 @@
-# Day 012 · o'clock catcher
+<p align="right"><sub>AI로 작성되었습니다. 슬롭 같으면 님 말이 맞음.</sub></p>
 
-**한 번의 터치, 한 시간의 주인공.** 매시 정각에 가장 가까이 도착한 한 사람의 이미지와 문구를 다음 결과까지 전시합니다.
+<h1 align="center">o'clock catcher</h1>
 
-[정각 잡으러 가기](https://oclock-catcher-20261027.web.app/) · [데이터 보관 안내](https://oclock-catcher-20261027.web.app/privacy.html) · [릴리즈 0.1.2](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day012-web-v0.1.2)
+<p align="center">한 번의 터치,<br>한 시간의 주인공.</p>
+
+<p align="center">
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day012-web-v0.1.2"><img alt="버전 0.1.2" src="https://img.shields.io/badge/version-0.1.2-e15532?labelColor=252420"></a>
+  <img alt="Web / Mobile Web MVP" src="https://img.shields.io/badge/Web_Mobile_Web-MVP-e15532?labelColor=252420">
+  <img alt="로그인 화면 없이 익명 참가" src="https://img.shields.io/badge/play-anonymous-e15532?labelColor=252420">
+  <img alt="원본 소스 비공개" src="https://img.shields.io/badge/source-private-767676?labelColor=252420">
+</p>
+
+<p align="center"><b><a href="https://oclock-catcher-20261027.web.app/">정각 잡으러 가기 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day012-web-v0.1.2">릴리즈와 웹 배포 ZIP</a> · <a href="https://oclock-catcher-20261027.web.app/privacy.html">데이터 보관 안내</a></p>
 
 ![정각의 순간을 잡는 o'clock catcher 콘셉트 hero](images/hero-v0.1.2.webp)
 
-*AI로 제작한 콘셉트 아트입니다. 실제 화면은 아래 캡처에서 확인할 수 있습니다.*
+<p align="center"><sub>AI로 제작한 콘셉트 아트입니다. 실제 화면은 아래 캡처에서 확인할 수 있습니다.</sub></p>
+
+**매시 정각에 가장 가까이 도착한 한 사람의 이미지와 문구를 다음 결과까지 전시하는 익명 타이밍 게임입니다.**
+
+닉네임·문구·이미지를 준비하고, 정각 전후 3초 안에 한 번 눌러 도전합니다. 한 시간의 무대를 노리는 짧은 게임입니다.
+
+[Daily Odd Builds 공개 포털 Day 012](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-23) · 기록일 **2026-10-23** · 실제 운영 공개·검증일 **2026-10-27** · **0.1.2 MVP**.
 
 ## 참가하기
 
@@ -16,6 +31,14 @@
 4. 약 00분 10초에 결과를 공개합니다. 우승한 브라우저는 이미지를 자동 전송하므로 창을 열어 두세요.
 
 로그인 화면 없이 브라우저에 익명 신원을 유지합니다. 새로고침과 같은 브라우저의 탭에는 보통 같은 신원이 이어집니다. 브라우저 데이터 삭제·다른 브라우저·다중 기기와 자동 클릭을 동일인으로 묶는 기능은 없습니다.
+
+## 어떤 걸 할 수 있나요?
+
+| 기능 | 하는 일 |
+| --- | --- |
+| 정각 경합 | 정각 전후 3초 동안 익명 신원당 한 번 입력합니다. |
+| 지연 테스트와 연습 | 서버 기록과의 시간 차이를 확인하고 5초 연습을 합니다. |
+| 우승 이미지 전시 | 우승한 브라우저만 파일을 전송하고 다음 결과까지 이미지·문구를 전시합니다. |
 
 ![참가 준비, 한 번의 입력, 우승 이미지 전시를 설명하는 기능 일러스트](images/features-v0.1.2.webp)
 
@@ -59,4 +82,13 @@ Web / Mobile Web MVP. Windows Chromium의 실제 운영 HTTPS 접속·익명 준
 
 릴리즈 ZIP은 로컬에서 빌드한 공개 웹 파일과 SHA-256 매니페스트입니다. 운영 Firebase backend는 별도 서비스이므로 ZIP만으로 독립 서버가 실행되지는 않습니다. 앱과 서버의 원본 소스·개발 이력·운영 자격증명은 비공개입니다. 타사 코드의 고지는 [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt)를 따릅니다.
 
-포털 Day 012 기록일은 2026-10-23입니다. 실제 운영 공개·검증일은 2026-10-27입니다. [제작 토큰 집계](TOKEN-USAGE.md) · [문의](https://github.com/hssum9409/daily_odd_builds-public/issues)
+## 만든놈
+
+### [hssum9409](https://github.com/hssum9409)
+
+매일 한개씩 잡동사니 만드는 사람.<br>
+그 외 잡동사니는 [Daily Odd Builds](https://daily-odd-builds-portal.web.app/)에서 볼 수 있습니다.
+
+문의·오류 제보는 [GitHub Issues](https://github.com/hssum9409/daily_odd_builds-public/issues)를 이용하세요.
+
+[제작 토큰 집계](TOKEN-USAGE.md)
