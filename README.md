@@ -49,7 +49,17 @@ Web / PWA · Google 로그인 · 개인 Chrome Push 실제 수신/클릭 확인.
 
 ## Day 005 · 성실삐🤖
 
-업무·휴식 시간 기록. [웹](https://bbi.hssum.kr/) · [Windows / macOS 다운로드](https://bbi.hssum.kr/download) · [안내·공개 소스](day-005-seongsilbbi/README.md). [릴리스 · 0.6.4](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day005-v0.6.5). Windows/Web beta, macOS preview.
+업무·휴식 시간 기록. [웹](https://bbi.hssum.kr/) · [Windows / macOS 다운로드](https://bbi.hssum.kr/download) · [안내·공개 소스](day-005-seongsilbbi/README.md). [릴리스 · 0.6.6](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day005-v0.6.6). Windows/Web beta, macOS preview.
+
+<!-- day006:start -->
+## DC 계정 인증 / SSO · 공개 포털 Day 007
+
+내 사이트에도 디시 인증 로그인. SSO로 로그인받거나, 기존 회원에게 계정 인증만 연결할 수 있는 비공식 웹서비스입니다.
+
+[서비스 열기](https://dc-identity.web.app/) · [소개와 기능 이미지](day-006-dc-identity/README.md) · [개발자 연동 가이드](https://dc-identity.web.app/?guide=1&section=examples) · [화면 체험](https://dc-identity.web.app/examples/) · [공개 포털](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-18)
+
+Web · Google/아이디 로그인 · 계정 인증 API / OpenID Connect · 기록된 누적 토큰 **314,135,620** (2026-10-22, 캐시 입력 포함). 서비스와 안내·이미지만 공개하며 앱·서버 원본 소스와 운영 설정은 비공개입니다.
+<!-- day006:end -->
 
 <!-- day008-token-scale:start -->
 ## Day 008 · 마 니 토큰 좀 쓰나?
@@ -62,16 +72,6 @@ Web / PWA · Google 로그인 · 개인 Chrome Push 실제 수신/클릭 확인.
 
 공개 포털 **Day 008 · 2026-10-19** · [포털 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-19) · 제작 누적 **276,674,216토큰** (2026-10-22 07:46 KST, 캐시 입력 포함). [집계 기준](day-008-token-scale/docs/TOKEN-USAGE.md)
 <!-- day008-token-scale:end -->
-
-<!-- day006:start -->
-## DC 계정 인증 / SSO · 공개 포털 Day 007
-
-내 사이트에도 디시 인증 로그인. SSO로 로그인받거나, 기존 회원에게 계정 인증만 연결할 수 있는 비공식 웹서비스입니다.
-
-[서비스 열기](https://dc-identity.web.app/) · [소개와 기능 이미지](day-006-dc-identity/README.md) · [개발자 연동 가이드](https://dc-identity.web.app/?guide=1&section=examples) · [화면 체험](https://dc-identity.web.app/examples/) · [공개 포털](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-18)
-
-Web · Google/아이디 로그인 · 계정 인증 API / OpenID Connect · 기록된 누적 토큰 **314,135,620** (2026-10-22, 캐시 입력 포함). 서비스와 안내·이미지만 공개하며 앱·서버 원본 소스와 운영 설정은 비공개입니다.
-<!-- day006:end -->
 
 <!-- day010-gpichan:start -->
 ## Day 010 · 지피쨩

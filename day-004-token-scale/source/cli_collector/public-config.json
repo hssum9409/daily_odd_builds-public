@@ -1,9 +1,0 @@
-{
-  "FIREBASE_PROJECT_ID": "token-arena-hssum9409",
-  "FIREBASE_API_KEY": "AIzaSyDnfdt4ebNP-xfWC77rgqRQtX8N61z8GfM",
-  "FIREBASE_APP_ID": "1:169786540729:web:b385ce5d0ebbc25eb15168",
-  "FIREBASE_SENDER_ID": "169786540729",
-  "ARENA_WEB_URL": "https://token-arena-hssum9409.web.app",
-  "ARENA_API_URL": "https://asia-northeast3-token-arena-hssum9409.cloudfunctions.net/arenaApi",
-  "ARENA_DATABASE_URL": "https://token-arena-hssum9409-default-rtdb.asia-southeast1.firebasedatabase.app"
-}

@@ -35,7 +35,7 @@ Day 005 of [Daily Odd Builds](https://daily-odd-builds-portal.web.app/). Windows
 
 **0.6.6**에서 macOS 설치 중 `Unsafe payload`로 종료되던 파일 목록 줄바꿈 문제를 수정했습니다. 이전 설치에 실패했다면 새 ZIP 전체를 받아 다시 설치해 주세요.
 
-문서는 **0.6.6 릴리스** 기준이며, 기능 화면은 0.6.4에서 촬영했습니다. 공개 ZIP의 현재 버전은 다운로드 페이지에서 확인하세요.
+문서는 **0.6.6 릴리스** 기준입니다. 기존 웹·홍보 이미지는 0.6.1 기능 기준, 위젯·설정은 0.6.4 작업본의 예시이며 일부 설정 화면 안에는 0.6.2 표기가 남아 있습니다. 현재 배포본의 화면·실행 검증과 구분해 보세요. 공개 ZIP 버전은 다운로드 페이지에서 확인합니다. [이미지별 제작 기준](docs/README-MEDIA.md)
 
 다운로드 페이지는 열거나 새로고침할 때 GitHub의 공개된 `day005-vX.Y.Z` 릴리스를 한 번 확인합니다. Windows·Mac 설치 ZIP과 `SHA256SUMS.txt`가 모두 업로드된 가장 높은 버전을 제공합니다. Git 커밋·태그만 올리거나 초안으로 저장한 릴리스는 반영되지 않습니다. 조회가 실패하면 페이지에 명시된 기존 버전과 GitHub 확인 링크를 표시합니다.
 
@@ -123,6 +123,15 @@ Day 005 of [Daily Odd Builds](https://daily-odd-builds-portal.web.app/). Windows
 </details>
 
 ![사용자가 제공한 성실삐 로그인 인트로 홍보 이미지. 원본과 픽셀이 같은 무손실 WebP](docs/images/login-intro.webp)
+
+<details>
+<summary>정사각 홍보 카드 보기</summary>
+
+<img src="docs/images/social-card.webp" width="640" alt="성실삐 정사각 홍보 카드 — 시작은 가볍게, 기록은 확실하게">
+
+기존 위젯을 참고해 제작한 홍보용 연출입니다. 위젯의 실제 크기나 macOS 동작을 보여주는 캡처가 아닙니다.
+
+</details>
 
 ## 업데이트와 제거
 

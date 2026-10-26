@@ -131,6 +131,15 @@ Safari/Chrome 일반 탭에서는 설치 안내가 먼저 나옵니다. 홈 화�
 
 </details>
 
+<details>
+<summary>정사각 홍보 카드 보기</summary>
+
+<img src="docs/images/social-card.png" width="640" alt="미래의 나에게 딩동 — 콘서트 예매 알림을 소개하는 정사각 홍보 일러스트">
+
+이미 제작한 공유용 카드입니다. 알림 카드는 설명용 연출이며 실제 OS Push 수신 화면이 아닙니다. [이미지 제작과 검증 범위](docs/README-MEDIA.md)
+
+</details>
+
 ## 어떻게 만들었나요?
 
 **Flutter Web/PWA + Firebase Auth·Firestore·FCM·Hosting + GCP Scheduler/Functions**를 사용했습니다. FCM은 발송을 맡고, 예약 시각 관리는 서버 Scheduler가 맡습니다.

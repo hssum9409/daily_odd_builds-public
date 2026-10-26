@@ -11,7 +11,7 @@
 
 <p align="center"><b><a href="https://dc-identity.web.app/">서비스 열기 →</a></b> · <a href="https://dc-identity.web.app/?guide=1&section=examples">개발자 연동 가이드</a> · <a href="https://dc-identity.web.app/examples/">화면 체험</a></p>
 
-![내 사이트에도 디시 인증 로그인 — SSO와 계정 인증 API](docs/images/promo-cover.webp)
+![내 사이트에도 디시 인증 로그인 — 사용자 동의를 거쳐 외부 사이트에 연결하는 SSO와 계정 인증 API](docs/images/hero-20261027.webp)
 
 <p align="center"><sub>기능 소개용 생성 이미지입니다. 실제 화면 예시와 검증 범위는 아래에서 구분해 안내합니다.</sub></p>
 
@@ -22,6 +22,15 @@
 디시 이용자를 위한 사이트를 만들 때, 계정 인증부터 매번 새로 만들 필요가 없도록 만들었습니다. 사이트의 회원 시스템은 그대로 두고 인증만 더해도 되고, 로그인 전체를 맡겨도 됩니다. 이용자는 자신의 계정을 확인하고, 어떤 정보를 보낼지 동의합니다.
 
 [daily_odd_builds 공개 포털 Day 007 · 2026-10-18](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-18)에 등록한 웹서비스입니다. **서비스와 공개 안내·이미지를 배포하며 앱·서버 원본 소스와 운영 설정은 공개하지 않습니다.** DCInside의 공식 OAuth 서비스나 공식 제휴 제품은 아닙니다.
+
+<details>
+<summary>서비스 홍보 포스터 보기</summary>
+
+![DC 계정 인증 SSO와 기존 회원의 인증 연결을 소개하는 홍보 포스터](docs/images/promo-cover.webp)
+
+서비스 소개용 생성 그래픽입니다. 실제 로그인·인증 성공 화면과 구분합니다.
+
+</details>
 
 ## 시작하기
 
@@ -127,7 +136,7 @@ Client Secret은 본인 서버에만 저장하며 다운로드 예제에 포함�
 
 Flutter Web·Firebase Authentication·Firestore·Cloud Functions를 사용하고, 외부 SSO는 검증된 OIDC 라이브러리 `oidc-provider`를 기반으로 제공합니다. Google 로그인과 아이디·비밀번호 로그인은 함께 사용할 수 있습니다.
 
-홍보·기능 이미지는 **GPT-6 Astra High 작업자가 non-fast 설정으로 내장 이미지 생성 도구를 직접 호출**해 만들었습니다. 파란색과 제품 카드 구성을 맞췄으며, 실제 동작 캡처와 설명용 그래픽을 구분합니다.
+새 hero는 **GPT-6 Astra / High 아트 작업자가 참고 이미지를 보고 내장 이미지 생성 도구를 직접 호출**해 만들었습니다. 기존 홍보·기능 이미지도 유지하며 실제 동작 캡처와 설명용 그래픽을 구분합니다. 작업자 설정은 이미지 backend의 모델·품질·과금 등급을 증명하지 않으며, 도구에 노출되지 않은 등급을 확인했다고 주장하지 않습니다.
 
 만든 사람 [hssum9409](https://github.com/hssum9409) · 다른 결과물은 [Daily Odd Builds](https://daily-odd-builds-portal.web.app/)에서 볼 수 있습니다.
 
