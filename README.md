@@ -96,7 +96,7 @@ Web / 싱글플레이 MVP · 7×11부터 30×30까지 · 명시적 초안 저장
 
 매시 정각에 가장 가까운 순간을 잡고, 우승 이미지와 문구로 한 시간의 주인공이 되는 익명 타이밍 게임입니다.
 
-[정각 잡기](https://oclock-catcher-20261027.web.app/) · [소개와 사용 방법](day-012-oclock-catcher/README.md) · [릴리즈 0.1.1](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day012-web-v0.1.1) · [데이터 보관 안내](https://oclock-catcher-20261027.web.app/privacy.html) · [포털 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-23)
+[정각 잡기](https://oclock-catcher-20261027.web.app/) · [소개와 사용 방법](day-012-oclock-catcher/README.md) · [릴리즈 0.1.2](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day012-web-v0.1.2) · [데이터 보관 안내](https://oclock-catcher-20261027.web.app/privacy.html) · [포털 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-23)
 
 Web / Mobile Web MVP · 로그인 없이 익명 참가 · 정각 전후 3초, 익명 신원당 1회 · 우승자만 이미지 전송. 포털 Day 012 기록일 2026-10-23, 실제 공개일은 제품 안내를 따릅니다. 원본 소스와 개발 이력은 비공개입니다. [제작 토큰 집계](day-012-oclock-catcher/TOKEN-USAGE.md).
 <!-- day012-oclock:end -->

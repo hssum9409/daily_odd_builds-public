@@ -1,4 +1,4 @@
-Third-party notices for o'clock catcher 0.1.1
+Third-party notices for o'clock catcher 0.1.2
 The following licenses apply to their respective bundled components, not to the private application source.
 
 ========================================
