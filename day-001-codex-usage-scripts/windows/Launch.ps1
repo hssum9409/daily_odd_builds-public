@@ -1,6 +1,6 @@
 ﻿# GUI 실행기는 콘솔 창 없이 모니터를 시작한 뒤 바로 종료한다.
 # 부모 CMD의 콘솔과 핸들을 상속하지 않아 CMD 종료에 영향받지 않는다.
-param([switch]$LoadOnly)
+param([switch]$LoadOnly,[switch]$Background)
 $ErrorActionPreference = 'Stop'
 
 function Quote-ProcessArgument([string]$Value) {
@@ -116,5 +116,8 @@ function Test-OwnedStartupCommand([string]$Command, [string]$Root) {
 }
 
 if (-not $LoadOnly) {
-    $null = Start-BackgroundPowerShell (Join-Path $PSScriptRoot 'Monitor.ps1') @($args)
+    $forward=@($args)
+    # 시작 메뉴·포터블 더블클릭은 숨김 상태의 설정을 연다. 로그온 실행은 조용히 유지한다.
+    if(-not $Background -and $forward.Count -eq 0){$forward=@('-Reopen')}
+    $null = Start-BackgroundPowerShell (Join-Path $PSScriptRoot 'Monitor.ps1') $forward
 }

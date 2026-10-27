@@ -39,10 +39,18 @@ namespace UsageScripts {
         static string anchorSignature="",cachedAnchorKind="";static int cachedAnchor;static DateTime nextAnchorCheck;
         public static bool Busy{get{return busy;}}
         public static TaskbarSlot GetSlot(){return Current;}
+        public static int PositionWrites {get;private set;}
+        public static bool IsAboveTaskbar(IntPtr hwnd,IntPtr taskbar){
+            // TOPMOST 플래그만으로 같은 최상위 그룹의 앞뒤 순서는 알 수 없다.
+            // 정상 배치에서는 바로 앞 창 한 개만 확인한다. 팝업을 가린다고 강제로 올리지는 않는다.
+            var previous=GetWindow(taskbar,3);
+            for(int i=0;previous!=IntPtr.Zero && i<512;i++,previous=GetWindow(previous,3))if(previous==hwnd)return true;
+            return false;
+        }
         public static bool IsPlaced(IntPtr hwnd,TaskbarSlot slot){
             if(slot==null || !IsWindow(hwnd) || !IsWindowVisible(hwnd) || (GetWindowLong(hwnd,-20)&8)==0)return false;
             var previous=SetThreadDpiAwarenessContext(new IntPtr(-4));
-            try{Rect actual,bar;return GetWindowRect(hwnd,out actual) && GetWindowRect(new IntPtr(slot.Hwnd),out bar) && actual.l==bar.l+slot.X && actual.t==bar.t+slot.Y && actual.r-actual.l==slot.Width && actual.b-actual.t==slot.Height;}
+            try{Rect actual,bar;var host=new IntPtr(slot.Hwnd);return GetWindowRect(hwnd,out actual) && GetWindowRect(host,out bar) && actual.l==bar.l+slot.X && actual.t==bar.t+slot.Y && actual.r-actual.l==slot.Width && actual.b-actual.t==slot.Height && IsAboveTaskbar(hwnd,host);}
             finally{if(previous!=IntPtr.Zero)SetThreadDpiAwarenessContext(previous);}
         }
         public static bool Attach(IntPtr hwnd,TaskbarSlot slot){
@@ -59,7 +67,14 @@ namespace UsageScripts {
                 // 스타일은 WinForms 생성 시 한 번 정한다. 매 틱 SetWindowLong으로
                 // 다시 쓰면 프레임워크의 창 순서 복구와 충돌할 수 있다.
                 // 이미 같은 자리에 보이면 Z 순서·좌표를 다시 쓰지 않는다. 전체 화면/자동 숨김 검사는 위에서 유지한다.
-                bool placed=IsPlaced(hwnd,slot) || SetWindowPos(hwnd,new IntPtr(-1),bar.l+slot.X,bar.t+slot.Y,slot.Width,slot.Height,0x0050);
+                bool placed=IsPlaced(hwnd,slot);
+                if(!placed){
+                    // 작업표시줄 바로 위에만 삽입한다. 트레이 메뉴 등 기존 최상위 팝업의 순서는 보존한다.
+                    var after=GetWindow(parent,3);
+                    if(after==hwnd)after=GetWindow(hwnd,3);
+                    if(after==IntPtr.Zero || (GetWindowLong(after,-20)&8)==0)after=new IntPtr(-1);
+                    placed=SetWindowPos(hwnd,after,bar.l+slot.X,bar.t+slot.Y,slot.Width,slot.Height,0x0050);PositionWrites++;
+                }
                 if(placed && !DiagnosticsEnabled){PlacementState="placed";return true;}
                 int placementError=placed?0:Marshal.GetLastWin32Error();Rect actual;GetWindowRect(hwnd,out actual);
                 var hit=GetAncestor(WindowFromPoint(new Point{x=(actual.l+actual.r)/2,y=(actual.t+actual.b)/2}),2);var hitClass=new System.Text.StringBuilder(100);GetClassName(hit,hitClass,100);int cloaked=0;DwmGetWindowAttribute(hwnd,14,out cloaked,4);

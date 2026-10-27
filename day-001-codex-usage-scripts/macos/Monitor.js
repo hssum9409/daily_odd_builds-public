@@ -558,6 +558,7 @@ function tick() {
             if (!control || now() - control.at > 60) continue;
             if (control.command === 'stop') { shutdown(); return; }
             if (control.command === 'settings') showSettings();
+            if (control.command === 'reopen') { if (settings.placement === 'hidden') showSettings(); else { nextUsage = 0; nextFeed = 0; } }
             if (control.command === 'toggle') toggle();
             if (control.command === 'refresh') { nextUsage = 0; nextFeed = 0; }
         }
@@ -632,7 +633,7 @@ function run(argv) {
     instanceLock = $.NSDistributedLock.lockWithPath($(home + '/instance.lock'));
     if (!instanceLock.tryLock) {
         var lockDate = instanceLock.lockDate, lockAge = lockDate ? -Number(lockDate.timeIntervalSinceNow) : 0;
-        if (instanceAlive(previous) || lockAge < 15) { queueCommand(argv.indexOf('--settings') >= 0 ? 'settings' : 'refresh'); return 'Already running'; }
+        if (instanceAlive(previous) || lockAge < 15) { queueCommand(argv.indexOf('--settings') >= 0 ? 'settings' : argv.indexOf('--reopen') >= 0 ? 'reopen' : 'refresh'); return 'Already running'; }
         instanceLock.breakLock; if (!instanceLock.tryLock) throw new Error('Another monitor is starting');
     }
     instanceId = unwrap($.NSUUID.UUID.UUIDString); writeJSON(home + '/instance.json', {id: instanceId, heartbeat: now(), pid: Number($.NSProcessInfo.processInfo.processIdentifier), root: root});
@@ -641,7 +642,7 @@ function run(argv) {
     $.NSWorkspace.sharedWorkspace.notificationCenter.addObserverSelectorNameObject(delegate, 'workspaceChanged:', $.NSWorkspaceDidLaunchApplicationNotification, null);
     $.NSWorkspace.sharedWorkspace.notificationCenter.addObserverSelectorNameObject(delegate, 'workspaceChanged:', $.NSWorkspaceDidTerminateApplicationNotification, null);
     timer = $.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(2, delegate, 'tick:', null, true);
-    if (argv.indexOf('--settings') >= 0) showSettings();
+    if (argv.indexOf('--settings') >= 0 || (argv.indexOf('--reopen') >= 0 && settings.placement === 'hidden')) showSettings();
     writeJSON(home + '/instance.json', {id:instanceId,heartbeat:now(),pid:Number($.NSProcessInfo.processInfo.processIdentifier),root:root,version:defaults.version,ready:true});
     app.run; shutdown(); return '';
 }
