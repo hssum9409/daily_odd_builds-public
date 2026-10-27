@@ -20,21 +20,22 @@ function Sync-DockSurface {
     if(-not $docked -and -not $script:mainCard.docked){$script:dockReady=$false;return}
     if($docked){$null=Update-CodexAppearance}
     $hostFrame=if($script:dockTestHost){$script:dockTestHost}else{[UsageScripts.AppDock]::Read([UsageScripts.AppDock]::Current.Hwnd)}
+    $hostForeground=[UsageScripts.AppDock]::IsForeground($hostFrame.Hwnd)
     $source=[Windows.PresentationSource]::FromVisual($script:mainCard.window)
     $scale=if($source){$source.CompositionTarget.TransformToDevice.M11}else{1.0}
     $sidebar=0
-    if($docked -and $script:alive -and $hostFrame.Visible -and -not $script:dockTestHost -and [UsageScripts.AppDock]::IsForeground($hostFrame.Hwnd)){
+    if($docked -and $script:alive -and $hostFrame.Visible -and -not $script:dockTestHost -and $hostForeground){
         $codexStateHome=if($env:CODEX_HOME){$env:CODEX_HOME}else{Join-Path $env:USERPROFILE '.codex'}
         [UsageScripts.DockOccupancy]::RefreshSidebar($codexStateHome);$sidebar=[UsageScripts.DockOccupancy]::SidebarWidth
     }
     if($docked -and -not $script:dockTestHost -and $sidebar -eq 0){$sidebar=[UsageScripts.DockOccupancy]::SidebarWidth}
     $script:dockGeometry=Get-DockGeometry $hostFrame.Client $scale $sidebar
     $now=Now
-    if($docked -and $script:dockGeometry -and -not $script:dockTestHost -and [UsageScripts.AppDock]::IsForeground($hostFrame.Hwnd)){
+    if($docked -and $script:dockGeometry -and -not $script:dockTestHost -and $hostForeground){
         $g=$script:dockGeometry
         $signature=[string]$hostFrame.Hwnd+':'+$hostFrame.Client.w+':'+$hostFrame.Client.h+':'+$scale+':'+$sidebar+':'+$script:codexAppearance.surface
         if($signature -cne $script:dockProbeSignature){$script:dockProbeSignature=$signature;$script:dockProbe=$null;$script:dockClearance=@{clear=0;inset=200;confirmed=$false};$script:dockProbeStarted=$now}
-        $probeKey=$signature+':'+$hostFrame.Client.x+':'+$hostFrame.Client.y
+        $probeKey=$signature+':'+$hostFrame.Client.x+':'+$hostFrame.Client.y+':'+$g.cardWidth
         if($now -ge $script:nextDockProbe){
             $script:nextDockProbe=$now+1
             $x=[int]($hostFrame.Client.x+$hostFrame.Client.w-($g.cardWidth+14)*$scale)
@@ -50,10 +51,18 @@ function Sync-DockSurface {
         # 일시적 툴팁/팝업 때문에 직전 정상 레이아웃을 버리지 않는다.
         # 창 크기·배율·테마가 바뀌면 위 signature 경로에서 관찰 상태를 초기화한다.
         $g.bottomInset=$script:dockClearance.inset;$g.maxBodyHeight=$g.h-$g.bottomInset-112
-        if($script:dockProbe.Known -and $script:dockProbe.Full){
+        if($script:dockClearance.full){
             # 우측 패널이 여백을 차지하면 사라지는 대신 접힌 요약을 남긴다.
             $g.compact=$true;$g.cardWidth=224;$g.bottomInset=16;$g.maxBodyHeight=$g.h-128
         }
+        if($g.maxBodyHeight -lt 120){$script:dockGeometry=$null}
+    }
+    # 설정창으로 포커스가 옮겨져도 같은 호스트 경계의 마지막 정상 배치를 유지한다.
+    $probeContext=[string]$hostFrame.Hwnd+':'+$hostFrame.Client.w+':'+$hostFrame.Client.h+':'+$scale+':'+$sidebar+':'+$script:codexAppearance.surface
+    $contextKnown=$script:dockTestHost -or $probeContext -ceq $script:dockProbeSignature
+    if($docked -and $script:dockGeometry -and -not $hostForeground -and $contextKnown -and $script:dockClearance.confirmed){
+        $g=$script:dockGeometry;$g.bottomInset=$script:dockClearance.inset;$g.maxBodyHeight=$g.h-$g.bottomInset-112
+        if($script:dockClearance.full){$g.compact=$true;$g.cardWidth=224;$g.bottomInset=16;$g.maxBodyHeight=$g.h-128}
         if($g.maxBodyHeight -lt 120){$script:dockGeometry=$null}
     }
     if($script:dockGeometry -and $hostFrame.Caret -and (-not $script:dockProbe -or -not $script:dockProbe.Known)){
@@ -63,11 +72,12 @@ function Sync-DockSurface {
         $script:dockGeometry.maxBodyHeight=$safeBottom-$script:dockGeometry.y-112
         if($script:dockGeometry.maxBodyHeight -lt 120){$script:dockGeometry=$null}
     }
-    $layoutKind=[string]$hostFrame.Hwnd+':'+[bool]$script:dockGeometry.compact+':'+[bool]$script:dockProbe.Full
+    $layoutKind=[string]$hostFrame.Hwnd+':'+[bool]$script:dockGeometry.compact+':'+[bool]$script:dockClearance.full
     if($layoutKind -cne $script:dockLayoutKind){$script:dockLayoutKind=$layoutKind;$script:dockCompactExpanded=$false}
     $initialKnown=$script:dockTestHost -or $script:dockProbe.Known -or ($script:dockProbeStarted -gt 0 -and $now-$script:dockProbeStarted -ge 2)
-    $rawReady=$docked -and $hostFrame.Visible -and [bool]$script:dockGeometry -and $initialKnown -and ($script:dockTestHost -or [UsageScripts.AppDock]::IsSettled)
-    if(-not $script:dockTestHost){$rawReady=$rawReady -and ([UsageScripts.AppDock]::IsForeground($hostFrame.Hwnd) -or ($script:settingsWindow -and $script:settingsWindow.IsVisible))}
+    $rawReady=$docked -and $script:alive -and $hostFrame.Visible -and [bool]$script:dockGeometry -and $initialKnown -and $contextKnown -and -not $script:dockClearance.pending -and ($script:dockTestHost -or [UsageScripts.AppDock]::IsSettled)
+    # 다른 앱이나 트레이 팝업이 전면이어도 창 전체를 숨기지 않는다.
+    # Codex 소유·비최상위 창의 Z 순서로 덮인 부분만 자연스럽게 가려진다.
     $entering=$docked -and -not $script:mainCard.docked
     $signature=[string]$hostFrame.Hwnd+':'+($hostFrame.Client|ConvertTo-Json -Compress)+':'+$script:dockGeometry.cardWidth+':'+$script:dockGeometry.compact+':'+$script:dockGeometry.bottomInset
     if(-not $rawReady){$script:dockStableSignature='';$script:dockStableAfter=$now+0.18}
@@ -97,11 +107,37 @@ function Sync-DockSurface {
 }
 function Resolve-DockClearance($State,$Probe,[double]$Scale) {
     if(-not $State){$State=@{clear=0;inset=200;confirmed=$false}}
+    # 우측 패널 전체를 입력창 높이로 저장하면, 패널을 닫는 첫 프레임에 본체가 위로 튄다.
+    # 접힌 배치는 별도 상태로 보관하고, 닫힘 후 같은 관찰이 두 번 확인되어야 한 번에 복원한다.
+    if($Probe.Known -and $Probe.Full){
+        $State.full=$true;$State.pending=$false;$State.candidateCount=0
+        $State.clear=0;$State.inset=16;$State.confirmed=$true
+        return $State
+    }
+    if($State.full){
+        if(-not $Probe.Known){$State.candidateCount=0;return $State}
+        $State.pending=$true
+        $inset=if($Probe.Blocked){[Math]::Max(16,$Probe.Inset/$Scale+12)}else{16}
+        if($State.candidateCount -gt 0 -and [Math]::Abs($State.candidateInset-$inset) -lt 4){$State.candidateCount++}
+        else{$State.candidateInset=$inset;$State.candidateCount=1}
+        if($State.candidateCount -lt 2){return $State}
+        $State.full=$false;$State.pending=$false;$State.inset=$inset;$State.clear=0
+        return $State
+    }
     # 툴팁 등으로 잠깐 가려진 관찰은 마지막 배치를 유지한다. 호스트 경계 변경 시에는 별도로 초기화한다.
     if(-not $Probe.Known){$State.clear=0}
     elseif($Probe.Blocked){$State.clear=0;$State.inset=[Math]::Max(16,$Probe.Inset/$Scale+12);$State.confirmed=$true}
     else{$State.clear++;if(-not $State.confirmed -or $State.clear -ge 2){$State.inset=16;$State.confirmed=$true}}
     return $State
+}
+function Test-DockSessionWork {
+    # 접힘·백그라운드에서는 마지막 통계를 유지한다. 다시 펼쳐 보일 때 다음 틱부터 읽는다.
+    $visible=$script:alive -and $script:config.placement -eq 'dock' -and $script:dockReady -and
+        $script:mainCard.window.IsVisible -and -not $script:mainCard.dashboardCollapsed -and
+        ($script:config.sessionTokens -or $script:config.sessionCache -or $script:config.sessionCost -or $script:config.sessionSpeed)
+    if(-not $visible){return $false}
+    if($script:dockHost -and -not $script:dockTestHost){return [UsageScripts.AppDock]::IsForeground($script:dockHost.Hwnd)}
+    return $true
 }
 function Fill-DockCard($Card,[string[]]$Lines,[bool]$Visible) {
     if($Card.kind -eq 'main'){Fill-Dashboard $Card $Lines $Visible}else{$Card.window.Hide()}

@@ -30,7 +30,7 @@ namespace UsageScripts {
         public string Executable;
         // 기본은 Codex stdio 서버다. 격리 전송 QA는 OS 내장 스크립트 서버로 대체한다.
         public string ServerArguments = "app-server --listen stdio://";
-        public string ClientVersion = "1.5.0";
+        public string ClientVersion = "1.5.1";
         public int TimeoutMilliseconds = 20000;
         public int OwnedPid { get { return process == null ? 0 : process.Id; } }
         public Rpc(string path) { Executable = path; }

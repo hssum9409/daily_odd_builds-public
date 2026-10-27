@@ -1,6 +1,18 @@
-# Codex Usage Monitor Scripts 1.5.0 — 배포 안내
+# Codex Usage Monitor Scripts 1.5.1 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.5.0은 Windows 창 부착 대시보드·작업표시줄 위젯과 입력 간섭 방지 처리를 추가합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.5.1은 Windows 대시보드 위치·설정창 순서·부분 가림과 현재 대화 통계를 개선합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+
+## 1.5.1 변경 사항
+
+Windows 대시보드가 우측 패널의 자동 접힘에서 복원될 때 위로 튀던 문제를 수정했습니다. 중간 회피 높이는 표시하지 않고 최종 위치를 확인한 뒤 복원합니다. 설정창을 열어도 마지막 정상 위치를 유지하며, 설정창이 Codex 뒤에 가려지던 창 순서를 정리했습니다.
+
+작은 창이나 숨겨진 아이콘 팝업이 전면에 왔다는 이유만으로 대시보드 전체를 숨기지 않습니다. Codex 소유의 비최상위 창으로 다른 창이 덮은 부분만 자연스럽게 가려집니다. 최소화·종료·이동 중 숨김 처리는 유지합니다.
+
+현재 보고 있는 로컬 대화의 토큰·캐시·속도 기록을 따라갑니다. 명시적으로 대화 ID를 지정하면 그 설정을 우선하며, 원격·새 대화·모호한 다중 창 상태에서는 다른 대화의 값을 대신 표시하지 않습니다. Work의 대화ID_실행ID 기록 파일도 지원합니다. 비용은 단가를 설정한 경우의 환산치이고, 속도는 완료된 턴의 시간 기록이 있어야 표시합니다.
+
+세션 로그는 처음 한 번 최근 최대 8MiB를 읽은 뒤 추가된 부분만 처리합니다. 부분 행·UTF-8·CRLF·중복·파일 교체를 처리하고 읽기·메모리 예산을 제한합니다. 데이터 갱신에서는 대시보드 컨트롤을 재사용하고, 작업표시줄 위젯은 별도 PowerShell 대신 본체 내부의 C# UI 스레드로 실행합니다. 반복 배치·상태 파일 디코드·진단 작업도 줄였습니다.
+
+실제 일반 실행에서 사용자가 한글 입력·포커스·설정 열기·접힘/복원·부분 가림과 토큰 표시를 확인했습니다. CPU는 입력 주입·브라우저 제어 없이 프로세스 카운터로 관찰했습니다. 성능 개선율이나 모든 PC에서의 동일한 동작을 보장하지 않습니다. Windows/Mac 설치형·포터블·자동 업데이트 파일을 함께 갱신하며, 새 대시보드 개선은 Windows 전용이고 Mac preview는 유지합니다.
 
 ## 1.5.0 변경 사항
 
@@ -100,10 +112,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.5.0-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.5.0-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.5.0-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.5.0-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.5.1-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.5.1-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.5.1-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.5.1-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 

@@ -34,7 +34,7 @@ namespace UsageScripts {
         [DllImport("dwmapi.dll")]static extern int DwmGetWindowAttribute(IntPtr hwnd,int attribute,out int value,int size);
         [DllImport("user32.dll",SetLastError=true)]static extern bool SetWindowPos(IntPtr hwnd,IntPtr after,int x,int y,int w,int h,uint flags);
         static volatile bool busy;public static volatile TaskbarSlot Current;public static volatile string Status="starting";public static volatile string LayoutFacts="";public static volatile string PlacementState="";
-        public static volatile bool SurfaceHit;public static volatile int AnchorLeft;public static volatile string AnchorKind="";
+        public static volatile bool SurfaceHit,DiagnosticsEnabled;public static volatile int AnchorLeft;public static volatile string AnchorKind="";
         public static volatile int PreferredWidthDip=104;
         static string anchorSignature="",cachedAnchorKind="";static int cachedAnchor;static DateTime nextAnchorCheck;
         public static bool Busy{get{return busy;}}
@@ -58,7 +58,9 @@ namespace UsageScripts {
                 }
                 // 스타일은 WinForms 생성 시 한 번 정한다. 매 틱 SetWindowLong으로
                 // 다시 쓰면 프레임워크의 창 순서 복구와 충돌할 수 있다.
-                bool placed=SetWindowPos(hwnd,new IntPtr(-1),bar.l+slot.X,bar.t+slot.Y,slot.Width,slot.Height,0x0050);
+                // 이미 같은 자리에 보이면 Z 순서·좌표를 다시 쓰지 않는다. 전체 화면/자동 숨김 검사는 위에서 유지한다.
+                bool placed=IsPlaced(hwnd,slot) || SetWindowPos(hwnd,new IntPtr(-1),bar.l+slot.X,bar.t+slot.Y,slot.Width,slot.Height,0x0050);
+                if(placed && !DiagnosticsEnabled){PlacementState="placed";return true;}
                 int placementError=placed?0:Marshal.GetLastWin32Error();Rect actual;GetWindowRect(hwnd,out actual);
                 var hit=GetAncestor(WindowFromPoint(new Point{x=(actual.l+actual.r)/2,y=(actual.t+actual.b)/2}),2);var hitClass=new System.Text.StringBuilder(100);GetClassName(hit,hitClass,100);int cloaked=0;DwmGetWindowAttribute(hwnd,14,out cloaked,4);
                 SurfaceHit=hit==hwnd && cloaked==0;

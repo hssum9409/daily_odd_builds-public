@@ -58,12 +58,13 @@ if (-not $Once) {
     Disconnect-MonitorConsole
 }
 Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes,System.Web.Extensions,WindowsBase
-Add-Type -Path @("$PSScriptRoot\Native.cs","$PSScriptRoot\SessionMetrics.cs","$PSScriptRoot\DockOccupancy.cs") -ReferencedAssemblies @('System.dll','System.Core.dll',[Web.Script.Serialization.JavaScriptSerializer].Assembly.Location,[Windows.Automation.AutomationElement].Assembly.Location,[Windows.Automation.ControlType].Assembly.Location,[Windows.Rect].Assembly.Location)
+Add-Type -Path @("$PSScriptRoot\Native.cs","$PSScriptRoot\SessionMetrics.cs","$PSScriptRoot\VisibleSession.cs","$PSScriptRoot\DockOccupancy.cs") -ReferencedAssemblies @('System.dll','System.Core.dll',[Web.Script.Serialization.JavaScriptSerializer].Assembly.Location,[Windows.Automation.AutomationElement].Assembly.Location,[Windows.Automation.ControlType].Assembly.Location,[Windows.Rect].Assembly.Location)
 [UsageScripts.TaskbarIdentity]::InitializeProcess()
 $rpc = $null; $feed = New-Object UsageScripts.Feed
 $data = $null; $lastData = 0.0; $announcement = $null; $lastFeed = 0.0; $nextFeed = 0.0; $nextUsage = 0.0; $nextScan = 0.0; $nextPresence = 0.0
 $usageHealth=New-UsageHealth
 $sessionReader=New-Object UsageScripts.SessionMetrics;$nextSession=0.0
+$visibleSession=New-Object UsageScripts.VisibleSession;$nextVisibleSession=0.0
 $taskbarProcess=$null;$taskbarStateFile=Join-Path $profile 'taskbar-status.json';$nextTaskbar=0.0
 $alive = $false; $mode = 'idle'; $life = @{missingSince=$null}; $creditState = @{previous=$null;consuming=$false;cycle=''}
 $noticeState = Read-Json $stateFile; $lastKey = if ($noticeState) { $noticeState.lastKey } else { '' }
@@ -240,6 +241,12 @@ function Load-UI {
     $script:mainCard.window.Tag.SetActions([Action]{Invoke-MonitorCommands},[Action]{if($script:mode -eq 'dock'){Update-Dock}})
     Sync-Tray
 }
+function Request-MonitorRefresh {
+    $script:nextUsage=0;$script:nextFeed=0
+    # 진행 중이던 실패 응답이 수동 새로고침을 60초 뒤로 다시 미루지 않도록,
+    # 그 응답을 수거한 직후 새 요청을 한 번 예약한다.
+    $script:manualFeedRefresh=$true
+}
 function Invoke-MonitorCommands {
     foreach($file in @([IO.Directory]::GetFiles($commandFolder,'*.json')|ForEach-Object{Get-Item -LiteralPath $_}|Sort-Object LastWriteTimeUtc|Select-Object -First 16)){
         $request=Read-Json $file.FullName;Remove-Item -LiteralPath $file.FullName -ErrorAction SilentlyContinue
@@ -249,7 +256,7 @@ function Invoke-MonitorCommands {
             'settings'{$script:lastSettingsRequestAt=$request.requestedAt;Show-Settings}
             'fold'{if($script:mode -eq 'dock'){Toggle-DashboardFold}}
             'toggle'{Toggle-Monitor}
-            'refresh'{$script:nextUsage=0;$script:nextFeed=0}
+            'refresh'{Request-MonitorRefresh}
             'update'{Check-ScriptUpdate $true}
         }
     }
@@ -269,7 +276,7 @@ function Sync-Tray {
     $menu=New-Object Windows.Forms.ContextMenuStrip
     $item=$menu.Items.Add((T 'settings')); $item.Add_Click({Show-Settings})
     $script:toggleItem=$menu.Items.Add('Monitor OFF'); $script:toggleItem.Add_Click({ Toggle-Monitor })
-    $item=$menu.Items.Add((T 'refresh')); $item.Add_Click({$script:nextUsage=0; $script:nextFeed=0})
+    $item=$menu.Items.Add((T 'refresh')); $item.Add_Click({Request-MonitorRefresh})
     $script:startupItem=$menu.Items.Add((T 'startup_register')); $script:startupItem.Add_Click({Set-Startup $true})
     $item=$menu.Items.Add((T 'quit')); $item.Add_Click({$script:quit=$true})
     $menu.Add_Opening({$script:toggleItem.Text=if ($script:config.placement -eq 'hidden') {T 'monitorOn'} else {T 'monitorOff'}; $script:startupItem.Visible=-not (Get-ItemProperty -Path $runKey -Name $runName -ErrorAction SilentlyContinue)})
@@ -463,7 +470,8 @@ function Render {
     $presentation=Get-UsagePresentation $script:data $script:usageHealth $script:config $now $script:words $script:lastError
     $view=$presentation.view
     $lines=if ($script:lastData -eq 0) {@($(if ($script:lastError -in @('login','account')) {T 'usage_login'} elseif($script:lastError) {T 'usage_retrying'} else {T 'connecting'}))} else {$presentation.lines}
-    Fill-Card $script:mainCard $lines $show
+    # 대시보드는 아래 알림 상태 확정 후 한 번만 만든다. Pet 패널은 기존 경로를 유지한다.
+    if($script:mode -ne 'dock'){Fill-Card $script:mainCard $lines $show}
     if ($show -and ($script:config.tickets -or $script:config.expiry) -and $script:lastData) {
         $index=if ($lines[0] -match '%|5h|Window') {1} else {0}
         if($script:mainCard.docked -and $script:mainCard.ticketLabel){$script:mainCard.ticketLabel.ToolTip=Ticket-Tooltip $view}
@@ -509,6 +517,7 @@ function Render {
 . "$PSScriptRoot\Appearance.ps1"
 . "$PSScriptRoot\Dashboard.ps1"
 . "$PSScriptRoot\Dock.ps1"
+. "$PSScriptRoot\SessionController.ps1"
 . "$PSScriptRoot\TaskbarController.ps1"
 . "$PSScriptRoot\Settings.ps1"
 function Sync-ReactionTimer {
@@ -825,7 +834,8 @@ try {
             if ($MeasureAfterSeconds -gt 0 -and -not $script:measuring -and $now-$script:loopStart -ge $MeasureAfterSeconds) {
                 $script:measuring=$true;$script:loopStart=$now;$script:loopCpu=[Diagnostics.Process]::GetCurrentProcess().TotalProcessorTime.TotalSeconds;$script:loopUiCPU=[UsageScripts.Desktop]::ThreadCPUSeconds();$script:scanCpuStart=[UsageScripts.Desktop]::ScanCPUSeconds
             }
-            Invoke-MonitorCommands
+            # 클릭은 WindowSignals로 즉시 받는다. 신호 없는 외부 실행용 폴더 확인만 1초로 제한한다.
+            if($now -ge $script:nextCommandPoll){Invoke-MonitorCommands;$script:nextCommandPoll=$now+1}
             if ($SmokeSeconds -gt 0 -and $now-$started -ge $SmokeSeconds) {$script:quit=$true}
             if ($script:quit) {$timer.Stop();$frameLoop.Continue=$false;return}
             if (-not $FixturePath -and $now -ge $script:nextPresence) {
@@ -846,10 +856,7 @@ try {
                         finally{$script:settingsWarmScheduled=$false}
                     },[Windows.Threading.DispatcherPriority]::ApplicationIdle)
                 }
-                if($script:config.placement -eq 'dock' -and $now -ge $script:nextSession -and ($script:config.sessionTokens -or $script:config.sessionCache -or $script:config.sessionCost -or $script:config.sessionSpeed)){
-                    $sessionHome=if($env:CODEX_HOME){$env:CODEX_HOME}else{Join-Path $env:USERPROFILE '.codex'}
-                    $script:sessionReader.Refresh($sessionHome,$script:config.sessionThreadId,$env:CODEX_THREAD_ID);$script:nextSession=$now+5
-                }
+                Update-VisibleSession $now
                 if($now -ge $script:nextUpdate){Check-ScriptUpdate}
                 if ($now -ge $script:nextScan) {
                     # 창 부착에는 Pet의 접근성 트리가 필요 없다. 설정에서 위치를 바꿀 때만 확인한다.
@@ -874,13 +881,21 @@ try {
                 }
                 if ($script:config.resetNotice -and -not $script:feed.Busy) {
                     Receive-Feed $now
+                    if($script:manualFeedRefresh){$script:nextFeed=0;$script:manualFeedRefresh=$false}
                     if ($now -ge $script:nextFeed) {$script:feed.Refresh();$script:nextFeed=$now+[Math]::Max(60,$script:feed.RetrySeconds)}
                 }
             }
             if ($script:uiLoaded) {
                 if ($script:settingsWindow -and $script:settingsWindow.IsVisible) {Sync-PetAvailability}
                 # 새 텍스트는 초마다만 렌더링; 이동 좌표는 50ms마다 갱신한다.
-                if ($now -ge $script:nextRender) {Render;if($script:settingsWindow -and $script:settingsWindow.IsVisible){Sync-UpdateStatus};$script:nextRender=$now+1}
+                if ($now -ge $script:nextRender) {
+                    # 숨은 창의 내용은 재생성하지 않는다. 복귀는 Update-Dock에서 배치 확정 후 Render한다.
+                    if($script:config.placement -eq 'dock' -and $script:mainCard.docked){
+                        Update-Dock
+                        if($script:dockReady -or (-not $script:alive -and $script:mode -ne 'idle')){Render}
+                    }else{Render}
+                    if($script:settingsWindow -and $script:settingsWindow.IsVisible){Sync-UpdateStatus};$script:nextRender=$now+1
+                }
                 elseif ($script:mode -eq 'dock') {Update-Dock}
                 elseif ($script:mainCard.window.IsVisible) {
                     $moving=if ($FixturePath) {$script:fixtureFrame} else {[UsageScripts.Desktop]::MovedFrame()}
