@@ -41,9 +41,9 @@ Web / PWA · Google 로그인 · 개인 Chrome Push 실제 수신/클릭 확인.
 
 긴 디시 글에서도 댓글·댓글쓰기·글 목록·맨 아래로 이동하는 작은 탐색 패널입니다. 색·크기·위치·버튼 순서·여러 줄 배치와 최대 10개 커스텀 갤러리를 설정할 수 있습니다. 기본 키와 사용자 지정 단축키를 지원하며 입력창에서는 실행하지 않습니다.
 
-[Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff) · [소개와 사용 방법](day-003-dcinside-scroll-helper/README.md) · [릴리즈 · 1.5.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.5.0) · [개인정보처리방침](https://daily-odd-builds-portal.web.app/privacy/dcinside-scroll-helper)
+[Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff) · [소개와 사용 방법](day-003-dcinside-scroll-helper/README.md) · [릴리즈 · 1.6.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.6.0) · [개인정보처리방침](https://daily-odd-builds-portal.web.app/privacy/dcinside-scroll-helper)
 
-1.5.0 ZIP·소스 공개 / 스토어 심사 제출 완료·승인 대기 (2026-10-27 사용자 확인) · Chrome Extension Manifest V3 · PC 일반·마이너·미니 갤러리 지원 · 설정과 최근 갤러리는 로컬 저장. 출시 버전 소스 공개, 코드 MIT. DCInside 비공식 도구입니다.
+1.6.0 ZIP·확장 소스 공개 / 스토어 1.6.0 미제출 · 현재 갤러리 지정·설정 텍스트/8자리 코드 공유·네 설정 탭 · 기본 탐색·설정은 로컬, 코드 공유만 선택적으로 서버 사용 · 코드 MIT, DCInside 비공식 도구입니다.
 <!-- day003:end -->
 
 

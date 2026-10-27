@@ -12,17 +12,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.5.0"><img alt="버전 1.5.0" src="https://img.shields.io/badge/version-1.5.0-3b4890?labelColor=17213b"></a>
-  <a href="https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff"><img alt="Chrome 웹 스토어 1.5.0 심사 대기" src="https://img.shields.io/badge/Chrome_Web_Store-1.5.0_pending_review-d79b35?labelColor=17213b"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.6.0"><img alt="버전 1.6.0" src="https://img.shields.io/badge/version-1.6.0-3b4890?labelColor=17213b"></a>
+  <a href="https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff"><img alt="Chrome 웹 스토어 제공 / 1.6.0 미제출" src="https://img.shields.io/badge/Chrome_Web_Store-available-d79b35?labelColor=17213b"></a>
   <img alt="Manifest V3" src="https://img.shields.io/badge/Manifest-V3-3b4890?labelColor=17213b">
   <a href="LICENSE"><img alt="코드 라이선스 MIT" src="https://img.shields.io/badge/code-MIT-3b4890?labelColor=17213b"></a>
 </p>
 
-<p align="center"><b><a href="https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff">Chrome에 추가하기 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.5.0">릴리즈와 ZIP</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/dcinside-scroll-helper">개인정보처리방침</a></p>
+<p align="center"><b><a href="https://chromewebstore.google.com/detail/ncfjoncjghbhknfmlnniciobbddebnff">Chrome에 추가하기 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day003-v1.6.0">릴리즈와 ZIP</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/dcinside-scroll-helper">개인정보처리방침</a></p>
 
 ![디시 스크롤 도우미 — 목적지 추적, 자유로운 배치, 기기에만 저장을 소개하는 홍보 일러스트](docs/images/feature-poster1280x800.png)
 
-<p align="center"><sub>설명용 홍보 일러스트입니다. 실제 Chrome 사용 화면은 스토어의 스크린샷에서 확인할 수 있습니다.</sub></p>
+<p align="center"><sub>기존 기능을 설명하는 홍보 일러스트입니다. 기본 설정은 로컬 저장이며, 1.6.0의 선택적 코드 공유는 서버를 사용합니다. 실제 사이트 화면과 로컬 재현 화면은 아래에서 구분합니다.</sub></p>
 
 **DCInside PC 페이지에 자주 쓰는 이동 버튼을 붙여주는 작은 Chrome 확장 프로그램입니다.**
 
@@ -30,7 +30,7 @@
 
 Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개인용으로 쓰던 확장을 배포 가능한 도구로 다듬었습니다. **DCInside가 제작·승인·운영하는 공식 제품은 아닙니다.**
 
-**1.5.0은 2026-10-27 Chrome 웹 스토어 심사에 제출했으며 승인·게시 대기 중입니다.** 제출 완료는 사용자 확인을 기준으로 기록했습니다. GitHub의 1.5.0 실행 ZIP과 공개 소스는 지금 사용할 수 있습니다. 스토어에서 1.5.0이 게시되었는지는 등록정보의 버전을 확인해 주세요. [업데이트 상태와 검증 기록](docs/RELEASE.md#chrome-웹-스토어-업데이트-상태)
+**1.6.0 실행 ZIP과 확장 소스를 GitHub에 공개합니다. Chrome 웹 스토어에는 아직 제출하지 않았습니다.** 2026-10-28 공개 등록정보에서 확인한 버전은 1.4.0이며, 1.5.0의 심사 제출 기록(2026-10-27, 사용자 확인)은 별도로 보존합니다. 새 버전에는 선택적 설정 코드 공유용 사이트 권한이 추가됩니다. [업데이트와 검증 기록](docs/RELEASE.md)
 
 ## 설치
 
@@ -43,7 +43,7 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 <details>
 <summary>ZIP 또는 공개 소스로 직접 설치하기</summary>
 
-1. [1.5.0 실행 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day003-v1.5.0/dcinside-scroll-helper-1.5.0.zip)을 받아 **전부 압축 해제**합니다.
+1. [1.6.0 실행 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day003-v1.6.0/dcinside-scroll-helper-1.6.0.zip)을 받아 **전부 압축 해제**합니다.
 2. Chrome 주소창에 `chrome://extensions`를 입력하고 **개발자 모드**를 켭니다.
 3. **압축해제된 확장 프로그램을 로드합니다**에서 `manifest.json`이 있는 폴더를 선택합니다. 이 저장소를 내려받았다면 `day-003-dcinside-scroll-helper/extension/`을 선택하세요.
 4. 디시인사이드 페이지를 새로고침합니다.
@@ -91,7 +91,7 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 | 갤러리 목록 / 마이너 갤러리 목록 | D / M |
 | 커스텀 갤러리 1–9 / 10 | 1–9 / 0 |
 
-**설정 → 키보드 단축키 → 단축키 보기 · 변경**에서 키를 클릭하고 새 키 조합을 누르세요. Ctrl·Alt·Shift·⌘ 조합도 지정할 수 있습니다. 예를 들어 Ctrl+Alt+E를 사용할 수 있습니다. 중복 조합과 대표적인 브라우저 예약키는 안내 후 저장하지 않습니다.
+**설정 → 버튼·단축키 → 단축키 보기 · 변경**에서 키를 클릭하고 새 키 조합을 누르세요. Ctrl·Alt·Shift·⌘ 조합도 지정할 수 있습니다. 예를 들어 Ctrl+Alt+E를 사용할 수 있습니다. 중복 조합과 대표적인 브라우저 예약키는 안내 후 저장하지 않습니다.
 
 `×`로 해당 키를 해제하고 **모두 해제**로 전부 끌 수 있습니다. **기본 키로**는 모양과 갤러리 설정을 유지한 채 키만 되돌립니다. 키를 모두 꺼도 설정 버튼은 클릭할 수 있습니다. 변경은 이 기기에 저장되고 새로고침 후에도 유지됩니다.
 
@@ -125,7 +125,8 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 
 커스텀 갤러리는 **빈 슬롯 하나**로 시작합니다. **+ 슬롯 추가**를 눌러 최대 10개까지 늘릴 수 있습니다.
 
-- 슬롯에서 **갤러리 지정**을 고르고 갤러리 주소와 선택적인 이름을 입력한 뒤 **적용**을 누릅니다.
+- **갤러리** 탭에서 **현재 갤러리 지정**을 누르면 현재 갤러리를 바로 저장합니다. 주소를 복사할 필요가 없습니다.
+- 직접 입력하려면 슬롯에서 **갤러리 지정**을 고르고 갤러리 주소와 선택적인 이름을 입력한 뒤 **적용**을 누릅니다.
 - 기본 아이콘 또는 별·하트·북마크·게임·번개·나침반을 선택하거나 이모지 한 개를 지정합니다.
 - 한 슬롯은 **직전 갤러리로 이동**으로 사용할 수 있습니다. 방문 기록이 없으면 비활성화됩니다.
 - **사용 안 함**으로 바꾸면 버튼을 숨기고 기존 주소·이름·아이콘 설정은 보관합니다.
@@ -150,9 +151,34 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 
 ![긴 글도 원하는 곳으로 — 목적지 추적 · 자유로운 배치 · 기기에만 저장](docs/images/marquee1400x560.png)
 
-세 이미지는 이 프로젝트용으로 생성한 홍보 일러스트이며 실제 사용 화면이나 공식 DCInside 광고가 아닙니다. [이미지 출처와 범위](docs/ARTWORK.md)
+기존 이미지는 기본 기능을 설명하는 이 프로젝트용 홍보 일러스트이며 실제 사용 화면이나 공식 DCInside 광고가 아닙니다. [이미지 출처와 범위](docs/ARTWORK.md)
 
 </details>
+
+## 설정은 네 탭으로, 공유는 선택해서
+
+설정을 **모양·배치 / 버튼·단축키 / 갤러리 / 설정 공유**로 나눴습니다. 커스텀 갤러리 행의 톱니바퀴를 누르면 해당 슬롯으로 바로 이동합니다. 닫기 옆 **만든놈**은 내부 소개 화면이며 다시 누르면 이전 탭으로 돌아갑니다. 입력 중인 내용과 탭별 스크롤을 유지합니다.
+
+<details>
+<summary>1.6.0 설정 화면 보기</summary>
+
+아래는 Chrome 156에서 **1.6.0 확장 UI 코드**를 로컬 재현 페이지로 실행한 캡처입니다. 페이지와 저장소/runtime 연결은 테스트용이며 실제 DCInside의 설치본 촬영이 아닙니다.
+
+<img src="docs/images/ui-appearance-1.6.0.png" width="320" alt="1.6.0 모양·배치 설정 UI — 로컬 재현 화면">
+<img src="docs/images/ui-buttons-1.6.0.png" width="320" alt="1.6.0 버튼·단축키 설정 UI — 로컬 재현 화면">
+<img src="docs/images/ui-galleries-1.6.0.png" width="320" alt="1.6.0 갤러리 슬롯 설정 UI — 로컬 재현 화면">
+<img src="docs/images/ui-sharing-1.6.0.png" width="320" alt="1.6.0 설정 공유 UI — 로컬 재현 화면">
+<img src="docs/images/ui-creator-1.6.0.png" width="320" alt="1.6.0 만든놈 내부 소개 화면 — 로컬 재현 화면">
+
+</details>
+
+### 같은 설정, 복사해서 나누세요
+
+**설정 공유 → 설정 복사**로 텍스트를 보내고, 받는 사람은 붙여넣어 **붙여넣은 설정 확인 → 확인한 설정 적용**을 누릅니다. 이 방식은 서버 없이 동작합니다. 커스텀 갤러리 주소·이름은 기본 제외되며, 제외한 설정을 받으면 내 갤러리는 유지됩니다.
+
+코드로 나누려면 서버 저장 안내에 동의한 뒤 **현재 설정 업로드 · 코드 만들기**를 누르세요. 8자리 코드가 발급됩니다. 다른 사람은 **코드 불러오기** 후 내용을 확인하고 적용합니다. 업로드와 적용은 자동으로 실행하지 않습니다.
+
+공유 설정은 Google Firebase 서울 리전에 보관합니다. **코드를 아는 사람은 누구나 조회**할 수 있으니 민감한 주소·이름을 넣지 마세요. 코드는 30일 후 만료되고 실제 삭제는 TTL 처리로 지연될 수 있습니다. 작성 기기의 **내가 만든 코드 관리 → 서버에서 삭제**로 먼저 삭제할 수 있습니다. 확장 제거가 서버 공유 삭제를 대신하지 않습니다.
 
 ## 어디에서 쓰나요?
 
@@ -164,11 +190,13 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 
 설정, 지정한 갤러리와 **최근 서로 다른 갤러리 두 곳**을 해당 Chrome 프로필의 `chrome.storage.local`에 저장합니다. 직전 갤러리 이동을 위한 기록은 지원 갤러리를 방문할 때 갱신되며, **직전 갤러리 버튼을 숨겨도 기록됩니다.**
 
-설정의 **방문 기록 지우기**로 최근 갤러리 기록을 삭제할 수 있습니다. 이후 지원 갤러리를 방문하면 새 기록을 저장합니다. 확장을 제거하면 확장의 로컬 데이터도 제거됩니다.
+설정의 **모양·배치 → 초기화·방문 기록 관리 → 방문 기록 지우기**로 최근 갤러리 기록을 삭제할 수 있습니다. 이후 지원 갤러리를 방문하면 새 기록을 저장합니다. 확장을 제거하면 확장의 로컬 데이터도 제거됩니다.
 
-개발자 서버·분석 SDK·광고 SDK·동기화 저장소를 사용하지 않습니다. 게시글·댓글 본문, 비밀번호와 인증 쿠키를 저장하지 않습니다. 현재 URL·페이지 구조·본인 갤로그 링크는 이동 기능에 사용하며 개발자에게 전송하지 않습니다.
+기본 탐색·설정과 텍스트 복사·붙여넣기는 로컬에서 동작합니다. **8자리 코드 공유를 선택할 때만** 고정 Google Cloud Functions API로 선택한 설정을 업로드·조회·삭제합니다. 최근 갤러리 기록, 본인 갤로그 링크, 키 입력 내용·이력은 업로드하지 않습니다. 삭제 키는 작성 기기에 보관하고 삭제 요청 때만 전송합니다.
 
-추가 권한은 **storage 하나**이고, 사이트 접근은 지정된 `gall.dcinside.com`·`gallog.dcinside.com` 화면입니다. 원래 사이트의 이미지·광고·로그인 통신은 DCInside의 동작과 정책을 따릅니다. [전체 개인정보처리방침](https://daily-odd-builds-portal.web.app/privacy/dcinside-scroll-helper)
+공유 API의 IP·시각·응답 상태가 Google Cloud 운영 로그에서 처리될 수 있습니다(현재 30일). 남용 방지용 일별 IP 지문·요청 횟수는 최대 약 48시간에 만료되며 물리 삭제는 지연될 수 있습니다. 광고·분석 SDK와 데이터 판매는 없습니다.
+
+일반 권한은 **storage**이고, 기존 DCInside 콘텐츠 스크립트 적용 범위에 **고정 공유 API 도메인의 사이트 권한 한 곳**이 추가됩니다. 클립보드 읽기·tabs·history·cookies 권한은 요청하지 않습니다. 새 사이트 권한으로 Chrome에서 추가 승인을 요청하거나 업데이트 적용이 보류될 수 있으므로 확장 상태를 확인하세요. 원격 실행 코드는 사용하지 않습니다. [전체 개인정보처리방침 · 1.2](https://daily-odd-builds-portal.web.app/privacy/dcinside-scroll-helper)
 
 ## 알아두면 덜 당황합니다
 
@@ -196,7 +224,7 @@ Day 003 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · 개�
 
 ## 소스와 라이선스
 
-이 폴더는 **1.5.0 출시 버전의 실행 소스 스냅샷**입니다. `extension/` 전체를 Chrome에서 로드하면 빌드 없이 실행할 수 있습니다. 개발 이력, 세션 로그와 내부 작업 자료는 포함하지 않습니다.
+이 폴더는 **1.6.0 배포 버전의 확장 실행 소스 스냅샷**입니다. `extension/` 전체를 Chrome에서 로드하면 빌드 없이 실행할 수 있습니다. 공유 서버의 운영 소스, 개발 이력, 세션 로그와 내부 작업 자료는 포함하지 않습니다. 서버 공유 없이 기본 탐색·설정과 텍스트 공유를 사용할 수 있습니다.
 
 코드는 [MIT](LICENSE)입니다. 포함된 로고·아이콘·홍보 이미지의 출처와 사용 범위는 [ARTWORK.md](docs/ARTWORK.md)에 기록했습니다. [구조 설명](docs/ARCHITECTURE.md)
 

@@ -17,7 +17,7 @@
     [303, 215, 375.5], [320, 626.5, 385], [280, 1038.5, 381.5],
     [334, 214.5, 892], [315, 626, 885], [316, 1038.5, 886],
   ]);
-  function createPanel({ api, onAction, onPatch, onClearHistory, onOpen }) {
+  function createPanel({ api, onAction, onPatch, onClearHistory, onOpen, getCurrentGallery = () => null }) {
     let settings = ns.normalizeSettings(), caps = {}, customLabels = [], toastTimer, toolbarKey, editorKey, drag = null;
     let shortcutEditorKey, capturingShortcut = null;
     const host = document.createElement('dc-scroll-helper');
@@ -60,7 +60,7 @@
     dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-label', '디시 스크롤 도우미 설정');
     // Static trusted markup only. User names/URLs use .value/.textContent.
     dialog.innerHTML = `
-      <header class="settings-header"><h2>설정</h2><button type="button" class="text-button" data-close>닫기</button></header>
+      <header class="settings-header"><h2>설정</h2><div class="settings-header-actions"><button type="button" class="text-button creator-toggle" id="dc-settings-creator" data-creator aria-pressed="false" aria-controls="dc-settings-panel-creator">만든놈</button><button type="button" class="text-button" data-close>닫기</button></div></header>
       <div class="settings-body">
         <label class="field color-field"><span>배경색</span><input type="color" name="backgroundColor"><output data-value="backgroundColor"></output></label>
         <label class="field color-field"><span>아이콘 색</span><input type="color" name="iconColor"><output data-value="iconColor"></output></label>
@@ -71,10 +71,167 @@
         <fieldset class="shortcut-settings"><legend>키보드 단축키</legend><p class="hint">입력창 밖에서만 작동합니다. 커스텀 1~10은 숫자 1~9·0입니다. 숨긴 버튼은 실행하지 않습니다.</p><details><summary>단축키 보기 · 변경</summary><p class="hint shortcut-help">버튼 옆의 키를 누른 뒤 원하는 키 조합을 입력하세요. Ctrl·Alt·Shift·⌘ 조합도 지원합니다. Esc 취소 · Tab 다음 항목. 다른 확장이나 OS가 먼저 처리하는 조합은 작동하지 않을 수 있습니다.</p><div class="shortcut-list"></div><div class="shortcut-tools"><button type="button" class="text-button" data-reset-shortcuts>기본 키로</button><button type="button" class="text-button" data-clear-shortcuts>모두 해제</button></div></details></fieldset>
         <fieldset><legend>표시할 버튼</legend><p class="hint">핸들을 끌어 순서를 바꾸세요. 구분선은 가로에서 새 줄, 세로에서 새 열을 만듭니다. 설정은 항상 표시됩니다.</p><div class="button-layout"></div></fieldset>
         <fieldset><legend>커스텀 갤러리 <output class="slot-count" aria-label="커스텀 슬롯 수"></output></legend><p class="hint">+로 최대 10개까지 추가하세요. 직전 갤러리는 한 슬롯에 지정할 수 있습니다.</p><div class="custom-slots"></div><button type="button" class="add-slot" data-add-slot aria-label="커스텀 갤러리 슬롯 추가">+ 슬롯 추가</button></fieldset>
-        <div class="settings-footer"><p class="hint">모양·버튼·단축키 변경은 자동 저장됩니다.</p><p class="hint">직전 갤러리 이동을 위해 최근 갤러리 두 곳을 이 기기에만 저장합니다. 기록은 아래 버튼으로 지울 수 있으며, 이후 방문하면 다시 저장됩니다.</p><button type="button" class="text-button" data-reset>기본값으로</button><button type="button" class="text-button" data-clear-history>방문 기록 지우기</button></div>
+        <fieldset class="share-settings"><legend>설정 공유</legend>
+          <p class="hint">모양·버튼 배치·단축키를 공유합니다. 최근 방문 기록·계정 정보는 포함하지 않습니다. 아직 적용하지 않은 슬롯 편집은 먼저 적용하세요.</p>
+          <label class="share-check"><input type="checkbox" data-share-galleries>커스텀 갤러리 주소·이름 포함</label>
+          <div class="share-tools"><button type="button" class="text-button" data-export>공유할 설정 만들기</button><button type="button" class="text-button" data-copy>설정 복사</button></div>
+          <label class="share-field"><span>복사·붙여넣기할 설정</span><textarea data-share-text aria-label="공유 설정 텍스트" maxlength="24000" spellcheck="false" placeholder="공유할 설정을 만들거나 다른 사람의 설정을 붙여넣으세요."></textarea></label>
+          <button type="button" class="text-button" data-parse>붙여넣은 설정 확인</button>
+          <p class="hint">코드 공유는 선택 기능입니다. 업로드하면 설정을 Google Firebase 서버에 30일간 보관하고, 코드를 아는 사람이 받아갈 수 있습니다. 민감한 주소·이름을 넣지 마세요. 설정 텍스트와 코드는 자동 업로드하지 않습니다.</p>
+          <a class="share-policy" href="https://daily-odd-builds-portal.web.app/privacy/dcinside-scroll-helper" target="_blank" rel="noopener noreferrer">공유 데이터·보관·삭제 안내</a>
+          <label class="share-check"><input type="checkbox" data-share-consent>위 공유 범위와 서버 저장에 동의합니다.</label>
+          <button type="button" class="apply-button" data-upload>현재 설정 업로드 · 코드 만들기</button>
+          <label class="share-field"><span>공유 코드 8자리</span><input type="text" data-share-code aria-label="공유 코드 8자리" maxlength="8" autocomplete="off" spellcheck="false" placeholder="예: AB2C3D4E"></label>
+          <button type="button" class="text-button" data-copy-code>코드 복사</button>
+          <button type="button" class="text-button" data-download>코드 불러오기</button>
+          <p class="share-preview hint" role="status"></p><button type="button" class="apply-button" data-import hidden>확인한 설정 적용</button>
+          <details class="owned-shares"><summary>내가 만든 코드 관리</summary><p class="hint">이 기기에 저장한 삭제 키로만 삭제할 수 있습니다. 확장 제거·데이터 삭제 전에 공유 코드를 삭제하세요. 삭제하지 않아도 30일 후 만료됩니다.</p><button type="button" class="text-button" data-owned>목록 새로고침</button><div class="owned-share-list"></div></details>
+        </fieldset>
+        <div class="settings-footer"><p class="hint">모양·버튼·단축키 변경은 자동 저장됩니다.</p><details class="settings-maintenance"><summary>초기화·방문 기록 관리</summary><p class="hint">직전 갤러리 이동을 위해 최근 갤러리 두 곳을 이 기기에만 저장합니다. 기록은 아래 버튼으로 지울 수 있으며, 이후 방문하면 다시 저장됩니다.</p><button type="button" class="text-button" data-reset>기본값으로</button><button type="button" class="text-button" data-clear-history>방문 기록 지우기</button></details></div>
+        <section class="settings-tab-panel creator-content" id="dc-settings-panel-creator" role="region" aria-labelledby="dc-settings-creator" hidden>
+          <h3>만든놈</h3>
+          <a class="creator-name" href="https://github.com/hssum9409" target="_blank" rel="noopener noreferrer">hssum9409</a>
+          <p>매일 한개씩 잡동사니 만드는 사람<br>요청사항은 <a href="https://github.com/hssum9409/daily_odd_builds-public/issues" target="_blank" rel="noopener noreferrer">github</a> 에 보내면 수정할지도 안할지도. 버그는 가능한 빠르게 수정함.</p>
+          <p>그 외 잡동사니가 보고싶은 사람은 <a href="https://daily-odd-builds-portal.web.app/" target="_blank" rel="noopener noreferrer">여기</a>로.<br>AI 슬롭 같다구요? 으쩌라구요</p>
+          <p class="creator-product">Day 003 · 디시 스크롤 도우미<span data-creator-version></span></p>
+        </section>
       </div><p class="settings-message" role="status" aria-live="polite"></p>`;
     const controls = new Map(), slots = [];
     function message(text, error = false) { const node = dialog.querySelector('.settings-message'); node.textContent = text; node.dataset.error = String(error); }
+    // Move existing controls once; switching tabs never rebuilds editors or loses drafts.
+    const settingsBody = dialog.querySelector('.settings-body');
+    const tabList = document.createElement('div'); tabList.className = 'settings-tabs';
+    tabList.setAttribute('role', 'tablist'); tabList.setAttribute('aria-label', '설정 분류');
+    const tabDefinitions = [
+      ['appearance', '모양·배치', '모양·배치', [...dialog.querySelectorAll('.field'), dialog.querySelector('.segments').closest('fieldset'), dialog.querySelector('.positions').closest('fieldset'), dialog.querySelector('.settings-footer')]],
+      ['buttons', '버튼·단축키', '버튼·단축키', [dialog.querySelector('.shortcut-settings'), dialog.querySelector('.button-layout').closest('fieldset')]],
+      ['galleries', '갤러리', '커스텀 갤러리', [dialog.querySelector('.custom-slots').closest('fieldset')]],
+      ['sharing', '설정 공유', '설정 공유', [dialog.querySelector('.share-settings')]],
+    ];
+    const tabButtons = new Map(), tabPanels = new Map(), tabScroll = new Map();
+    let activeTab = 'appearance', previousSettingsTab = 'appearance';
+    const creatorButton = dialog.querySelector('[data-creator]');
+    const creatorPanel = dialog.querySelector('.creator-content');
+    const version = api.runtime.getManifest?.().version;
+    if (version) dialog.querySelector('[data-creator-version]').textContent = ` · v${version}`;
+    for (const [id, caption, label, nodes] of tabDefinitions) {
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'settings-tab';
+      button.id = `dc-settings-tab-${id}`; button.dataset.tab = id; button.textContent = caption;
+      button.setAttribute('role', 'tab'); button.setAttribute('aria-label', label);
+      button.setAttribute('aria-controls', `dc-settings-panel-${id}`);
+      button.setAttribute('aria-selected', String(id === activeTab)); button.tabIndex = id === activeTab ? 0 : -1;
+      const panel = document.createElement('section'); panel.id = `dc-settings-panel-${id}`; panel.className = 'settings-tab-panel';
+      panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', button.id); panel.tabIndex = 0;
+      panel.hidden = id !== activeTab; panel.append(...nodes); settingsBody.append(panel);
+      button.addEventListener('click', () => selectSettingsTab(id));
+      button.addEventListener('keydown', event => {
+        const index = tabDefinitions.findIndex(([key]) => key === id);
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabDefinitions.length - 1
+          : event.key === 'ArrowRight' ? (index + 1) % tabDefinitions.length
+            : event.key === 'ArrowLeft' ? (index + tabDefinitions.length - 1) % tabDefinitions.length : null;
+        if (next === null) return;
+        event.preventDefault(); selectSettingsTab(tabDefinitions[next][0]); tabButtons.get(activeTab).focus();
+      });
+      tabButtons.set(id, button); tabPanels.set(id, panel); tabList.append(button);
+    }
+    tabPanels.set('creator', creatorPanel);
+    creatorButton.addEventListener('click', () => {
+      if (activeTab === 'creator') selectSettingsTab(previousSettingsTab);
+      else { previousSettingsTab = activeTab; selectSettingsTab('creator'); }
+    });
+    dialog.querySelector('.settings-header').after(tabList);
+    function selectSettingsTab(id) {
+      if (id === activeTab) return;
+      tabScroll.set(activeTab, settingsBody.scrollTop); stopShortcutCapture(); activeTab = id;
+      creatorButton.setAttribute('aria-pressed', String(id === 'creator'));
+      tabButtons.forEach((button, key) => { button.setAttribute('aria-selected', String(key === id)); button.tabIndex = key === (id === 'creator' ? previousSettingsTab : id) ? 0 : -1; });
+      tabPanels.forEach((panel, key) => { panel.hidden = key !== id; });
+      settingsBody.scrollTop = tabScroll.get(id) ?? 0; message(''); placeDialog();
+    }
+    const shareText = dialog.querySelector('[data-share-text]'), shareCode = dialog.querySelector('[data-share-code]');
+    const sharePreview = dialog.querySelector('.share-preview'), importButton = dialog.querySelector('[data-import]');
+    let pendingImport = null, shareBusy = false, shareTextIsExport = false;
+    function showImport(profile) {
+      shareTextIsExport = false; pendingImport = ns.validateShareProfile(profile); sharePreview.textContent = `${ns.shareSummary(pendingImport)} · 적용하면 해당 설정을 바꿉니다. 방문 기록은 유지합니다.`;
+      importButton.hidden = false;
+    }
+    function invalidateImport() { pendingImport = null; shareTextIsExport = false; importButton.hidden = true; sharePreview.textContent = ''; }
+    shareText.addEventListener('input', invalidateImport); shareCode.addEventListener('input', invalidateImport);
+    const includeGalleries = () => dialog.querySelector('[data-share-galleries]').checked;
+    function createExport() {
+      const profile = ns.exportShareProfile(settings, includeGalleries());
+      invalidateImport(); shareText.value = JSON.stringify(profile); shareTextIsExport = true; sharePreview.textContent = ns.shareSummary(profile);
+      return profile;
+    }
+    dialog.querySelector('[data-export]').addEventListener('click', () => { createExport(); message('공유할 설정을 만들었습니다. 텍스트를 복사해 보내세요.'); });
+    dialog.querySelector('[data-share-galleries]').addEventListener('change', () => { if (shareTextIsExport) createExport(); });
+    dialog.querySelector('[data-copy]').addEventListener('click', async () => {
+      const profile = createExport(), text = JSON.stringify(profile);
+      try { await navigator.clipboard.writeText(text); message('설정을 복사했습니다. 다른 사람에게 붙여넣어 보내세요.'); }
+      catch { shareText.focus(); shareText.select(); message('복사가 제한되어 텍스트를 선택했습니다. Ctrl+C 또는 ⌘C로 복사하세요.'); }
+    });
+    dialog.querySelector('[data-parse]').addEventListener('click', () => {
+      invalidateImport();
+      try { showImport(shareText.value); message('설정 형식을 확인했습니다. 적용할 내용을 확인하세요.'); }
+      catch (error) { message(error.message, true); }
+    });
+    importButton.addEventListener('click', async () => {
+      if (!pendingImport || shareBusy) return;
+      const profile = ns.validateShareProfile(pendingImport);
+      if (await onPatch(profile.settings, true)) { slots.forEach(slot => { slot.dirty = false; }); invalidateImport(); syncSlots(); message('공유 설정을 적용했습니다. 방문 기록은 유지했습니다.'); }
+    });
+    async function sharingRequest(type, body = {}) {
+      const response = await api.runtime.sendMessage({ type, ...body });
+      if (!response?.ok) throw new Error(response?.error || '공유 요청에 실패했습니다. 연결 상태를 확인하세요.');
+      return response.data;
+    }
+    async function shareTask(button, action) {
+      if (shareBusy) return;
+      shareBusy = true; button.disabled = true; button.setAttribute('aria-busy', 'true');
+      try { await action(); }
+      catch (error) { message(error.message || '공유 요청에 실패했습니다.', true); }
+      finally { shareBusy = false; button.disabled = false; button.removeAttribute('aria-busy'); }
+    }
+    const uploadButton = dialog.querySelector('[data-upload]');
+    uploadButton.addEventListener('click', () => {
+      if (!dialog.querySelector('[data-share-consent]').checked) { message('공유 범위와 서버 저장 안내를 확인하고 동의해 주세요.', true); return; }
+      shareTask(uploadButton, async () => {
+        const profile = createExport(); message('공유 코드를 만드는 중입니다.');
+        const result = await sharingRequest('share.create', { profile });
+        shareCode.value = result.code; sharePreview.textContent = `${ns.shareSummary(profile)} · ${new Date(result.expiresAt).toLocaleDateString()} 만료`;
+        message(`공유 코드 ${result.code}를 만들었습니다. 30일 동안 사용할 수 있습니다.`); await renderOwned();
+      });
+    });
+    const downloadButton = dialog.querySelector('[data-download]');
+    dialog.querySelector('[data-copy-code]').addEventListener('click', async () => {
+      try {
+        const code = ns.normalizeShareCode(shareCode.value); shareCode.value = code;
+        try { await navigator.clipboard.writeText(code); message('공유 코드를 복사했습니다.'); }
+        catch { shareCode.focus(); shareCode.select(); message('코드를 선택했습니다. Ctrl+C 또는 ⌘C로 복사하세요.'); }
+      } catch (error) { message(error.message, true); }
+    });
+    downloadButton.addEventListener('click', () => shareTask(downloadButton, async () => {
+      invalidateImport(); const code = ns.normalizeShareCode(shareCode.value); shareCode.value = code;
+      const result = await sharingRequest('share.get', { code }); showImport(result.profile);
+      shareText.value = JSON.stringify(pendingImport); message('설정을 불러왔습니다. 아래 내용을 확인한 뒤 적용하세요.');
+    }));
+    async function renderOwned() {
+      const result = await sharingRequest('share.owned'), list = dialog.querySelector('.owned-share-list');
+      list.replaceChildren();
+      for (const share of result.shares) {
+        const row = document.createElement('div'); row.className = 'owned-share-row';
+        const label = document.createElement('span'); label.textContent = `${share.code} · ${new Date(share.expiresAt).toLocaleDateString()}`;
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'text-button'; button.textContent = '서버에서 삭제';
+        button.setAttribute('aria-label', `${share.code} 공유 삭제`);
+        button.addEventListener('click', () => shareTask(button, async () => {
+          await sharingRequest('share.delete', { code: share.code }); await renderOwned(); message(`${share.code} 공유를 삭제했습니다.`);
+        }));
+        row.append(label, button); list.append(row);
+      }
+      if (!result.shares.length) list.textContent = '이 기기에서 만든 유효한 코드가 없습니다.';
+    }
+    const ownedButton = dialog.querySelector('[data-owned]');
+    ownedButton.addEventListener('click', () => shareTask(ownedButton, renderOwned));
     const shortcutList = dialog.querySelector('.shortcut-list');
     function stopShortcutCapture() {
       capturingShortcut = null;
@@ -213,8 +370,26 @@
             input.addEventListener('change', () => preview({ buttons: { [entry]: input.checked } }));
             toggle.append(text, input); row.append(toggle); controls.set(entry, input);
           } else {
-            row.append(text); const state = document.createElement('span'); state.className = 'layout-state';
-            state.textContent = entry === 'settings' ? '항상 표시' : isBreak ? '' : '슬롯 설정'; row.append(state);
+            row.append(text);
+            if (entry.startsWith('custom')) {
+              const configure = document.createElement('button'); configure.type = 'button'; configure.className = 'layout-gallery-settings';
+              configure.setAttribute('aria-label', `${label} 설정 열기`); configure.title = '갤러리 탭에서 설정';
+              configure.setAttribute('aria-controls', 'dc-settings-panel-galleries');
+              // Dedicated vector for this small control; do not shrink the raster toolbar atlas.
+              configure.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4l.5 2.2 1.5.6 1.9-1.2 2.8 2.8-1.2 1.9.6 1.5L22 10v4l-2.2.5-.6 1.5 1.2 1.9-2.8 2.8-1.9-1.2-1.5.6L14 22h-4l-.5-2.2-1.5-.6-1.9 1.2-2.8-2.8 1.2-1.9-.6-1.5L2 14v-4l2.2-.5.6-1.5-1.2-1.9 2.8-2.8L8 4.8l1.5-.6L10 2Z"/><circle cx="12" cy="12" r="3.2"/></svg>';
+              configure.addEventListener('click', () => {
+                selectSettingsTab('galleries');
+                const slot = slots[Number(entry.slice(6))];
+                if (slot) {
+                  slot.mode.focus({ preventScroll: true });
+                  settingsBody.scrollTop += slot.node.getBoundingClientRect().top - settingsBody.getBoundingClientRect().top - 8;
+                }
+              });
+              row.append(configure);
+            } else {
+              const state = document.createElement('span'); state.className = 'layout-state';
+              state.textContent = entry === 'settings' ? '항상 표시' : ''; row.append(state);
+            }
           }
           const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'layout-edit';
           if (isBreak) {
@@ -241,6 +416,7 @@
     function createSlot(index) {
       const slot = document.createElement('div'); slot.className = 'custom-slot';
       slot.innerHTML = `<label class="slot-mode"><span>슬롯 ${index + 1}</span><select aria-label="커스텀 ${index + 1} 종류"><option value="off">사용 안 함</option><option value="fixed">갤러리 지정</option><option value="previous">직전 갤러리로 이동</option></select></label>
+        <button type="button" class="text-button current-gallery" aria-label="커스텀 ${index + 1} 현재 갤러리 지정">현재 갤러리 지정</button>
         <label class="slot-url"><span>갤러리 URL</span><input type="url" aria-label="커스텀 ${index + 1} URL" placeholder="https://gall.dcinside.com/board/lists/?id=…"></label>
         <label class="slot-name"><span>버튼 이름</span><input type="text" aria-label="커스텀 ${index + 1} 이름" maxlength="24" placeholder="선택 사항"></label>
         <div class="slot-appearance"><span class="slot-caption">버튼 아이콘</span><div class="icon-options" role="radiogroup" aria-label="커스텀 ${index + 1} 아이콘"></div>
@@ -280,7 +456,7 @@
       mode.addEventListener('change', () => { entry.dirty = true; entry.showFields(); });
       url.addEventListener('input', () => { entry.dirty = true; }); name.addEventListener('input', () => { entry.dirty = true; });
       emoji.addEventListener('input', () => { entry.dirty = true; });
-      slot.querySelector('.apply-button').addEventListener('click', async () => {
+      async function applySlot() {
         const address = mode.value === 'fixed' ? ns.galleryAddress(url.value.trim()) : null;
         if (mode.value === 'fixed' && !address) { message('일반·마이너·미니 갤러리의 PC 게시글 또는 목록 URL을 입력하세요.', true); url.focus(); return; }
         const custom = settings.customGalleries.map(item => ({ ...item }));
@@ -288,6 +464,13 @@
         if (mode.value === 'previous') custom.forEach((item, i) => { if (i !== index && item.mode === 'previous') custom[i] = { ...item, mode: 'off' }; });
         custom[index] = { mode: mode.value, name: name.value, url: address?.url ?? (mode.value === 'off' ? url.value : ''), icon: entry.icon, emoji: emoji.value };
         if (await onPatch({ customGalleries: custom }, true)) { entry.dirty = false; syncSlots(); message('커스텀 갤러리를 저장했습니다.'); }
+      }
+      slot.querySelector('.apply-button').addEventListener('click', applySlot);
+      slot.querySelector('.current-gallery').addEventListener('click', () => {
+        const current = getCurrentGallery();
+        if (!current) { message('갤러리 게시글이나 글 목록에서 지정할 수 있습니다.', true); return; }
+        mode.value = 'fixed'; url.value = current.url; if (!name.value.trim()) name.value = current.name;
+        entry.dirty = true; entry.showFields(); applySlot();
       });
       dialog.querySelector('.custom-slots').append(slot);
     }
@@ -317,6 +500,8 @@
       addSlot.disabled = addingSlot || settings.customSlotCount >= ns.MAX_CUSTOM_GALLERIES;
       addSlot.textContent = settings.customSlotCount >= ns.MAX_CUSTOM_GALLERIES ? '최대 10개까지 추가했습니다' : '+ 슬롯 추가';
       slots.forEach((entry, index) => {
+      const currentButton = entry.node.querySelector('.current-gallery');
+      currentButton.disabled = !getCurrentGallery(); currentButton.title = currentButton.disabled ? '갤러리 게시글·글 목록에서 사용할 수 있습니다.' : '지금 보고 있는 갤러리를 바로 저장합니다.';
       if (entry.dirty) return; const current = settings.customGalleries[index];
       entry.mode.value = current.mode; entry.url.value = current.url; entry.name.value = current.name;
       entry.icon = current.icon; entry.emoji.value = current.emoji; entry.showFields();

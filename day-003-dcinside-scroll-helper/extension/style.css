@@ -2,7 +2,7 @@
 [hidden] { display: none !important; }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
-button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #93b4fc; outline-offset: 3px; }
+button:focus-visible, input:focus-visible, select:focus-visible, .creator-content a:focus-visible { outline: 3px solid #93b4fc; outline-offset: 3px; }
 .toolbar { display: flex; flex-direction: column; align-items: var(--toolbar-align); gap: 8px; max-width: calc(100vw - 28px); max-height: calc(100dvh - 28px); overflow: auto; scrollbar-width: thin; padding: 6px; margin: -6px; font: 14px/1.4 "Malgun Gothic", system-ui, sans-serif; }
 .toolbar-group { display: flex; flex-wrap: wrap; justify-content: var(--toolbar-align); gap: 8px; flex: none; max-width: calc(100vw - 40px); }
 :host([data-orientation="vertical"]) .toolbar { flex-direction: row; align-items: var(--column-align); }
@@ -19,8 +19,24 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .settings { position: fixed; width: min(340px, calc(100vw - 24px)); max-height: min(620px, calc(100dvh - 96px)); display: flex; flex-direction: column; overflow: hidden; pointer-events: auto; color: #18253e; background: #fff; border: 1px solid #dde2eb; border-radius: 16px; box-shadow: 0 10px 36px #17274626, 0 2px 5px #17274610; font: 13px/1.5 "Malgun Gothic", system-ui, sans-serif; text-align: left; color-scheme: light; }
 .settings-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 10px; flex: none; }
+.settings-header-actions { display: flex; align-items: center; gap: 6px; }
+.creator-toggle:hover, .creator-toggle[aria-pressed="true"] { color: #3b4890; background: #eef0f9; }
+.creator-toggle[aria-pressed="true"] { border-color: #3b4890; }
+.creator-content h3 { margin: 0 0 12px; font-size: 14px; }
+.creator-content a { color: #3b4890; text-underline-offset: 3px; }
+.creator-content .creator-name { display: inline-block; font-size: 23px; font-weight: 700; text-decoration: none; }
+.creator-content p { margin: 16px 0; line-height: 1.85; overflow-wrap: anywhere; }
+.creator-content .creator-product { margin-bottom: 0; padding-top: 14px; border-top: 1px solid #e4e8f1; font-size: 11px; color: #758097; }
 h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.5px; }
-.settings-body { padding: 4px 20px 18px; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.settings-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; margin: 0 12px 12px; padding: 3px; border-radius: 10px; background: #f1f3f9; flex: none; }
+.settings-tab { min-width: 0; min-height: 38px; padding: 5px 2px; border: 0; border-radius: 7px; background: transparent; color: #65718a; font-size: 11px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.settings-tab[aria-selected="true"] { color: #3b4890; background: #fff; box-shadow: 0 1px 4px #17274614; }
+.settings-tab:hover { color: #3b4890; }
+.settings-tabs .settings-tab:focus-visible { outline-offset: 0; }
+.settings-body { min-height: 0; padding: 4px 20px 18px; overflow: auto; overflow-anchor: none; overscroll-behavior: contain; scrollbar-width: thin; }
+.settings-tab-panel { display: flow-root; min-width: 0; }
+.settings-tab-panel > fieldset:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.settings-tab-panel:focus-visible { outline: 2px solid #93b4fc; outline-offset: -2px; border-radius: 4px; }
 .field { display: grid; align-items: center; gap: 8px; margin: 0 0 12px; }
 .color-field { grid-template-columns: 1fr 32px 75px; }
 .range-field { grid-template-columns: 105px 1fr 38px; }
@@ -65,6 +81,9 @@ input[type="radio"] { accent-color: #3b4890; margin: 0; }
 .layout-edit { font-size: 10px; width: 28px; }
 .layout-label { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 12px; }
 .layout-state { font-size: 10px; color: #758097; }
+.layout-gallery-settings { display: grid; place-items: center; flex: none; width: 34px; height: 30px; padding: 0; border: 0; border-radius: 5px; color: #758097; background: transparent; }
+.layout-gallery-settings svg { display: block; width: 18px; height: 18px; }
+.layout-gallery-settings:hover { color: #3b4890; background: #eef0f9; }
 .break-row { min-height: 32px; margin: 3px 0; background: #f5f7fb; border: 0; }
 .break-row .layout-label { display: flex; align-items: center; gap: 6px; color: #65718a; font-size: 11px; }
 .break-row .layout-label::after { content: ''; height: 1px; flex: 1; background: #cfd6e2; }
@@ -97,8 +116,22 @@ select, input[type="url"], input[type="text"] { width: 100%; min-width: 0; heigh
 .apply-button { display: block; margin: 8px 0 0 auto; padding: 4px 12px; border: 0; border-radius: 6px; color: #fff; background: #3b4890; font-size: 12px; }
 .text-button { padding: 5px 9px; border: 1px solid #dce2ec; border-radius: 7px; color: #35415a; background: #f7f9fc; font-size: 12px; }
 .settings-footer { margin-top: 16px; }
+.settings-maintenance summary { color: #65718a; font-size: 12px; cursor: pointer; }
+.settings-maintenance[open] summary { margin-bottom: 10px; }
 .settings-footer button + button { margin-left: 4px; }
 .settings-message { flex: none; padding: 0 20px; margin: 0; font-size: 11px; color: #3b4890; }
 .settings-message:not(:empty) { padding-bottom: 12px; padding-top: 8px; }
 .settings-message[data-error="true"] { color: #b3261e; }
+.current-gallery { margin-top: 8px; }
+.share-field { display: grid; gap: 5px; margin: 10px 0; font-size: 11px; color: #65718a; }
+.share-field textarea { width: 100%; min-height: 80px; max-height: 200px; resize: vertical; padding: 8px; border: 1px solid #d9dfeb; border-radius: 6px; color: #24314b; background: #fff; font: 11px/1.5 monospace; overflow-wrap: anywhere; }
+.share-check { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; margin: 10px 0; }
+.share-check input { flex: none; margin-top: 3px; }
+.share-tools { display: flex; flex-wrap: wrap; gap: 5px; }
+.share-policy { font-size: 12px; color: #3b4890; }
+.share-preview { overflow-wrap: anywhere; }
+.owned-shares { margin-top: 14px; font-size: 12px; }
+.owned-share-row { display: flex; align-items: center; gap: 6px; justify-content: space-between; margin-top: 8px; }
+.owned-share-list { font-size: 11px; margin-top: 8px; overflow-wrap: anywhere; }
+.share-settings button:disabled, .current-gallery:disabled { opacity: .55; cursor: default; }
 @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; } }

@@ -40,6 +40,7 @@
     if (!ns.isSupportedPage(context)) { removePanel(); return; }
     if (!panel) {
       panel = ns.createPanel({ api: chrome, onAction: performAction, onPatch: queuePatch,
+        getCurrentGallery: () => ns.currentGallerySlot(context),
         onClearHistory: () => store.clearHistory(), onOpen: () => navigator?.cancel('settings') });
       navigator = ns.createNavigator({
         resolveTarget: action => ns.resolveTarget(action, document, context),
