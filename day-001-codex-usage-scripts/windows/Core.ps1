@@ -1,4 +1,5 @@
 ﻿# 공유 fixture로 macOS의 순수 JS 로직과 결과를 비교하는 PowerShell 5.1 코어.
+. "$PSScriptRoot\UsageHealth.ps1"
 function Test-Number($Value) {
     if ($null -eq $Value -or $Value -is [bool] -or ($Value -is [string] -and $Value -eq '')) { return $false }
     $parsed = 0.0
@@ -57,7 +58,9 @@ function Get-View($Data, $Settings, [double]$Now, $Words) {
             $percent = ([Math]::Round($n, 1)).ToString([Globalization.CultureInfo]::InvariantCulture) + '%'
         }
         $text = "$label $percent"
-        if (($v.weekly -and $Settings.weeklyReset) -or (-not $v.weekly -and $Settings.shortReset)) { $text += " ($($Words.reset) $(Get-Duration $w.resetsAt $Now ($v.weekly -and $shortShown)))" }
+        if (($v.weekly -and $Settings.weeklyReset) -or (-not $v.weekly -and $Settings.shortReset)) {
+            $text+=if($w._resetPending){' ('+$Words.usage_reset_pending+')'}else{" ($($Words.reset) $(Get-Duration $w.resetsAt $Now ($v.weekly -and $shortShown)))"}
+        }
         $parts += $text
     }
     if ($parts.Count) { $suffix = if ($Settings.usageDisplay -eq 'remaining') { $Words.remaining } else { $Words.used }; $lines += ($parts -join ' · ') + " $suffix" }
@@ -185,6 +188,7 @@ function Test-CreditEvent($State, $Data, [int]$Step) {
 function Get-Lifecycle($Settings, [bool]$Alive, [bool]$Pet, [double]$Now, $State) {
     if (-not $Alive) { $State.missingSince = $null; return 'idle' }
     if ($Settings.placement -eq 'hidden') { return 'hidden' }
+    if ($Settings.placement -eq 'dock') { return 'dock' }
     if ($Settings.placement -eq 'free') { return 'free' }
     if ($Pet) { $State.missingSince = $null; return $Settings.placement }
     if ($null -eq $State.missingSince) { $State.missingSince = $Now }
@@ -193,7 +197,7 @@ function Get-Lifecycle($Settings, [bool]$Alive, [bool]$Pet, [double]$Now, $State
 }
 function Get-PositionSelection($Settings, [string]$Mode) {
     # 실행 중인 위치만 선택 표시한다. 일시 대기/절전에서 복원용 선호값을 덮어쓰지 않는다.
-    if($Mode -in @('above','below','free','hidden')){return $Mode}
+    if($Mode -in @('above','below','free','hidden','dock')){return $Mode}
     return $Settings.placement
 }
 function Get-Placement($Pet, $Blockers, $Screen, [double]$Width, [double]$Height, [string]$Preferred, $Insets=$null, $Settings=$null) {
@@ -245,7 +249,7 @@ function Get-FallbackLayout($Pet,$Blockers,$Screen,$Sizes,[string]$Preferred,[do
 function Get-Normalized($Raw, $Defaults) {
     $s = $Defaults | ConvertTo-Json -Depth 10 | ConvertFrom-Json
     foreach ($p in $s.PSObject.Properties) { if ($p.Value -is [bool] -and $Raw.($p.Name) -is [bool]) { $s.($p.Name) = $Raw.($p.Name) } }
-    $options = @{language = @('ko','en','zh','ja'); timezone = @('system','UTC','Asia/Seoul','Asia/Tokyo','Asia/Shanghai','America/Los_Angeles','America/New_York','Europe/London','Europe/Berlin'); usageDisplay = @('used','remaining'); placement = @('above','below','free','hidden'); attachedPlacement = @('above','below')}
+    $options = @{language = @('ko','en','zh','ja'); timezone = @('system','UTC','Asia/Seoul','Asia/Tokyo','Asia/Shanghai','America/Los_Angeles','America/New_York','Europe/London','Europe/Berlin'); usageDisplay = @('used','remaining'); placement = @('above','below','free','hidden','dock'); attachedPlacement = @('above','below')}
     foreach ($k in $options.Keys) { if ($Raw.$k -in $options[$k]) { $s.$k = $Raw.$k } }
     if ($Raw.resetMinutes -in @(10,30,60,120)) { $s.resetMinutes = $Raw.resetMinutes }
     if ($Raw.creditStep -in @(1000,3000,5000,10000)) { $s.creditStep = $Raw.creditStep }
@@ -259,6 +263,9 @@ function Get-Normalized($Raw, $Defaults) {
         }
     }
     if ($Raw.codexPath -is [string]) { $s.codexPath = $Raw.codexPath }
+    foreach($key in @('sessionThreadId','sessionPriceModel','sessionInputPrice','sessionCachedPrice','sessionOutputPrice')){
+        if($Raw.$key -is [string] -and $Raw.$key.Length -le 100){$s.$key=$Raw.$key}
+    }
     foreach ($k in @('x','y')) { if (Test-Finite $Raw.$k) { $s.$k = $Raw.$k } }
     foreach ($g in @('main','reset','credit')) {
         foreach ($k in @('color','text')) { if ($Raw.styles.$g.$k -match '^#[0-9a-fA-F]{6}$') { $s.styles.$g.$k = $Raw.styles.$g.$k } }

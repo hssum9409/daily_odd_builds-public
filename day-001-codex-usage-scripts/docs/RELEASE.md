@@ -1,6 +1,18 @@
-# Codex Usage Monitor Scripts 1.4.13 — 배포 안내
+# Codex Usage Monitor Scripts 1.5.0 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.4.13은 초기화 안내의 재실행 복원·통신 복구·재알림·공간 부족 배치를 보강합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.5.0은 Windows 창 부착 대시보드·작업표시줄 위젯과 입력 간섭 방지 처리를 추가합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+
+## 1.5.0 변경 사항
+
+Windows에 Codex 창 부착 대시보드와 작업표시줄 위젯을 추가했습니다. 기존 Pet 위/아래·별도 표시 방식은 유지합니다. 창 부착은 Codex 테마를 따르고 원형 게이지와 초기화·크레딧 안내를 내부에 표시합니다. 폭에 따라 기본형/좁은형을 자동 선택하고 우측 패널이 열리면 요약으로 접습니다. 창 이동·크기 변경 중에는 숨었다가 안정된 위치에 다시 나타납니다.
+
+톱니바퀴로 설정을 열고 옆 아이콘으로 접기·펼치기를 전환합니다. 지정한 대화의 로컬 기록에서 세션 토큰·캐시 적중률·환산 비용·출력 속도를 표시하며 각각 끌 수 있습니다. 비용은 입력한 단가의 환산치이며 실제 청구액이 아닙니다. 단가 미설정·미지원 데이터는 값을 만들어내지 않습니다.
+
+작업표시줄 위젯은 숨겨진 아이콘 화살표 왼쪽에 원형 게이지·퍼센트·초기화까지 남은 시간을 표시합니다. 5시간·주간 한도가 함께 제공되면 모두 표시합니다. 라이트/다크 테마와 호버·클릭 효과를 지원하고 클릭하면 설정을 엽니다. 기본 OFF입니다.
+
+조회 중·갱신 지연·연결 오류를 구분합니다. 창 메시지마다 PowerShell을 호출하던 경로를 C# 필터로 바꾸고 이벤트 관찰을 필요한 범위로 줄였습니다. 일반 실행에서 한글 입력·포커스·접기/펼치기를 사용자와 확인했습니다. 툴팁 호버만으로 배치를 바꾸지 않으며 세션 로그는 필요한 이벤트만 디코딩합니다.
+
+Mac은 기존 Pet 기능의 preview를 유지합니다. 신규 창 부착·작업표시줄 UI는 Windows 전용입니다. Mac 전체 설치·권한·Pet 추적·자동 업데이트는 실기기 검증이 완료되지 않았습니다.
 
 ## 1.4.13 변경 사항
 
@@ -88,10 +100,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.4.13-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.4.13-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.4.13-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.4.13-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.5.0-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.5.0-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.5.0-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.5.0-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 

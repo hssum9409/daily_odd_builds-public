@@ -26,7 +26,3 @@ Codex 내장 imagegen의 이미지 편집 모드로 참조 시트와 연결된 �
 ## 공개 스크립트 배포의 적용 범위
 
 배포 ZIP의 `assets/gp-chan-face.png`, `assets/gp-chan-monitor.png`, `assets/gp-chan.ico`를 두 OS에서 함께 사용합니다. 코드의 MIT 라이선스는 캐릭터 원본에 새로운 권리를 부여하지 않습니다. 사용자 제공 시트를 참조한 아트이며 OpenAI의 공식 제품 아트로 표시하지 않습니다.
-
-## 2026-10-27 · README 홍보 카드
-
-`docs/images/promotion-20261027.webp`는 같은 제품의 캐릭터와 작은 모니터를 표현한 별도 생성 홍보 카드입니다. GPT-6 Astra / High 아트 작업자가 기존 원화와 실제 Day 1·2·3·7·8 이미지를 보고 내장 imagegen을 직접 호출했습니다. 이미지 backend 모델·품질·과금 등급은 미노출입니다. 화면 속 패널은 설명용 일러스트이며 실행 화면이 아닙니다. 기존 캐릭터 원본의 권리와 코드 MIT의 구분은 위 고지를 그대로 따릅니다.

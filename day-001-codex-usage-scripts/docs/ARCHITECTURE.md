@@ -30,6 +30,7 @@ codex-resets.com/api/v1/status → 제3자 초기화 예고 / 리셋 조짐
 - `windows/Core.ps1`: Windows 계산 로직. 같은 fixture와 기대값으로 비교한다.
 - `windows/Native.cs`: UIA/Win32 읽기, 비동기 RPC/HTTP. 자체 exe를 만들지 않는다. 인증 정보/오류 원문을 로그로 내보내지 않는다.
 - `windows/Monitor.ps1`: WPF UI, 사용자 설정, 수명 주기, 메뉴와 명령 처리. 작업 스레드의 완료만 읽는다.
+- `windows/Dock.ps1`: Windows 개발 기능인 창 내부 부착 모드. 외부 소유 창 방식이며 [검증 범위와 제한](WINDOWS-APP-DOCK.md)을 참고한다.
 - `macos/Monitor.js`: 내장 ObjC bridge/AX/NSTask/NSRunLoop 어댑터. Mac에서 런타임 검증이 필요하다.
 - `defaults.json`, `strings.json`: 공유 설정 스키마와 네 언어. 기존 앱 설정은 가져오지 않는다.
 - `tests/`: 경계값, 플랫폼 결과 비교, 가짜 App Server, Windows 네이티브 UI/실제 계정/HTTP 검사.

@@ -58,10 +58,13 @@ if (-not $Once) {
     Disconnect-MonitorConsole
 }
 Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes,System.Web.Extensions,WindowsBase
-Add-Type -Path "$PSScriptRoot\Native.cs" -ReferencedAssemblies @('System.dll','System.Core.dll',[Web.Script.Serialization.JavaScriptSerializer].Assembly.Location,[Windows.Automation.AutomationElement].Assembly.Location,[Windows.Automation.ControlType].Assembly.Location,[Windows.Rect].Assembly.Location)
+Add-Type -Path @("$PSScriptRoot\Native.cs","$PSScriptRoot\SessionMetrics.cs","$PSScriptRoot\DockOccupancy.cs") -ReferencedAssemblies @('System.dll','System.Core.dll',[Web.Script.Serialization.JavaScriptSerializer].Assembly.Location,[Windows.Automation.AutomationElement].Assembly.Location,[Windows.Automation.ControlType].Assembly.Location,[Windows.Rect].Assembly.Location)
 [UsageScripts.TaskbarIdentity]::InitializeProcess()
 $rpc = $null; $feed = New-Object UsageScripts.Feed
 $data = $null; $lastData = 0.0; $announcement = $null; $lastFeed = 0.0; $nextFeed = 0.0; $nextUsage = 0.0; $nextScan = 0.0; $nextPresence = 0.0
+$usageHealth=New-UsageHealth
+$sessionReader=New-Object UsageScripts.SessionMetrics;$nextSession=0.0
+$taskbarProcess=$null;$taskbarStateFile=Join-Path $profile 'taskbar-status.json';$nextTaskbar=0.0
 $alive = $false; $mode = 'idle'; $life = @{missingSince=$null}; $creditState = @{previous=$null;consuming=$false;cycle=''}
 $noticeState = Read-Json $stateFile; $lastKey = if ($noticeState) { $noticeState.lastKey } else { '' }
 $dismissedResetKey = if ($noticeState) { [string]$noticeState.dismissedKey } else { '' }
@@ -132,6 +135,7 @@ function Stop-UpdateCheck {
 function Write-Diagnostic {
     # 실사용 QA에서만 켜는 상태 기록. 계정 응답·인증·창 제목은 저장하지 않는다.
     if (-not $TracePath) { return }
+    $traceNow=Now;if($traceNow -lt $script:nextTraceSample){return};$script:nextTraceSample=$traceNow+0.25
     try {
         $frame=[UsageScripts.Desktop]::MovedFrame()
         $main=if ($script:uiLoaded) {$script:mainCard.window} else {$null}
@@ -142,6 +146,7 @@ function Write-Diagnostic {
             $state.height=$main.ActualHeight
         }
         if ($script:rpc) {$state.rpcPid=$script:rpc.OwnedPid}
+        if($script:mode -eq 'dock'){$state.dock=@{client=$script:dockHost.Client;inset=$script:dockGeometry.bottomInset;probe=$script:dockProbe;sidebar=[UsageScripts.DockOccupancy]::SidebarWidth}}
         $key=$state|ConvertTo-Json -Depth 6 -Compress
         if ($key -eq $script:lastTrace) {return}
         $script:lastTrace=$key
@@ -187,6 +192,11 @@ function Card([string]$Kind) {
         param($sender,$eventArgs)
         $handle=(New-Object Windows.Interop.WindowInteropHelper($sender)).Handle
         [UsageScripts.WindowChrome]::HideFromSwitcher($handle)
+        if($script:config.placement -eq 'dock'){[UsageScripts.WindowChrome]::SetNoActivate($handle,$true)}
+        if('UsageScripts.WindowSignals' -as [type]){
+            $sender.Tag=New-Object UsageScripts.WindowSignals($handle,(Join-Path $script:profile 'ui-errors.log'))
+            $sender.Tag.NoActivate=$script:config.placement -eq 'dock'
+        }
     })
     $w.FontFamily=New-Object Windows.Media.FontFamily(@{ko='Malgun Gothic';en='Segoe UI';zh='Microsoft YaHei';ja='Meiryo'}[$script:config.language])
     $outer=New-Object Windows.Controls.Grid; $outer.Margin=0
@@ -205,9 +215,10 @@ function Card([string]$Kind) {
     if ($Kind -eq 'main') { $more=Button '···' {Show-Settings};$more.Style=$w.Resources['HoverPill'];$more.HorizontalAlignment='Left';$more.Margin='27,0,0,0';$null=$controls.Children.Add($more) }
     if ($Kind -eq 'reset') { $arrow=Button '→' {if ($script:announcement.url) { Start-Process $script:announcement.url }};$arrow.Style=$w.Resources['HoverPill'];$arrow.HorizontalAlignment='Right';$null=$controls.Children.Add($arrow) }
     $null=$outer.Children.Add($controls); $w.Content=$outer
-    $w.Add_MouseEnter({$this.Content.Children[1].Visibility='Visible'})
+    $w.Add_MouseEnter({$this.Content.Children[1].Visibility=if($script:mode -eq 'dock'){'Collapsed'}else{'Visible'}})
     $w.Add_MouseLeave({$this.Content.Children[1].Visibility='Collapsed'})
     if ($Kind -eq 'main') {
+        $w.Add_SizeChanged({if($script:mode -eq 'dock' -and $script:dockReady){Position-Dock}})
         $w.Add_MouseLeftButtonDown({
             if ($script:mode -eq 'free' -and $_.OriginalSource -isnot [Windows.Controls.Button]) {
                 $this.BeginAnimation([Windows.Window]::LeftProperty,$null); $this.BeginAnimation([Windows.Window]::TopProperty,$null)
@@ -215,13 +226,33 @@ function Card([string]$Kind) {
             }
         })
     }
-    return @{window=$w;border=$border;stack=$stack;kind=$Kind;close=$close}
+    return @{window=$w;border=$border;stack=$stack;kind=$Kind;close=$close;shadow=$shadow}
 }
 function Load-UI {
     if ($script:uiLoaded) { return }
     Add-Type -AssemblyName PresentationFramework,PresentationCore,WindowsBase,System.Windows.Forms,System.Drawing
+    if(-not ('UsageScripts.WindowSignals' -as [type])){Add-Type -Path "$PSScriptRoot/WindowSignals.cs" -ReferencedAssemblies @('System.dll','System.Core.dll',[Windows.Interop.HwndSource].Assembly.Location,[Windows.Threading.Dispatcher].Assembly.Location)}
     $script:mainCard=Card 'main'; $script:resetCard=Card 'reset'; $script:creditCard=Card 'credit'; $script:uiLoaded=$true
+    # 보조 위젯의 클릭은 폴링 시각을 기다리지 않고 자체 창 메시지로 전달한다.
+    $handle=(New-Object Windows.Interop.WindowInteropHelper($script:mainCard.window)).EnsureHandle()
+    $script:commandHwnd=$handle.ToInt64();$script:commandSource=[Windows.Interop.HwndSource]::FromHwnd($handle)
+    [UsageScripts.AppDock]::SetWakeWindow($script:commandHwnd)
+    $script:mainCard.window.Tag.SetActions([Action]{Invoke-MonitorCommands},[Action]{if($script:mode -eq 'dock'){Update-Dock}})
     Sync-Tray
+}
+function Invoke-MonitorCommands {
+    foreach($file in @([IO.Directory]::GetFiles($commandFolder,'*.json')|ForEach-Object{Get-Item -LiteralPath $_}|Sort-Object LastWriteTimeUtc|Select-Object -First 16)){
+        $request=Read-Json $file.FullName;Remove-Item -LiteralPath $file.FullName -ErrorAction SilentlyContinue
+        if((Now)-([DateTimeOffset]$file.LastWriteTimeUtc).ToUnixTimeSeconds() -ge 60){continue}
+        switch($request.command){
+            'stop'{$script:quit=$true}
+            'settings'{$script:lastSettingsRequestAt=$request.requestedAt;Show-Settings}
+            'fold'{if($script:mode -eq 'dock'){Toggle-DashboardFold}}
+            'toggle'{Toggle-Monitor}
+            'refresh'{$script:nextUsage=0;$script:nextFeed=0}
+            'update'{Check-ScriptUpdate $true}
+        }
+    }
 }
 function Close-Tray {
     if (-not $script:tray) {return}
@@ -251,11 +282,15 @@ function Toggle-Monitor {
 function Ticket-Tooltip($View) {
     $tip=New-Object Windows.Controls.ToolTip;$tip.Placement='Left';$tip.Background=Brush $script:config.styles.main.color $script:config.styles.main.opacity;$tip.Foreground=Brush $script:config.styles.main.text;$tip.Padding=12
     $stack=New-Object Windows.Controls.StackPanel;$i=1
+    if($script:mainCard.docked -and $script:config.dockFollowTheme -and $script:codexAppearance){
+        $tip.Background=Brush $script:codexAppearance.surface;$tip.Foreground=Brush $script:codexAppearance.ink
+    }
+    if($script:usageHealth.retained){$note=Label (T 'usage_details_delayed') 11;$note.Opacity=0.7;$null=$stack.Children.Add($note)}
     foreach ($ticket in $View.tickets.rows) {
         $big=Label ("$i : "+(Get-Duration $ticket.expiresAt (Now) $false)+' '+(T 'expires')) 15;$big.FontWeight='SemiBold';$null=$stack.Children.Add($big)
         $small=Label (Local-Date $ticket.expiresAt) 11;$small.Opacity=0.7;$null=$stack.Children.Add($small);$i++
     }
-    if (-not $View.tickets.rows.Count) {$null=$stack.Children.Add((Label (T 'noData') 13))}
+    if (-not $View.tickets.rows.Count) {$null=$stack.Children.Add((Label $(if($View.tickets.count -eq 0){(T 'tickets')+' 0'}else{T 'usage_details_missing'}) 13))}
     $tip.Content=$stack;return $tip
 }
 function Measure-Text([string]$Text,[double]$Size=9.5) {
@@ -291,6 +326,7 @@ function Reset-Footer([string]$Text,[double]$Width,[string]$Ink) {
     $canvas.Height=($lines.Count-1)*14+[Math]::Max($glyphHeight,[Math]::Ceiling($bounds.Height));return $canvas
 }
 function Fill-Card($Card, [string[]]$Lines, [bool]$Visible,[bool]$Offscreen=$false) {
+    if ($Card.docked -and -not $Offscreen) {Fill-DockCard $Card $Lines $Visible;return}
     $w=$Card.window
     $w.FontFamily=New-Object Windows.Media.FontFamily(@{ko='Malgun Gothic';en='Segoe UI';zh='Microsoft YaHei';ja='Meiryo'}[$script:config.language])
     if (-not $Visible) { $w.Hide(); return }
@@ -351,6 +387,7 @@ function Fill-Card($Card, [string[]]$Lines, [bool]$Visible,[bool]$Offscreen=$fal
     else {if (-not $w.IsVisible) { $w.Show() };$w.UpdateLayout()}
 }
 function Move-Card($Card, [double]$X, [double]$Y, [bool]$Animate) {
+    if($Card.unmask){$Animate=$false}
     $w=$Card.window
     $Card.targetX=$X;$Card.targetY=$Y
     if ([Math]::Abs($w.Left-$X) -lt 0.5 -and [Math]::Abs($w.Top-$Y) -lt 0.5) { return }
@@ -372,6 +409,7 @@ function Screen-Box($Frame) {
     return @{x=$work.X/$script:scale;y=$work.Y/$script:scale;w=$work.Width/$script:scale;h=$work.Height/$script:scale}
 }
 function Position-Cards($Frame) {
+    if ($script:mode -eq 'dock') {Position-Dock;return}
     $main=$script:mainCard.window
     $script:layoutFallback=$false
     # 각 카드의 투명 여백을 빼고 설정한 본체 간격을 한 번만 더한다.
@@ -420,13 +458,16 @@ function Render {
     if ($script:mode -eq 'free' -and $oldMode -in @('above','below','waiting') -and -not [double]::IsNaN($script:mainCard.window.Left)) {$script:config.x=$script:mainCard.window.Left;$script:config.y=$script:mainCard.window.Top}
     if($script:settingsWindow -and $script:settingsWindow.IsVisible){Sync-PetAvailability}
     $show=$script:mode -notin @('idle','hidden','waiting')
-    $view=Get-View $script:data $script:config $now $script:words
-    $lines=if ($script:lastData -eq 0) {@($(if ($script:lastError) {T 'error'} else {T 'connecting'}))} else {$view.lines}
-    if ($script:lastData -and $now-$script:lastData -gt 60) {$lines+=T 'stale'}
+    if ($script:config.placement -eq 'dock' -or $script:mainCard.docked) {Sync-DockSurface}
+    if ($script:mode -eq 'dock') {$show=$show -and [bool]$script:dockReady}
+    $presentation=Get-UsagePresentation $script:data $script:usageHealth $script:config $now $script:words $script:lastError
+    $view=$presentation.view
+    $lines=if ($script:lastData -eq 0) {@($(if ($script:lastError -in @('login','account')) {T 'usage_login'} elseif($script:lastError) {T 'usage_retrying'} else {T 'connecting'}))} else {$presentation.lines}
     Fill-Card $script:mainCard $lines $show
     if ($show -and ($script:config.tickets -or $script:config.expiry) -and $script:lastData) {
         $index=if ($lines[0] -match '%|5h|Window') {1} else {0}
-        if ($index -lt $script:mainCard.stack.Children.Count) {$script:mainCard.stack.Children[$index].ToolTip=Ticket-Tooltip $view}
+        if($script:mainCard.docked -and $script:mainCard.ticketLabel){$script:mainCard.ticketLabel.ToolTip=Ticket-Tooltip $view}
+        elseif ($index -lt $script:mainCard.stack.Children.Count) {$script:mainCard.stack.Children[$index].ToolTip=Ticket-Tooltip $view}
     }
     if (-not $script:config.resetNotice) {$script:resetVisible=$false}
     if (-not $script:config.creditNotice) {$script:creditVisible=$false}
@@ -450,6 +491,10 @@ function Render {
     } else {$script:resetVisible=$false}
     $title=Get-NoticeTitle $script:announcement $now $script:words
     if($script:resetVisible -and ($now-$script:lastFeed -ge 1800 -or $script:feedError)){$title+=' · '+(T 'feed_delayed')}
+    if($script:mode -eq 'dock'){
+        $script:resetCard.window.Hide();$script:creditCard.window.Hide();Fill-Dashboard $script:mainCard $lines $show
+        if($show){Position-Dock};Write-FeedDiagnostic;return
+    }
     Fill-Card $script:resetCard @($title, (T 'reset_disclaimer')) ($show -and $script:resetVisible)
     Fill-Card $script:creditCard @((T 'credit_started'), ((T 'balance')+' '+(Format-Credit $view.balance))) ($show -and $script:creditVisible)
     $cards=@($script:mainCard,$script:resetCard,$script:creditCard)
@@ -458,11 +503,25 @@ function Render {
         if ($card.window.IsVisible -and $card.forceWidth -ne $sharedWidth) {$card.forceWidth=$sharedWidth;Fill-Card $card $card.lastLines $true}
     }
     if ($show) { Position-Cards $frame }
+    foreach($card in $cards){if($card.unmask){$card.window.Opacity=1;$card.unmask=$false}}
     Write-FeedDiagnostic
 }
+. "$PSScriptRoot\Appearance.ps1"
+. "$PSScriptRoot\Dashboard.ps1"
+. "$PSScriptRoot\Dock.ps1"
+. "$PSScriptRoot\TaskbarController.ps1"
 . "$PSScriptRoot\Settings.ps1"
 function Sync-ReactionTimer {
-    if ($script:timer) {$script:timer.Interval=[TimeSpan]::FromMilliseconds((Get-ReactionInterval $script:config $script:alive ([UsageScripts.Desktop]::PointerDown)))}
+    # Pet 모드·Codex 비활성 상태에는 창 부착 전용 이벤트 관찰을 해제한다.
+    if($script:alive -and $script:config.placement -eq 'dock'){[UsageScripts.AppDock]::StartWatching()}
+    else{[UsageScripts.AppDock]::StopWatching()}
+    if ($script:timer) {
+        $interval=Get-ReactionInterval $script:config $script:alive ([UsageScripts.Desktop]::PointerDown)
+        if($script:alive -and $script:config.placement -eq 'dock'){
+            $interval=[Math]::Max(250,$interval)
+        }
+        if($script:timer.Interval.TotalMilliseconds -ne $interval){$script:timer.Interval=[TimeSpan]::FromMilliseconds($interval)}
+    }
 }
 
 try {
@@ -751,24 +810,22 @@ try {
         }
     }
     $timer=New-Object Windows.Threading.DispatcherTimer;$timer.Interval=[TimeSpan]::FromSeconds(2)
+    Sync-ReactionTimer
     $timer.Add_Tick({
         try {
             $now=Now
             Sync-ReactionTimer
             if ($script:alive -and $now -lt $script:nextLogicTick) {
-                if ($script:uiLoaded -and $script:mainCard.window.IsVisible -and -not $FixturePath) {$fast=[UsageScripts.Desktop]::ChangedFrame();if ($fast) {Position-Cards $fast}}
+                if ($script:uiLoaded -and -not $FixturePath) {
+                    if($script:mode -eq 'dock'){Update-Dock}else{if($script:mainCard.window.IsVisible){$fast=[UsageScripts.Desktop]::ChangedFrame();if ($fast) {Position-Cards $fast}}}
+                }
                 return
             }
             $script:nextLogicTick=$now+0.25
             if ($MeasureAfterSeconds -gt 0 -and -not $script:measuring -and $now-$script:loopStart -ge $MeasureAfterSeconds) {
                 $script:measuring=$true;$script:loopStart=$now;$script:loopCpu=[Diagnostics.Process]::GetCurrentProcess().TotalProcessorTime.TotalSeconds;$script:loopUiCPU=[UsageScripts.Desktop]::ThreadCPUSeconds();$script:scanCpuStart=[UsageScripts.Desktop]::ScanCPUSeconds
             }
-            foreach ($file in @([IO.Directory]::GetFiles($commandFolder,'*.json') | ForEach-Object {Get-Item -LiteralPath $_} | Sort-Object LastWriteTimeUtc | Select-Object -First 16)) {
-                $request=Read-Json $file.FullName;Remove-Item -LiteralPath $file.FullName -ErrorAction SilentlyContinue
-                if ($now-([DateTimeOffset]$file.LastWriteTimeUtc).ToUnixTimeSeconds() -lt 60) {
-                    switch ($request.command) {'stop' {$script:quit=$true};'settings' {Show-Settings};'toggle' {Toggle-Monitor};'refresh' {$script:nextUsage=0;$script:nextFeed=0};'update' {Check-ScriptUpdate $true}}
-                }
-            }
+            Invoke-MonitorCommands
             if ($SmokeSeconds -gt 0 -and $now-$started -ge $SmokeSeconds) {$script:quit=$true}
             if ($script:quit) {$timer.Stop();$frameLoop.Continue=$false;return}
             if (-not $FixturePath -and $now -ge $script:nextPresence) {
@@ -777,18 +834,42 @@ try {
                 $script:alive=$present
             }
             Sync-ReactionTimer
+            Sync-Taskbar
             if ($script:alive -and -not $FixturePath) {
                 Load-UI
+                # 설정창은 활성화 없이 한 번 준비한다. 이후 클릭에서 전체 UI 생성을 기다리지 않는다.
+                if(-not $script:settingsWindow -and -not $script:settingsWarmScheduled -and $now-$started -ge 3 -and $now -ge $script:nextSettingsWarm){
+                    $script:settingsWarmScheduled=$true
+                    $script:nextSettingsWarm=$now+30
+                    $null=$script:mainCard.window.Dispatcher.BeginInvoke([Action]{
+                        try{Prepare-Settings}catch{$script:report.settingsPrepareError=$_.Exception.GetType().Name}
+                        finally{$script:settingsWarmScheduled=$false}
+                    },[Windows.Threading.DispatcherPriority]::ApplicationIdle)
+                }
+                if($script:config.placement -eq 'dock' -and $now -ge $script:nextSession -and ($script:config.sessionTokens -or $script:config.sessionCache -or $script:config.sessionCost -or $script:config.sessionSpeed)){
+                    $sessionHome=if($env:CODEX_HOME){$env:CODEX_HOME}else{Join-Path $env:USERPROFILE '.codex'}
+                    $script:sessionReader.Refresh($sessionHome,$script:config.sessionThreadId,$env:CODEX_THREAD_ID);$script:nextSession=$now+5
+                }
                 if($now -ge $script:nextUpdate){Check-ScriptUpdate}
-                if ($now -ge $script:nextScan) {[UsageScripts.Desktop]::Refresh();$script:nextScan=$now+$script:config.chromeMs/1000.0}
+                if ($now -ge $script:nextScan) {
+                    # 창 부착에는 Pet의 접근성 트리가 필요 없다. 설정에서 위치를 바꿀 때만 확인한다.
+                    if($script:config.placement -ne 'dock' -or ($script:settingsWindow -and $script:settingsWindow.IsVisible)){[UsageScripts.Desktop]::Refresh()}
+                    if($script:config.placement -eq 'dock'){[UsageScripts.AppDock]::Refresh()}
+                    $script:nextScan=$now+$(if($script:config.placement -eq 'dock'){2}else{$script:config.chromeMs/1000.0})
+                }
                 if (-not $script:rpc) {try {Start-Rpc} catch {$script:lastError='path'}}
                 if ($script:rpc -and -not $script:rpc.Busy) {
                     if ($script:rpc.Result) {
-                        $script:data=$script:rpc.Result|ConvertFrom-Json;$script:rpc.Result=$null;$script:lastData=$now;$script:report.usageRead=$true;$script:lastError=$null
+                        $incoming=$script:rpc.Result|ConvertFrom-Json
+                        $script:data=Merge-UsageSnapshot $script:usageHealth $incoming $script:rpc.AccountKey $now
+                        $script:rpc.Result=$null;$script:lastData=$now;$script:report.usageRead=$true;$script:lastError=$null
                         if ($script:settingsWindow) {$isPro=Test-Pro $script:data;$script:fields.short.IsEnabled=-not $isPro;$script:fields.shortReset.IsEnabled=-not $isPro -and [bool]$script:fields.short.IsChecked;$script:proHint.Visibility=if ($isPro) {'Visible'} else {'Collapsed'}}
                         if (Test-CreditEvent $script:creditState $script:data $script:config.creditStep) {if ($script:config.creditNotice -and $script:config.placement -ne 'hidden') {$script:creditVisible=$true;Play-Notice 'credit'}}
                     }
-                    if ($script:rpc.Error) {$script:lastError=$script:rpc.Error}
+                    if ($script:rpc.Error) {
+                        $script:lastError=$script:rpc.Error
+                        if($script:lastError -in @('login','account')){$script:usageHealth=New-UsageHealth;$script:data=$null;$script:lastData=0}
+                    }
                     if ($now -ge $script:nextUsage -or $script:rpc.Dirty) {$script:rpc.Refresh();$script:nextUsage=$now+$script:config.pollSeconds}
                 }
                 if ($script:config.resetNotice -and -not $script:feed.Busy) {
@@ -800,6 +881,7 @@ try {
                 if ($script:settingsWindow -and $script:settingsWindow.IsVisible) {Sync-PetAvailability}
                 # 새 텍스트는 초마다만 렌더링; 이동 좌표는 50ms마다 갱신한다.
                 if ($now -ge $script:nextRender) {Render;if($script:settingsWindow -and $script:settingsWindow.IsVisible){Sync-UpdateStatus};$script:nextRender=$now+1}
+                elseif ($script:mode -eq 'dock') {Update-Dock}
                 elseif ($script:mainCard.window.IsVisible) {
                     $moving=if ($FixturePath) {$script:fixtureFrame} else {[UsageScripts.Desktop]::MovedFrame()}
                     if ($moving.Pet -and ($script:lastMoveX -ne $moving.Pet.x -or $script:lastMoveY -ne $moving.Pet.y -or $script:lastRevision -ne $moving.Revision)) {
@@ -819,11 +901,14 @@ try {
     $report.loopCPUSeconds=[Math]::Round([Diagnostics.Process]::GetCurrentProcess().TotalProcessorTime.TotalSeconds-$loopCpu,3);$report.loopSeconds=[Math]::Round((Now)-$loopStart,1)
     $report.scanCPUSeconds=[Math]::Round([UsageScripts.Desktop]::ScanCPUSeconds-$script:scanCpuStart,3);$report.uiCPUSeconds=[Math]::Round([UsageScripts.Desktop]::ThreadCPUSeconds()-$loopUiCPU,3);$report.warmupExcludedSeconds=$MeasureAfterSeconds
 } finally {
+    [UsageScripts.AppDock]::SetWakeWindow(0)
+    [UsageScripts.AppDock]::StopWatching()
+    Stop-Taskbar
     Stop-UpdateCheck
     if ($rpc) {$rpc.Dispose()};$report.ownedServerStopped=$true
     $feed.Cancel()
     Close-Tray
-    if ($settingsWindow) {$settingsWindow.Close()}
+    if ($settingsWindow) {$script:closingSettingsForExit=$true;$settingsWindow.Close()}
     if ($uiLoaded) {foreach ($card in @($mainCard,$resetCard,$creditCard)) {$card.window.Close()}}
     if ($ReportPath) {Write-Json $ReportPath $report}
     if (-not $Once) {$instance=Read-Json (Join-Path $profile 'instance.json');if ($instance.pid -eq $PID) {Remove-Item -LiteralPath (Join-Path $profile 'instance.json') -ErrorAction SilentlyContinue}}
