@@ -12,13 +12,15 @@ namespace UsageScripts {
         readonly ToolTip tooltip=new ToolTip();readonly Timer timer=new Timer(),animation=new Timer();
         readonly JavaScriptSerializer json=new JavaScriptSerializer();readonly Dictionary<string,object> report=new Dictionary<string,object>();
         TaskbarReading[] readings=new TaskbarReading[0];TaskbarSlot slot;
-        bool light=true,remaining,hovered,pressed,dirty=true;float hover;double nextScan;string designKey="",tipKey="",basis="",capturedKey="";
+        bool light=true,remaining,hovered,pressed,dirty=true;float hover;double nextScan,nextParentCheck;string designKey="",tipKey="",basis="",capturedKey="";
+        Dictionary<string,object> cachedState;long stateLength=-1,stateStamp;
         protected override bool ShowWithoutActivation{get{return true;}}
         // 스타일을 나중에 덮어쓰지 않고 레이어·비활성·최상위 속성을 생성 시 정한다.
         protected override CreateParams CreateParams{get{var p=base.CreateParams;p.ExStyle|=0x08080088;return p;}}
         static double Now(){return DateTimeOffset.UtcNow.ToUnixTimeSeconds();}
         public TaskbarWidget(string path,int parent,string diagnostic){
             statePath=path;parentId=parent;reportPath=diagnostic;
+            TaskbarHost.DiagnosticsEnabled=!String.IsNullOrEmpty(diagnostic);
             using(var process=Process.GetProcessById(parent))parentStamp=process.StartTime.ToUniversalTime().Ticks;
             Text="Codex Usage Monitor - taskbar";FormBorderStyle=FormBorderStyle.None;ShowInTaskbar=false;TopMost=true;
             StartPosition=FormStartPosition.Manual;Location=new Point(-32000,-32000);Size=new Size(104,48);AutoScaleMode=AutoScaleMode.None;
@@ -47,8 +49,15 @@ namespace UsageScripts {
         }
         static object Get(Dictionary<string,object> state,string key){object value;return state.TryGetValue(key,out value)?value:null;}
         Dictionary<string,object> ReadState(){
-            try{using(var stream=new FileStream(statePath,FileMode.Open,FileAccess.Read,FileShare.ReadWrite|FileShare.Delete)){
-                if(stream.Length>32768)return null;using(var reader=new StreamReader(stream))return json.DeserializeObject(reader.ReadToEnd()) as Dictionary<string,object>;
+            try{
+                var file=new FileInfo(statePath);
+                if(!file.Exists || file.Length>32768){cachedState=null;return null;}
+                long stamp=file.LastWriteTimeUtc.Ticks,length=file.Length;
+                if(cachedState!=null && stamp==stateStamp && length==stateLength)return cachedState;
+                using(var stream=new FileStream(statePath,FileMode.Open,FileAccess.Read,FileShare.ReadWrite|FileShare.Delete)){
+                if(stream.Length>32768)return null;
+                using(var reader=new StreamReader(stream))cachedState=json.DeserializeObject(reader.ReadToEnd()) as Dictionary<string,object>;
+                stateStamp=stamp;stateLength=length;return cachedState;
             }}catch{return null;}
         }
         void HideWidget(){animation.Stop();hovered=pressed=false;hover=0;dirty=true;if(Visible)Hide();}
@@ -79,18 +88,23 @@ namespace UsageScripts {
         }
         void TickWidget(){
             try{
-                try{using(var parent=Process.GetProcessById(parentId)){if(parent.StartTime.ToUniversalTime().Ticks!=parentStamp){Close();return;}}}catch{Close();return;}
-                var state=ReadState();double now=Now();
+                double now=Now();
+                // 부모 확인은 5초마다, 상태 파일은 변경 시에만 해석한다. 만료 판정은 매 틱 유지한다.
+                if(now>=nextParentCheck){
+                    try{using(var parent=Process.GetProcessById(parentId)){if(parent.StartTime.ToUniversalTime().Ticks!=parentStamp){Close();return;}}}catch{Close();return;}
+                    nextParentCheck=now+5;
+                }
+                var previous=cachedState;var state=ReadState();
                 if(state==null || !Object.Equals(Get(state,"enabled"),true) || now-Convert.ToDouble(Get(state,"at"))>15){HideWidget();return;}
-                ApplyState(state);if(now>=nextScan){TaskbarHost.Refresh();nextScan=now+2;}
+                if(!Object.ReferenceEquals(previous,state))ApplyState(state);if(now>=nextScan){TaskbarHost.Refresh();nextScan=now+2;}
                 var next=TaskbarHost.GetSlot();if(next==null || now-next.Stamp>5){HideWidget();return;}
                 if(slot==null || slot.Width!=next.Width || slot.Height!=next.Height || slot.Scale!=next.Scale)dirty=true;slot=next;
                 if(TaskbarHost.Attach(Handle,slot)){
-                    if(!Visible){Show();dirty=true;}if(dirty)DrawSurface();TaskbarHost.Attach(Handle,slot);
+                    if(!Visible){Show();dirty=true;}if(dirty)DrawSurface();
                     report["width"]=slot.Width;report["height"]=slot.Height;report["readingCount"]=readings.Length;report["light"]=light;
                 }else HideWidget();
             }catch(Exception error){report["error"]=error.GetType().FullName;HideWidget();}
-            finally{if(!IsDisposed){report["placed"]=TaskbarHost.IsPlaced(Handle,slot);report["visible"]=Visible;report["surfaceHit"]=TaskbarHost.SurfaceHit;report["anchorKind"]=TaskbarHost.AnchorKind;report["anchorLeft"]=TaskbarHost.AnchorLeft;report["layered"]=true;report["animationActive"]=animation.Enabled;report["reason"]=TaskbarHost.Status;report["phase"]=TaskbarHost.PlacementState;Save(reportPath,report);}}
+            finally{if(!IsDisposed && !String.IsNullOrEmpty(reportPath)){report["placed"]=TaskbarHost.IsPlaced(Handle,slot);report["visible"]=Visible;report["surfaceHit"]=TaskbarHost.SurfaceHit;report["anchorKind"]=TaskbarHost.AnchorKind;report["anchorLeft"]=TaskbarHost.AnchorLeft;report["layered"]=true;report["animationActive"]=animation.Enabled;report["reason"]=TaskbarHost.Status;report["phase"]=TaskbarHost.PlacementState;Save(reportPath,report);}}
         }
         void Save(string path,object value){
             if(String.IsNullOrEmpty(path))return;string temp=path+"."+Process.GetCurrentProcess().Id+".tmp";

@@ -3,22 +3,32 @@
     if(-not $enabled){Stop-Taskbar;return}
     $now=Now
     if($now -lt $script:nextTaskbar){return};$script:nextTaskbar=$now+1
-    if(-not $script:taskbarProcess -or $script:taskbarProcess.HasExited){
-        $path=Join-Path $PSScriptRoot 'Taskbar.ps1';$ps=Join-Path $env:SystemRoot 'System32/WindowsPowerShell/v1.0/powershell.exe'
-        $args='-NoLogo -NoProfile -NonInteractive -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "'+$path+'" -StatePath "'+$script:taskbarStateFile+'" -ParentId '+$PID
-        if($TracePath){$args+=' -ReportPath "'+(Join-Path $profile 'taskbar-diagnostic.json')+'"'}
-        if($TracePath){$script:taskbarProcess=Start-Process -FilePath $ps -ArgumentList $args -WindowStyle Hidden -RedirectStandardError (Join-Path $profile 'taskbar-stderr.log') -PassThru}
-        else{$script:taskbarProcess=Start-Process -FilePath $ps -ArgumentList $args -WindowStyle Hidden -PassThru}
+    if(-not ('UsageScripts.TaskbarService' -as [type])){
+        Add-Type -AssemblyName System.Windows.Forms,System.Drawing,System.Web.Extensions,UIAutomationClient,UIAutomationTypes,WindowsBase
+        Add-Type -Path @("$PSScriptRoot/TaskbarNative.cs","$PSScriptRoot/TaskbarDesign.cs","$PSScriptRoot/TaskbarWidget.cs","$PSScriptRoot/TaskbarService.cs") -ReferencedAssemblies @('System.dll','System.Core.dll',[Web.Script.Serialization.JavaScriptSerializer].Assembly.Location,[Windows.Forms.Form].Assembly.Location,[Drawing.Bitmap].Assembly.Location,[Windows.Automation.AutomationElement].Assembly.Location,[Windows.Automation.ControlType].Assembly.Location,[Windows.Rect].Assembly.Location)
+    }
+    if(-not [UsageScripts.TaskbarService]::Running){
+        $diagnostic=if($TracePath){Join-Path $profile 'taskbar-diagnostic.json'}else{''}
+        [UsageScripts.TaskbarService]::Start($script:taskbarStateFile,$PID,$diagnostic)
+        $script:taskbarStateKey='';$script:nextTaskbarHeartbeat=0
     }
     $display=Get-UsagePresentation $script:data $script:usageHealth $script:config $now $script:words $script:lastError
     $text=if($script:lastData){$display.lines[0]}else{T 'connecting'}
     $text=[regex]::Replace($text,'\s*[\(（][^\)）]*[\)）]','')
-    $system=Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' -Name SystemUsesLightTheme -ErrorAction SilentlyContinue
-    $light=[bool]$system.SystemUsesLightTheme
+    if($now -ge $script:nextTaskbarTheme){
+        $system=Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' -Name SystemUsesLightTheme -ErrorAction SilentlyContinue
+        $script:taskbarLight=[bool]$system.SystemUsesLightTheme;$script:nextTaskbarTheme=$now+5
+    }
+    $light=$script:taskbarLight
     $items=@(Get-TaskbarReadings $script:data $script:usageHealth $script:config $now $script:words)
     $basis=if($script:config.usageDisplay -eq 'remaining'){$script:words.taskbar_remaining}else{$script:words.used}
-    $state=@{enabled=$true;at=$now;text=$text;tooltip=(($display.lines -join "`n")+"`n"+(T 'settings'));light=$light;remaining=($script:config.usageDisplay -eq 'remaining');basis=$basis;items=$items;commandHwnd=$script:commandHwnd}
-    Write-Json $script:taskbarStateFile $state
+    $state=[ordered]@{enabled=$true;text=$text;tooltip=(($display.lines -join "`n")+"`n"+(T 'settings'));light=$light;remaining=($script:config.usageDisplay -eq 'remaining');basis=$basis;items=$items;commandHwnd=$script:commandHwnd}
+    $key=$state|ConvertTo-Json -Depth 8 -Compress
+    # 내용이 같으면 5초 간격의 생존 신호만 쓴다. 사용량 조회 주기는 변경하지 않는다.
+    if($key -cne $script:taskbarStateKey -or $now -ge $script:nextTaskbarHeartbeat){
+        $state.at=$now;Write-Json $script:taskbarStateFile $state
+        $script:taskbarStateKey=$key;$script:nextTaskbarHeartbeat=$now+5
+    }
 }
 function Get-TaskbarReadings($Data,$Health,$Settings,[double]$Now,$Words) {
     # 표시 문구를 다시 파싱하지 않고 원본 수치에서 게이지 데이터를 만든다.
@@ -41,8 +51,5 @@ function Get-TaskbarReadings($Data,$Health,$Settings,[double]$Now,$Words) {
     return $items
 }
 function Stop-Taskbar {
-    if($script:taskbarProcess){
-        if(-not $script:taskbarProcess.HasExited){Stop-Process -Id $script:taskbarProcess.Id -ErrorAction SilentlyContinue;$null=$script:taskbarProcess.WaitForExit(1500)}
-        $script:taskbarProcess.Dispose();$script:taskbarProcess=$null
-    }
+    if('UsageScripts.TaskbarService' -as [type]){[UsageScripts.TaskbarService]::Stop()}
 }
