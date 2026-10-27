@@ -3,6 +3,7 @@
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) || exit 1
 export CODEX_USAGE_SCRIPTS_ROOT=$(dirname -- "$SCRIPT_DIR")
 cd -- "$CODEX_USAGE_SCRIPTS_ROOT" || exit 1
+if [ "$#" -eq 0 ]; then set -- --reopen; fi
 case "${1-}" in
     --once|--stop|--register-startup|--remove-startup)
         exec /usr/bin/osascript -l JavaScript "$SCRIPT_DIR/Monitor.js" "$@" ;;

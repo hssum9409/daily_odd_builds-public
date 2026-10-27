@@ -12,13 +12,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.5.1"><img alt="버전 1.5.1" src="https://img.shields.io/badge/version-1.5.1-a5e4ce?labelColor=101617"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.5.2"><img alt="버전 1.5.2" src="https://img.shields.io/badge/version-1.5.2-a5e4ce?labelColor=101617"></a>
   <img alt="Windows 실제 실행 검증" src="https://img.shields.io/badge/Windows-tested-a5e4ce?labelColor=101617">
   <img alt="macOS 실기기 미검증 preview" src="https://img.shields.io/badge/macOS-preview-f1d77f?labelColor=101617">
   <a href="LICENSE"><img alt="코드 라이선스 MIT" src="https://img.shields.io/badge/code-MIT-a5e4ce?labelColor=101617"></a>
 </p>
 
-<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.1/CodexUsageMonitorScripts-1.5.1-windows-installer.zip">Windows 설치형 다운로드 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.5.1">전체 다운로드와 변경 사항</a></p>
+<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.2/CodexUsageMonitorScripts-1.5.2-windows-installer.zip">Windows 설치형 다운로드 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.5.2">전체 다운로드와 변경 사항</a></p>
 
 ![Codex Usage Monitor — 실제 Windows UI 렌더러와 지피쨩 아트로 구성한 소개 이미지](docs/images/hero.webp)
 
@@ -36,12 +36,12 @@ Day 001 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · OS �
 
 | 환경 | 다운로드 | 압축 해제 후 실행 | 상태 |
 | --- | --- | --- | --- |
-| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.1/CodexUsageMonitorScripts-1.5.1-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
-| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.1/CodexUsageMonitorScripts-1.5.1-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
-| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.1/CodexUsageMonitorScripts-1.5.1-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
-| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.1/CodexUsageMonitorScripts-1.5.1-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
+| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.2/CodexUsageMonitorScripts-1.5.2-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
+| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.2/CodexUsageMonitorScripts-1.5.2-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
+| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.2/CodexUsageMonitorScripts-1.5.2-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
+| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.2/CodexUsageMonitorScripts-1.5.2-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
 
-[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.5.1) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.1/SHA256SUMS.txt)
+[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.5.2) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.2/SHA256SUMS.txt)
 
 **Mac은 아직 전체 기능의 실기기 검증이 끝나지 않았습니다.** 일부 사용자 진단으로 글자 표시·CLI 탐색·사용량 응답을 확인했으며, 권한·Pet 추적·로그인 자동 실행·실제 자동 업데이트 전체 흐름은 장치 검증 전입니다. 아래 이미지도 모두 Windows 화면입니다. [미검증 목록](docs/MAC-QA.md)을 확인하고 preview 테스트 용도로 사용해주세요.
 
@@ -198,6 +198,13 @@ Windows는 실제 계정/Pet 연결 검사와 격리 WPF·설치·업데이트·
 
 ## 업데이트 로그
 
+### 1.5.2 · 2026-10-28
+
+- **작업표시줄 위젯이 켜져 있어도 작업표시줄 뒤에 가려지던 문제**를 수정했습니다. 좌표·최상위 속성뿐 아니라 실제 창 순서를 확인하고, 필요한 경우 작업표시줄 바로 위로 복구합니다. 트레이 팝업의 순서는 유지합니다.
+- Windows에서 패널을 숨기면 트레이 아이콘 OFF 설정이어도 복귀용 아이콘을 유지합니다. 패널을 다시 표시하면 원래 아이콘 설정을 따릅니다.
+- 숨김 상태에서 앱을 다시 실행하면 설정이 열립니다. Windows 시작 메뉴·포터블과 Mac 포터블 실행기에 반영했으며 로그온 자동 시작은 설정창을 열지 않습니다.
+- 실제 Explorer에서 1.5.1의 가림을 재현하고 수정본의 복구·반복 가림·팝업·포커스를 검사했습니다. Windows/Mac 설치형·포터블·자동 업데이트 파일을 갱신하며 Mac은 실기기 미검증 preview를 유지합니다.
+
 ### 1.5.1 · 2026-10-28
 
 - 자동 접힘에서 복원될 때 대시보드가 위로 튀던 문제와 설정창이 Codex 뒤에 가려지던 창 순서를 수정했습니다.
@@ -312,7 +319,7 @@ AI 슬롭 같다구요? 으쩌라구요
 
 ## 소스와 라이선스
 
-이 폴더는 **1.5.1 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
+이 폴더는 **1.5.2 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
 
 코드는 [MIT](LICENSE)입니다. 한국어·중국어·일본어 참고 번역과 영어 원문을 제공합니다. 지피쨩 캐릭터 아트의 출처와 적용 범위는 [ARTWORK.md](docs/ARTWORK.md), 화면 예시의 제작 방식은 [README-MEDIA.md](docs/README-MEDIA.md)를 참고하세요. OpenAI 공식 제품이 아닙니다.
 

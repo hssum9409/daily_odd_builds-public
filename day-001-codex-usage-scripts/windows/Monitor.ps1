@@ -1,5 +1,5 @@
 ﻿param(
-    [switch]$Once, [switch]$Settings, [switch]$Stop, [switch]$Toggle,
+    [switch]$Once, [switch]$Settings, [switch]$Stop, [switch]$Toggle, [switch]$Reopen,
     [switch]$RegisterStartup, [switch]$RemoveStartup,
     [int]$SmokeSeconds = 0, [string]$ReportPath = '', [string]$FixturePath = '', [switch]$SelfTest, [switch]$ForceIdle, [int]$MeasureAfterSeconds = 0,
     [string]$TracePath = $env:CODEX_USAGE_SCRIPTS_TRACE
@@ -24,7 +24,7 @@ function Write-Json([string]$Path, $Value) {
 }
 $config = Get-Normalized (Read-Json $settingsFile) $defaults
 $words = $allWords.($config.language)
-function Save-Config { Write-Json $settingsFile $script:config }
+function Save-Config { Write-Json $settingsFile $script:config;Sync-Tray }
 function T([string]$Key) { return [string]$script:words.$Key }
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'; $runName = 'CodexUsageMonitorScripts'
 if($env:CODEX_USAGE_SCRIPTS_REGISTRY_NAMESPACE){
@@ -34,7 +34,7 @@ if($env:CODEX_USAGE_SCRIPTS_REGISTRY_NAMESPACE){
 function Set-Startup([bool]$Enabled) {
     if ($Enabled) {
         $exe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-        $value = '"' + $exe + '" -NoLogo -NoProfile -NonInteractive -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + (Join-Path $PSScriptRoot 'Launch.ps1') + '"'
+        $value = '"' + $exe + '" -NoLogo -NoProfile -NonInteractive -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + (Join-Path $PSScriptRoot 'Launch.ps1') + '" -Background'
         if (-not (Test-Path $runKey)) {$null = New-Item -Path $runKey}
         $null = New-ItemProperty -Path $runKey -Name $runName -Value $value -PropertyType String -Force
     } else { Remove-ItemProperty -Path $runKey -Name $runName -ErrorAction SilentlyContinue }
@@ -46,7 +46,7 @@ $owns = $false
 try { $owns = $mutex.WaitOne(0) } catch [Threading.AbandonedMutexException] { $owns = $true }
 if (-not $owns) {
     if ($Once) { Write-Error 'Monitor already running. Use refresh.cmd or stop.cmd first.'; exit 2 }
-    $command = if ($Stop) { 'stop' } elseif ($Toggle) { 'toggle' } elseif ($Settings) { 'settings' } else { 'refresh' }
+    $command = if ($Stop) { 'stop' } elseif ($Toggle) { 'toggle' } elseif ($Settings) { 'settings' } elseif ($Reopen) {'reopen'} else { 'refresh' }
     # PS 5.1의 경로 길이 제한을 고려해 GUID의 불필요한 구분자를 생략한다.
     $id=[Guid]::NewGuid().ToString('N');Write-Json (Join-Path $commandFolder ($id+'.json')) @{command=$command;id=$id}
     $mutex.Dispose(); exit 0
@@ -254,6 +254,7 @@ function Invoke-MonitorCommands {
         switch($request.command){
             'stop'{$script:quit=$true}
             'settings'{$script:lastSettingsRequestAt=$request.requestedAt;Show-Settings}
+            'reopen'{if($script:config.placement -eq 'hidden'){Show-Settings}else{Request-MonitorRefresh}}
             'fold'{if($script:mode -eq 'dock'){Toggle-DashboardFold}}
             'toggle'{Toggle-Monitor}
             'refresh'{Request-MonitorRefresh}
@@ -270,8 +271,10 @@ function Close-Tray {
     $script:toggleItem=$null;$script:startupItem=$null
 }
 function Sync-Tray {
-    if (-not $script:config.trayIcon) {Close-Tray;return}
+    # 패널이 숨겨진 동안에는 복귀용 아이콘을 유지하고, 표시 복원 후에는 원래 선호를 따른다.
+    if (-not ($script:config.trayIcon -or $script:config.placement -eq 'hidden')) {Close-Tray;return}
     if ($script:tray) {return}
+    Add-Type -AssemblyName System.Windows.Forms,System.Drawing
     $script:tray=New-Object Windows.Forms.NotifyIcon; $script:tray.Icon=New-Object Drawing.Icon((Join-Path $root 'assets\gp-chan.ico')); $script:tray.Text='Codex Usage Monitor'; $script:tray.Visible=$true
     $menu=New-Object Windows.Forms.ContextMenuStrip
     $item=$menu.Items.Add((T 'settings')); $item.Add_Click({Show-Settings})
@@ -555,7 +558,8 @@ try {
         if ($fixture.pet) {$fixtureFrame.Pet=New-Object UsageScripts.Box($fixture.pet.x,$fixture.pet.y,$fixture.pet.w,$fixture.pet.h)}
         Load-UI;Render
     }
-    if ($Settings) {Show-Settings}
+    Sync-Tray
+    if ($Settings -or ($Reopen -and $config.placement -eq 'hidden')) {Show-Settings}
     if ($SelfTest) {
         if (-not $FixturePath -or -not $ReportPath) {throw 'SelfTest requires an isolated fixture/profile and report path'}
         $checks=0
@@ -621,6 +625,13 @@ try {
         Assert-Tray ($null -eq $tray) 'hidden tray icon and resources disposed'
         Assert-Tray $mainCard.window.IsVisible 'panel remains visible without tray'
         Assert-Tray $settingsWindow.IsVisible 'settings remains open without tray'
+        $previousPlacement=$config.placement;$config.placement='hidden';Save-Config;Render
+        Assert-Tray ([bool]($tray -and $tray.Visible)) 'hidden panel keeps a recovery tray icon'
+        Assert-Tray (-not (Read-Json $settingsFile).trayIcon) 'temporary recovery icon preserves the tray preference'
+        $settingsWindow.Close();$tray.ContextMenuStrip.Items[0].PerformClick()
+        Assert-Tray $settingsWindow.IsVisible 'recovery tray settings action opens the actual settings window'
+        $config.placement=$previousPlacement;Save-Config;Render
+        Assert-Tray ($null -eq $tray) 'restoring the panel honors the original tray-off preference'
         $settingsWindow.Close();Show-Settings
         Assert-Tray ($settingsWindow.IsVisible -and -not $fields.trayIcon.IsChecked) 'settings reopens with hidden tray'
         $reopenedHandle=(New-Object Windows.Interop.WindowInteropHelper($settingsWindow)).Handle
