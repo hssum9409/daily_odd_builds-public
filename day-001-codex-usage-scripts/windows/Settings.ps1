@@ -58,7 +58,7 @@ function Sync-PetAvailability {
     }
     $selected=Get-PositionSelection $script:config $script:mode
     if($script:lastPositionSelection -cne $selected) {
-        foreach($key in @('above','below','free','hidden')) {
+        foreach($key in @('above','below','free','hidden','dock')) {
             $button=$script:positionButtons[$key];if(-not $button){continue}
             $button.Background=Brush $(if($key -eq $selected){'#a5e4ce'}else{'#233236'})
             $button.Foreground=Brush $(if($key -eq $selected){'#101617'}else{'#edf4f1'})
@@ -112,6 +112,10 @@ function UI-Range($Parent,[string]$Key,[string]$Title,[double]$Minimum,[double]$
     return $slider
 }
 function UI-Rule($Parent) {$line=New-Object Windows.Controls.Border;$line.Height=1;$line.Background=Brush '#2b393c';$line.Margin='0,10';$null=$Parent.Children.Add($line)}
+function UI-Entry($Parent,[string]$Key){
+    $label=UI-Text (T $Key) 10 '#99aeaa';$label.Margin='0,7,0,3';$null=$Parent.Children.Add($label)
+    $input=New-Object Windows.Controls.TextBox;$input.Text=$script:config.$Key;$input.FontSize=11;$script:fields[$Key]=$input;$null=$Parent.Children.Add($input);$input.Add_LostFocus({Save-Fields})
+}
 function Set-SettingsPage([string]$Name) {
     foreach ($key in $script:settingsPages.Keys) {
         $script:settingsPages[$key].scroll.Visibility=if ($key -eq $Name) {'Visible'} else {'Collapsed'}
@@ -173,6 +177,10 @@ function Build-SettingsContent {
             $b=Button (T $key) $action;$b.Margin='0,3';$script:positionButtons[$key]=$b;$null=$pair[$i].Children.Add($b)
         }
     }
+    $b=Button (T 'dock') {Set-Position 'dock'};$b.Margin='0,3';$script:positionButtons['dock']=$b;$null=$position.Children.Add($b)
+    $dockHint=UI-Text (T 'dock_hint') 10 '#99aeaa';$dockHint.Margin='0,6,0,0';$null=$position.Children.Add($dockHint)
+    $null=UI-Check $position 'taskbarWidget' (T 'taskbar_widget')
+    $null=$position.Children.Add((UI-Text (T 'taskbar_hint') 10 '#99aeaa'))
     $hint=UI-Text (T 'position_hint') 10 '#99aeaa';$hint.Margin='0,9,0,0';$null=$position.Children.Add($hint)
     $usage=UI-Section $general (T 'data');$null=UI-Choice $usage 'usageDisplay' (T 'usage_group') @('used','remaining') @((T 'displayUsed'),(T 'displayRemaining'))
     $pair=UI-Pair $usage
@@ -192,6 +200,12 @@ function Build-SettingsContent {
     UI-Rule $usage;$pair=UI-Pair $usage 12;$null=UI-Check $pair[0] 'balance' (T 'credit_data');$null=UI-Check $pair[1] 'creditNotice' (T 'credit_warning');$null=UI-Check $pair[1] 'creditSound' (T 'credit_sound')
     $creditLabels=@('1,000','3,000','5,000','10,000' | ForEach-Object {(T 'interval_credits').Replace('{n}',$_)})
     $null=UI-Choice $usage 'creditStep' (T 'credit_interval') @(1000,3000,5000,10000) $creditLabels
+    $session=UI-Section $general (T 'session_group')
+    foreach($row in @(@('sessionTokens','sessionCache'),@('sessionCost','sessionSpeed'))){$pair=UI-Pair $session;for($j=0;$j -lt 2;$j++){$null=UI-Check $pair[$j] $row[$j] (T $row[$j])}}
+    $null=$session.Children.Add((UI-Text (T 'session_hint') 10 '#99aeaa'));UI-Entry $session 'sessionThreadId'
+    $price=New-Object Windows.Controls.Expander;$price.Header=T 'metric_price_settings';$price.Style=$w.Resources['AdvancedExpander'];$priceBody=New-Object Windows.Controls.StackPanel;$price.Content=$priceBody;$null=$session.Children.Add($price)
+    foreach($key in @('sessionPriceModel','sessionInputPrice','sessionCachedPrice','sessionOutputPrice')){UI-Entry $priceBody $key}
+    $null=$priceBody.Children.Add((UI-Text (T 'metric_cost_hint') 10 '#99aeaa'))
     $startup=UI-Section $general (T 'startup_group')
     $script:config | Add-Member -NotePropertyName startupEnabled -NotePropertyValue ([bool](Get-ItemProperty -Path $runKey -Name $runName -ErrorAction SilentlyContinue)) -Force
     $c=UI-Check $startup 'startupEnabled' (T 'startup_register');$c.Add_Click({Set-Startup ([bool]$this.IsChecked)})
@@ -229,6 +243,9 @@ function Build-SettingsContent {
         $preview=New-Object Windows.Controls.Border;$preview.Background=Brush '#101617';$preview.Child=$rectangle;$script:previews[$g]=@{card=$card;lines=$lines};$null=$pair[1].Children.Add($preview)
     }
     $null=$style.Children.Add((UI-Text (T 'style_hint') 11.5 '#99aeaa'))
+    $themeSection=UI-Section $pages.style.stack (T 'dock_theme')
+    $null=UI-Check $themeSection 'dockFollowTheme' (T 'dock_theme_follow')
+    $null=$themeSection.Children.Add((UI-Text (T 'dock_theme_hint') 10 '#99aeaa'))
     $spacing=UI-Section $pages.style.stack (T 'spacing_group')
     foreach ($key in @('gapAbove','gapBelow','noticeGap')) {$null=UI-Range $spacing $key (T $key) $uiSpec.spacing.min $uiSpec.spacing.max}
     $null=$spacing.Children.Add((UI-Text (T 'spacing_hint') 10 '#99aeaa'))
@@ -279,17 +296,22 @@ function Initialize-SettingsTaskbar($Window) {
     $handle=(New-Object Windows.Interop.WindowInteropHelper($Window)).EnsureHandle()
     [UsageScripts.TaskbarIdentity]::ApplyToWindow($handle,$icon,(Quote-ProcessArgument $path))
 }
-function Show-Settings {
+function Prepare-Settings {
     Load-UI
     if (-not $script:settingsWindow) {
         $w=New-Object Windows.Window;$w.Title='Codex Usage Monitor';$w.Background=Brush '#101617';$w.Foreground=Brush '#edf4f1';$w.WindowStartupLocation='CenterScreen'
         $w.Resources= [Windows.Markup.XamlReader]::Parse([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'Theme.xaml')))
         $w.Icon=New-Object Windows.Media.Imaging.BitmapImage([Uri](Join-Path $script:root 'assets\gp-chan.ico'))
         $w.Width=[Math]::Min(856,[Windows.SystemParameters]::WorkArea.Width-34);$w.Height=[Math]::Min(759,[Windows.SystemParameters]::WorkArea.Height-40);$w.MinWidth=[Math]::Min(776,$w.Width);$w.MinHeight=[Math]::Min(609,$w.Height)
-        $script:settingsWindow=$w;$script:report.settingsOpened=$true;Build-SettingsContent
+        $script:settingsWindow=$w
+        try{Build-SettingsContent}catch{
+            if($script:previews){foreach($entry in $script:previews.Values){$entry.card.window.Close()}}
+            $script:previews=$null;$script:settingsWindow=$null;$w.Close();throw
+        }
         $script:settingsTaskbarReady=$false
         $w.Add_Closing({
             param($sender,$eventArgs)
+            if(-not $script:closingSettingsForExit){$eventArgs.Cancel=$true;$sender.Hide();return}
             $handle=(New-Object Windows.Interop.WindowInteropHelper($sender)).Handle
             if($handle -ne [IntPtr]::Zero){try {[UsageScripts.TaskbarIdentity]::ClearWindow($handle)} catch {$script:report.taskbarError=$_.Exception.Message}}
         })
@@ -301,9 +323,18 @@ function Show-Settings {
         try {Initialize-SettingsTaskbar $w;$script:settingsTaskbarReady=$true;$script:report.taskbarError=$null}
         catch {$script:report.taskbarError=$_.Exception.Message}
     }
+}
+function Show-Settings {
+    $watch=[Diagnostics.Stopwatch]::StartNew();$built=-not [bool]$script:settingsWindow
+    Prepare-Settings;$script:report.settingsOpened=$true;$w=$script:settingsWindow
+    if($w.WindowState -eq 'Minimized'){$w.WindowState='Normal'}
     $w.Show();$w.UpdateLayout();Sync-PetAvailability
     if (-not $script:settingsSized) {$w.Width+=([Math]::Min(840,[Windows.SystemParameters]::WorkArea.Width-50)-$script:settingsRoot.ActualWidth);$w.Height+=([Math]::Min(720,[Windows.SystemParameters]::WorkArea.Height-60)-$script:settingsRoot.ActualHeight);$script:settingsSized=$true;$w.UpdateLayout()}
     $w.Topmost=$true;$null=$w.Activate();$w.Topmost=$false
     $hwnd=(New-Object Windows.Interop.WindowInteropHelper($w)).Handle
     [UsageScripts.Desktop]::DarkTitleBar($hwnd);$null=[UsageScripts.Desktop]::SetForegroundWindow($hwnd)
+    $timing=@{built=$built;showMs=[Math]::Round($watch.Elapsed.TotalMilliseconds,1);requestedToVisibleMs=$null}
+    if($script:lastSettingsRequestAt){$timing.requestedToVisibleMs=[Math]::Round([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()-$script:lastSettingsRequestAt,1)}
+    $script:lastSettingsRequestAt=0;$script:report.settingsTiming=$timing
+    if($TracePath){Write-Json (Join-Path $profile 'settings-performance.json') $timing}
 }

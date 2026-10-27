@@ -21,7 +21,7 @@
 
 Codex Pet 옆에 사용량·초기화권·잔여 크레딧·리셋 예고를 표시하는 작은 모니터입니다.
 
-[소개와 사용 방법](day-001-codex-usage-scripts/README.md) · [다운로드 · 1.4.13](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.13)
+[소개와 사용 방법](day-001-codex-usage-scripts/README.md) · [다운로드 · 1.5.0](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.5.0)
 
 Windows 설치형·포터블을 제공합니다. Mac 설치형·포터블은 실기기 미검증 preview입니다.
 <!-- day001:end -->

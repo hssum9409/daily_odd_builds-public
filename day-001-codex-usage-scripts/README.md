@@ -12,15 +12,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.13"><img alt="버전 1.4.13" src="https://img.shields.io/badge/version-1.4.13-a5e4ce?labelColor=101617"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.5.0"><img alt="버전 1.5.0" src="https://img.shields.io/badge/version-1.5.0-a5e4ce?labelColor=101617"></a>
   <img alt="Windows 실제 실행 검증" src="https://img.shields.io/badge/Windows-tested-a5e4ce?labelColor=101617">
   <img alt="macOS 실기기 미검증 preview" src="https://img.shields.io/badge/macOS-preview-f1d77f?labelColor=101617">
   <a href="LICENSE"><img alt="코드 라이선스 MIT" src="https://img.shields.io/badge/code-MIT-a5e4ce?labelColor=101617"></a>
 </p>
 
+<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.0/CodexUsageMonitorScripts-1.5.0-windows-installer.zip">Windows 설치형 다운로드 →</a></b> · <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.5.0">전체 다운로드와 변경 사항</a></p>
+
 ![Codex Usage Monitor — 실제 Windows UI 렌더러와 지피쨩 아트로 구성한 소개 이미지](docs/images/hero.webp)
 
-<p align="center"><sub>1.4.2 Windows 렌더러와 예시 데이터로 만든 소개 이미지입니다. 현재 배포 버전은 아래 다운로드 표를 확인하세요.</sub></p>
+<p align="center"><sub>기존 Windows 카드 렌더러와 예시 데이터로 만든 소개 이미지입니다. 신규 대시보드와는 디자인이 다릅니다.</sub></p>
 
 **Codex Pet 옆에 사용량·초기화권·잔여 크레딧·리셋 예고를 붙여두는 작은 모니터입니다.**
 
@@ -34,12 +36,12 @@ Day 001 of [daily_odd_builds](https://daily-odd-builds-portal.web.app/) · OS �
 
 | 환경 | 다운로드 | 압축 해제 후 실행 | 상태 |
 | --- | --- | --- | --- |
-| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.13/CodexUsageMonitorScripts-1.4.13-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
-| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.13/CodexUsageMonitorScripts-1.4.13-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
-| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.13/CodexUsageMonitorScripts-1.4.13-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
-| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.13/CodexUsageMonitorScripts-1.4.13-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
+| Windows 설치형 · 권장 | [설치형 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.0/CodexUsageMonitorScripts-1.5.0-windows-installer.zip) | `Install.cmd` | 실제 Windows 실행 검증 |
+| Windows 포터블 | [포터블 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.0/CodexUsageMonitorScripts-1.5.0-windows-portable.zip) | `Start.cmd` | 실제 Windows 실행 검증 |
+| Mac 설치형 | [설치형 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.0/CodexUsageMonitorScripts-1.5.0-macos-installer-preview.zip) | `Install.command` | **실기기 미검증 preview** |
+| Mac 포터블 | [포터블 preview ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.0/CodexUsageMonitorScripts-1.5.0-macos-portable-preview.zip) | `Start.command` | **실기기 미검증 preview** |
 
-[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.4.13) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.4.13/SHA256SUMS.txt)
+[릴리즈 전체 파일](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day001-v1.5.0) · [SHA-256 체크섬](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day001-v1.5.0/SHA256SUMS.txt)
 
 **Mac은 아직 전체 기능의 실기기 검증이 끝나지 않았습니다.** 일부 사용자 진단으로 글자 표시·CLI 탐색·사용량 응답을 확인했으며, 권한·Pet 추적·로그인 자동 실행·실제 자동 업데이트 전체 흐름은 장치 검증 전입니다. 아래 이미지도 모두 Windows 화면입니다. [미검증 목록](docs/MAC-QA.md)을 확인하고 preview 테스트 용도로 사용해주세요.
 
@@ -76,6 +78,8 @@ Pet 추적에는 접근성 권한이 필요할 수 있습니다. 실제 권한 �
 
 | 기능 | 하는 일 |
 | --- | --- |
+| 창 부착 · Windows | Codex 테마를 따르는 원형 게이지·내부 알림·세션 차트. 폭에 따라 자동 배치합니다. |
+| 작업표시줄 · Windows | 화살표 왼쪽에 5시간/주간 퍼센트와 남은 시간을 표시합니다. |
 | 사용량 / 잔여량 | 5시간·주간 비율과 초기화까지 남은 시간을 표시합니다. |
 | 초기화권 | 개수·가까운 만료일, 마우스를 올리면 개별 만료 정보를 표시합니다. |
 | 잔여 크레딧 | 숫자에 쉼표를 붙입니다. 소수점 아홉 자리를 감상할 필요는 없습니다. |
@@ -84,6 +88,16 @@ Pet 추적에는 접근성 권한이 필요할 수 있습니다. 실제 권한 �
 | Pet 위치 | 위/아래, 공간 부족 시 반대편, 별도 표시와 드래그를 지원합니다. |
 | 스타일 | 패널별 색·불투명도, 간격과 반응 속도를 조절합니다. |
 | 기본 편의 | 알림 소리, 4개 언어, 시간대, 시작 등록, 자동 업데이트를 제공합니다. |
+
+### 창 안과 작업표시줄에서도 · Windows
+
+설정의 위치에서 Codex 창 부착을 선택하면 우측 하단 대시보드를 사용합니다. 톱니바퀴로 설정을 열고 옆 아이콘으로 접습니다. 폭에 따라 기본형/좁은형을 자동 선택하며 우측 패널이 열리면 요약으로 표시합니다. 창을 옮기거나 크기를 바꾸는 동안 숨었다가 다시 나타납니다. 기존 Pet 표시도 유지합니다.
+
+세션 토큰·캐시 적중률·환산 비용·출력 속도는 지정한 대화의 로컬 기록으로 표시하고 각각 끌 수 있습니다. 비용은 입력한 단가로 계산한 환산치이며 실제 청구액이 아닙니다. 단가가 없으면 미설정으로 표시합니다. 세션 본문이나 계정 토큰을 외부로 보내지 않습니다.
+
+작업표시줄 위젯을 켜면 숨겨진 아이콘 화살표 왼쪽에 작은 원형 게이지·퍼센트·초기화까지 남은 시간이 나타납니다. 5시간 한도가 있는 계정은 주간과 함께 표시합니다. 클릭하면 설정이 열립니다. Windows 전용 옵션이며 기본 OFF입니다.
+
+앱 파일을 패치하거나 내부 공간을 예약하는 확장은 아닙니다. 외부 창을 Codex에 맞춰 배치하므로 테마·창 구조·작업표시줄 구성에 따라 달라질 수 있습니다. Mac에는 신규 UI를 제공하지 않습니다. [구현·실사용 검증 범위](docs/WINDOWS-APP-DOCK.md)
 
 ### 쓴 만큼, 또는 남은 만큼
 
@@ -126,9 +140,9 @@ Pet 추적에는 접근성 권한이 필요할 수 있습니다. 실제 권한 �
 <details>
 <summary>정사각 홍보 카드 보기</summary>
 
-<img src="docs/images/promotion-20261027.webp" width="640" alt="Codex Usage Monitor 정사각 홍보 일러스트 — 펫은 귀엽고, 한도는 현실입니다.">
+<img src="docs/images/promotion-20261027.webp" width="640" alt="Codex Usage Monitor 정사각 홍보 일러스트">
 
-제품 캐릭터와 작은 사용량 패널을 소개하는 생성 일러스트입니다. 실제 계정 수치·OS 화면이나 리셋 예고의 정확성을 입증하는 캡처가 아닙니다.
+설명용 생성 일러스트이며 실제 OS 화면이나 계정 데이터 캡처가 아닙니다. [이미지 출처](docs/README-MEDIA.md)
 
 </details>
 
@@ -181,6 +195,15 @@ Windows는 실제 계정/Pet 연결 검사와 격리 WPF·설치·업데이트·
 </details>
 
 ## 업데이트 로그
+
+### 1.5.0 · 2026-10-28
+
+- Windows 창 부착 대시보드: 테마 추종, 원형 게이지, 내부 리셋/크레딧 안내, 세션 지표와 접기·펼치기. 기존 Pet 모드는 유지합니다.
+- 작업표시줄 위젯: 화살표 왼쪽에 퍼센트와 초기화까지 남은 시간. 5시간/주간을 함께 지원하며 클릭하면 설정이 열립니다.
+- 폭에 따라 자동 배치: 기본형/좁은형 전환, 우측 패널 열림 시 요약, 창 조작 중 숨김 후 복원. 툴팁만으로 배치를 바꾸지 않습니다.
+- 입력 간섭 줄이기: C# 창 메시지 필터, 대상 이벤트 범위 축소, 필요한 세션 이벤트만 읽기, 설정창 재사용과 조회 상태 안내를 적용했습니다. 일반 실행에서 한글·포커스·접기/펼치기를 확인했습니다.
+- Windows/Mac 설치형·포터블·자동 업데이트 ZIP을 갱신했습니다. 신규 UI는 Windows 전용이며 Mac은 실기기 미검증 preview를 유지합니다.
+
 
 ### 1.4.13 · 2026-10-22
 
@@ -279,7 +302,7 @@ AI 슬롭 같다구요? 으쩌라구요
 
 ## 소스와 라이선스
 
-이 폴더는 **1.4.13 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
+이 폴더는 **1.5.0 배포 버전의 실행 소스 스냅샷**입니다. 개발 저장소의 Git 이력과 내부 QA 자료는 포함하지 않습니다. 설치·업데이트에는 파일 manifest가 포함된 Release ZIP을 사용하세요.
 
 코드는 [MIT](LICENSE)입니다. 한국어·중국어·일본어 참고 번역과 영어 원문을 제공합니다. 지피쨩 캐릭터 아트의 출처와 적용 범위는 [ARTWORK.md](docs/ARTWORK.md), 화면 예시의 제작 방식은 [README-MEDIA.md](docs/README-MEDIA.md)를 참고하세요. OpenAI 공식 제품이 아닙니다.
 

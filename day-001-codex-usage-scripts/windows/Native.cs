@@ -26,10 +26,11 @@ namespace UsageScripts {
         public volatile bool Dirty;
         public string Result;
         public string Error;
+        public string AccountKey = "";
         public string Executable;
         // 기본은 Codex stdio 서버다. 격리 전송 QA는 OS 내장 스크립트 서버로 대체한다.
         public string ServerArguments = "app-server --listen stdio://";
-        public string ClientVersion = "1.4.13";
+        public string ClientVersion = "1.5.0";
         public int TimeoutMilliseconds = 20000;
         public int OwnedPid { get { return process == null ? 0 : process.Id; } }
         public Rpc(string path) { Executable = path; }
@@ -91,6 +92,15 @@ namespace UsageScripts {
             }
             throw new TimeoutException();
         }
+        string ReadIdentity() {
+            var result=Call("account/read",new {refreshToken=false}) as Dictionary<string,object>;
+            object raw;var account=result!=null && result.TryGetValue("account",out raw) ? raw as Dictionary<string,object> : null;
+            if(account==null || !account.ContainsKey("type") || Convert.ToString(account["type"])=="apiKey") throw new InvalidOperationException("login");
+            string identity="";bool known=false;
+            foreach(string key in new string[]{"type","id","email"}){object value;if(account.TryGetValue(key,out value)){identity+=key+":"+Convert.ToString(value)+"\n";if(key!="type" && !String.IsNullOrEmpty(Convert.ToString(value)))known=true;}}
+            if(!known)return "";
+            using(var sha=System.Security.Cryptography.SHA256.Create())return BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(identity))).Replace("-","");
+        }
         public void Refresh() {
             lock (gate) {
                 if (Busy || disposed) return;
@@ -103,16 +113,25 @@ namespace UsageScripts {
                         Call("initialize", new {clientInfo = new {name = "codex_usage_scripts", title = "Codex Usage Monitor Scripts", version = ClientVersion}});
                         process.StandardInput.WriteLine("{\"method\":\"initialized\"}");
                         process.StandardInput.Flush();
-                        var result = Call("account/read", new {refreshToken = false}) as Dictionary<string, object>;
-                        var account = result != null && result.ContainsKey("account") ? result["account"] as Dictionary<string, object> : null;
-                        if (account == null || !account.ContainsKey("type") || Convert.ToString(account["type"]) == "apiKey") throw new InvalidOperationException("login");
                         initialized = true;
                     }
-                    Result = json.Serialize(Call("account/rateLimits/read", null));
+                    // 계정 전환 중에 다른 계정의 잔액/초기화권을 합치지 않는다.
+                    string before=ReadIdentity();
+                    var snapshot=Call("account/rateLimits/read",null) as Dictionary<string,object>;
+                    if(snapshot==null)throw new IOException("schema");
+                    string after=ReadIdentity();
+                    if(before!=after)throw new InvalidOperationException("account-changed");
+                    object accountId;
+                    // 이메일만 같은 다른 워크스페이스를 구분할 수 없으면 상세 캐시를 재사용하지 않는다.
+                    AccountKey="";
+                    if(snapshot.TryGetValue("accountId",out accountId) && !String.IsNullOrEmpty(Convert.ToString(accountId))){
+                        using(var sha=System.Security.Cryptography.SHA256.Create())AccountKey=BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(before+":"+Convert.ToString(accountId)))).Replace("-","");
+                    }
+                    Result = json.Serialize(snapshot);
                     Dirty = false;
                 } catch (Exception ex) {
-                    Error = ex is TimeoutException ? "timeout" : ex is InvalidOperationException ? "login" : "connection";
-                    CloseProcess(); initialized = false;
+                    Error = ex is TimeoutException ? "timeout" : ex is InvalidOperationException ? (ex.Message=="account-changed" ? "account" : "login") : "connection";
+                    CloseProcess(); initialized = false; AccountKey="";
                 } finally { Busy = false; }
             });
         }
@@ -287,6 +306,10 @@ namespace UsageScripts {
         public static long ExtendedStyle(IntPtr hwnd) {
             return IntPtr.Size == 8 ? GetStyle64(hwnd, ExtendedStyleIndex).ToInt64() : (uint)GetStyle32(hwnd, ExtendedStyleIndex);
         }
+        public static void SetNoActivate(IntPtr hwnd,bool enabled) {
+            long style=ExtendedStyle(hwnd);style=enabled ? style|0x08000000 : style&~0x08000000;
+            if(IntPtr.Size==8)SetStyle64(hwnd,ExtendedStyleIndex,new IntPtr(style));else SetStyle32(hwnd,ExtendedStyleIndex,unchecked((int)style));
+        }
         public static void HideFromSwitcher(IntPtr hwnd) {
             if (hwnd == IntPtr.Zero) throw new ArgumentException("Window handle is not initialized.", "hwnd");
             // 작업표시줄 숨김만으로는 Alt+Tab에서 제외되지 않는다. 패널만 도구 창으로 지정한다.
@@ -357,7 +380,7 @@ namespace UsageScripts {
             foreach (string path in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';')) { try { string exe = Path.Combine(path, "codex.exe"); if (File.Exists(exe)) return exe; } catch { } }
             return null;
         }
-        static List<int> Applications() {
+        internal static List<int> Applications() {
             var apps = new List<int>();uint mine;ProcessIdToSessionId((uint)Process.GetCurrentProcess().Id,out mine);
             IntPtr snapshot=CreateToolhelp32Snapshot(2,0);
             if (snapshot==new IntPtr(-1)) return apps;
@@ -443,5 +466,129 @@ namespace UsageScripts {
             });
         }
         static bool Same(Box a,Box b) {return a==null ? b==null : b!=null && a.x==b.x && a.y==b.y && a.w==b.w && a.h==b.h;}
+    }
+    // 앱 내부 코드를 주입하지 않는다. 도구 창의 소유자만 Codex로 지정하고,
+    // 클라이언트 영역의 물리 좌표를 읽어 우측 하단에 배치한다.
+    public sealed class HostFrame { public long Hwnd; public Box Client,Caret; public bool Visible; }
+    public static class AppDock {
+        [DllImport("user32.dll")]static extern bool EnumChildWindows(IntPtr hwnd,EnumProc proc,IntPtr unused);
+        [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern int GetClassName(IntPtr hwnd,StringBuilder name,int length);
+        [DllImport("user32.dll")]static extern bool GetWindowRect(IntPtr hwnd,out Rect rect);
+        public static string ChildLayout(){
+            var text=new StringBuilder();EnumChildWindows(new IntPtr(Current.Hwnd),delegate(IntPtr hwnd,IntPtr unused){Rect r;var name=new StringBuilder(128);GetClassName(hwnd,name,128);if(IsWindowVisible(hwnd) && GetWindowRect(hwnd,out r))text.Append(name+":"+r.left+","+r.top+","+r.right+","+r.bottom+";");return true;},IntPtr.Zero);return text.ToString();
+        }
+        delegate void WinEventProc(IntPtr hook,uint kind,IntPtr hwnd,int obj,int child,uint thread,uint time);
+        static readonly WinEventProc EventCallback=OnWindowEvent;
+        static readonly List<IntPtr> Hooks=new List<IntPtr>();
+        static readonly List<IntPtr> TargetHooks=new List<IntPtr>();
+        static bool watching;
+        static uint watchedProcess;
+        static long wakeWindow;
+        static bool moving;static long changedAt;static HostFrame lastObserved;
+        public static bool IsSettled{get{return !moving && (changedAt==0 || (Stopwatch.GetTimestamp()-changedAt)*1000.0/Stopwatch.Frequency>=200);}}
+        [DllImport("user32.dll")]static extern bool PostMessage(IntPtr hwnd,uint message,IntPtr wparam,IntPtr lparam);
+        public static void SetWakeWindow(long handle){wakeWindow=handle;}
+        public static uint WatchedProcess {get{return watchedProcess;}}
+        static long revision;
+        public static long Revision {get{return Interlocked.Read(ref revision);}}
+        [DllImport("user32.dll")] static extern IntPtr SetWinEventHook(uint first,uint last,IntPtr module,WinEventProc proc,uint process,uint thread,uint flags);
+        [DllImport("user32.dll")] static extern bool UnhookWinEvent(IntPtr hook);
+        static void OnWindowEvent(IntPtr hook,uint kind,IntPtr hwnd,int obj,int child,uint thread,uint time) {
+            if(kind!=3 && (hwnd.ToInt64()!=Current.Hwnd || obj!=0 || child!=0))return;
+            if(kind==0xA)moving=true;
+            if(kind==0xB){moving=false;changedAt=Stopwatch.GetTimestamp();}
+            Interlocked.Increment(ref revision);
+            if(wakeWindow!=0)PostMessage(new IntPtr(wakeWindow),0x8272,IntPtr.Zero,IntPtr.Zero);
+        }
+        public static void StartWatching() {
+            if(watching)return;watching=true;
+            // 전역으로 필요한 이벤트는 전면 창 변경 하나뿐이다. 자체 UI 이벤트는 제외한다.
+            // OUTOFCONTEXT 관찰이며 키보드 훅이나 다른 프로세스에 대한 DLL 주입은 아니다.
+            var hook=SetWinEventHook(3,3,IntPtr.Zero,EventCallback,0,0,2);
+            if(hook!=IntPtr.Zero)Hooks.Add(hook);
+            BindTarget();
+        }
+        static void BindTarget(){
+            uint pid=0;if(Current.Hwnd!=0)GetWindowThreadProcessId(new IntPtr(Current.Hwnd),out pid);
+            if(pid==watchedProcess)return;
+            foreach(var hook in TargetHooks)UnhookWinEvent(hook);TargetHooks.Clear();watchedProcess=pid;
+            if(pid==0)return;
+            // 이동 시작/종료·최소화만 받는다. 객체 생성·위치 이벤트는 채팅 접근성 갱신까지
+            // 대량으로 전달하므로 아예 구독하지 않는다. 일반 크기 변경은 느린 경계 확인으로 처리한다.
+            foreach(var pair in new uint[][]{new uint[]{0xA,0xB},new uint[]{0x16,0x17}}){
+                var hook=SetWinEventHook(pair[0],pair[1],IntPtr.Zero,EventCallback,pid,0,2);
+                if(hook!=IntPtr.Zero)TargetHooks.Add(hook);
+            }
+        }
+        public static void StopWatching(){
+            if(!watching)return;
+            foreach(var hook in Hooks)UnhookWinEvent(hook);Hooks.Clear();
+            foreach(var hook in TargetHooks)UnhookWinEvent(hook);TargetHooks.Clear();
+            watchedProcess=0;watching=false;moving=false;changedAt=0;lastObserved=null;
+        }
+        [StructLayout(LayoutKind.Sequential)] struct Rect { public int left, top, right, bottom; }
+        [StructLayout(LayoutKind.Sequential)] struct Point { public int x,y; }
+        [StructLayout(LayoutKind.Sequential)] struct GuiInfo {public int size;public uint flags;public IntPtr active,focus,capture,menu,moving,caret;public Rect rect;}
+        [DllImport("user32.dll")]static extern bool GetGUIThreadInfo(uint thread,ref GuiInfo info);
+        delegate bool EnumProc(IntPtr hwnd, IntPtr unused);
+        [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc proc, IntPtr unused);
+        [DllImport("user32.dll")] static extern bool IsWindow(IntPtr hwnd);
+        [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr hwnd);
+        [DllImport("user32.dll")] static extern bool IsIconic(IntPtr hwnd);
+        [DllImport("user32.dll")] static extern bool GetClientRect(IntPtr hwnd,out Rect rect);
+        [DllImport("user32.dll")] static extern bool ClientToScreen(IntPtr hwnd,ref Point point);
+        [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd,out uint pid);
+        [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr hwnd,uint command);
+        [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr hwnd,int index);
+        [DllImport("user32.dll")] static extern IntPtr SetThreadDpiAwarenessContext(IntPtr context);
+        [DllImport("dwmapi.dll")] static extern int DwmGetWindowAttribute(IntPtr hwnd,int attr,out int value,int size);
+        public static HostFrame Current = new HostFrame();
+        public static bool IsForeground(long handle){return handle!=0 && GetForegroundWindow().ToInt64()==handle;}
+        public static HostFrame Read(long handle) {
+            IntPtr hwnd=new IntPtr(handle); var frame=new HostFrame {Hwnd=handle};
+            if(handle==0 || !IsWindow(hwnd)) return new HostFrame();
+            int cloaked=0; DwmGetWindowAttribute(hwnd,14,out cloaked,4);
+            frame.Visible=IsWindowVisible(hwnd) && !IsIconic(hwnd) && cloaked==0;
+            IntPtr old=IntPtr.Zero;
+            try {
+                old=SetThreadDpiAwarenessContext(new IntPtr(-4));
+                Rect r;var p=new Point();
+                if(GetClientRect(hwnd,out r) && ClientToScreen(hwnd,ref p)) frame.Client=new Box(p.x,p.y,r.right-r.left,r.bottom-r.top);
+                // 입력창 경계를 접근성으로 제공하지 않는 앱에서도 실제 텍스트 커서는 피한다.
+                var info=new GuiInfo();info.size=Marshal.SizeOf(typeof(GuiInfo));
+                if(GetForegroundWindow()==hwnd && GetGUIThreadInfo(0,ref info) && info.caret!=IntPtr.Zero && info.rect.bottom>info.rect.top){
+                    uint appPid,caretPid;GetWindowThreadProcessId(hwnd,out appPid);GetWindowThreadProcessId(info.caret,out caretPid);
+                    var caretPoint=new Point{x=info.rect.left,y=info.rect.top};
+                    if(appPid==caretPid && ClientToScreen(info.caret,ref caretPoint))frame.Caret=new Box(caretPoint.x,caretPoint.y,Math.Max(1,info.rect.right-info.rect.left),info.rect.bottom-info.rect.top);
+                }
+            } finally {if(old!=IntPtr.Zero) SetThreadDpiAwarenessContext(old);}
+            if(watching && frame.Hwnd==Current.Hwnd){
+                if(lastObserved!=null && lastObserved.Hwnd==frame.Hwnd && frame.Client!=null && lastObserved.Client!=null){
+                    var a=lastObserved.Client;var b=frame.Client;
+                    if(a.x!=b.x || a.y!=b.y || a.w!=b.w || a.h!=b.h)changedAt=Stopwatch.GetTimestamp();
+                }
+                lastObserved=frame;
+            }
+            return frame;
+        }
+        public static void Refresh() {
+            // 프로세스 열거는 기존 감지 주기에만 수행한다. 이동 중에는 Read만 호출한다.
+            var pids=new HashSet<int>(Desktop.Applications());var selected=new HostFrame();
+            var front=GetForegroundWindow();double score=-1;
+            EnumWindows(delegate(IntPtr hwnd,IntPtr unused) {
+                uint pid;GetWindowThreadProcessId(hwnd,out pid);
+                if(!pids.Contains((int)pid) || GetWindow(hwnd,4)!=IntPtr.Zero || (GetWindowLong(hwnd,-20)&0x80)!=0) return true;
+                var f=Read(hwnd.ToInt64());if(f.Client==null || f.Client.w<600 || f.Client.h<400) return true;
+                double value=f.Client.w*f.Client.h;
+                if(f.Visible) value+=1e9;
+                if(hwnd==front) value+=1e10;
+                else if(f.Hwnd==Current.Hwnd) value+=1e8;
+                if(value>score){selected=f;score=value;} return true;
+            },IntPtr.Zero);
+            if(Current.Hwnd!=selected.Hwnd)Interlocked.Increment(ref revision);
+            Current=selected;
+            if(watching)BindTarget();
+        }
     }
 }
