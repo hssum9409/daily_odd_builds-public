@@ -1,6 +1,14 @@
-# Codex Usage Monitor Scripts 1.5.2 — 배포 안내
+# Codex Usage Monitor Scripts 1.5.3 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.5.2는 Windows 작업표시줄 위젯의 가림과 숨긴 모니터의 복구 경로를 개선합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.5.3은 Windows 트레이 중복 등록과 반복 오류를 줄이고 종료 원인 기록·정리를 보강합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+
+## 1.5.3 변경 사항
+
+- Windows 트레이 아이콘이 실행 세대마다 별도로 남지 않도록 프로필별 고정 식별자로 재등록합니다. 숨김 상태의 복귀용 아이콘과 재실행으로 설정 열기는 유지합니다.
+- 크레딧 상태 계산 중 매 조회마다 Windows 로그에 반복되던 PowerShell ‘시스템 오류’를 수정했습니다.
+- 백그라운드 실행 중 출력·예외가 콘솔 핸들 오류로 이어지지 않도록 출력 경로를 분리했습니다. 종료 정리 하나가 실패해도 트레이·자식 프로세스·단일 실행 잠금을 계속 정리합니다.
+- 시작·종료 사유와 예외 위치를 용량 제한이 있는 로컬 로그에 기록합니다. 예외 메시지·계정 응답·대화 내용은 기록하지 않습니다. 기존 보고서만으로 최초 종료 원인까지 확정한 것은 아닙니다.
+- Windows/Mac 설치형·포터블·자동 업데이트 ZIP을 갱신했습니다. 이번 실행 안정성 수정은 Windows 대상이며 Mac은 실기기 미검증 preview를 유지합니다.
 
 ## 1.5.2 변경 사항
 
@@ -120,10 +128,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.5.2-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.5.2-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.5.2-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.5.2-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.5.3-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.5.3-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.5.3-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.5.3-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 

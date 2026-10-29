@@ -175,7 +175,9 @@ function Get-ForecastUntil($Until, [double]$Now, $Words) {
     return "$([Math]::Floor($mins / 60))$($Words.hour) $($mins % 60)$($Words.minute)"
 }
 function Test-CreditEvent($State, $Data, [int]$Step) {
-    $b = @(Get-Buckets $Data) | Select-Object -First 1; $c = $b.credits
+    # Select-Object -First의 파이프라인 조기 중단은 Dispatcher 콜백에서 매 조회마다
+    # PowerShell 4100 '시스템 오류'를 남긴다. 이미 작은 배열이므로 직접 선택한다.
+    $buckets = @(Get-Buckets $Data); $b = if ($buckets.Count) {$buckets[0]} else {$null}; $c = $b.credits
     if ($c.unlimited -or -not (Test-Number $c.balance) -or [decimal]$c.balance -lt 0) { $State.previous = $null; return $false }
     $value = [decimal]$c.balance; $cycle = "$($b.primary.resetsAt):$($b.secondary.resetsAt)"; $old = $State.previous
     $changed = $null -ne $old -and $State.cycle -eq $cycle -and $value -lt $old
