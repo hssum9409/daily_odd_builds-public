@@ -130,7 +130,7 @@ function Get-DashSource($Snapshot){
 function Update-DashboardContent($Card,$Lines,$Snapshot,$Windows,[bool]$Collapsed){
     # 구조가 같으면 기존 버튼·행·타일을 유지한다. 차트 데이터가 바뀐 타일의 그림만 교체한다.
     $Card.dashboardTitle.Text=if($script:dockGeometry.compact){[regex]::Replace([regex]::Replace($Lines[0],'\s*\([^\)]*\)',''),'\s*(사용|남음|used|left)$','')}else{T 'dashboard_usage'}
-    $i=0;foreach($entry in ($Windows|Select-Object -First 2)){Update-DashGauge $Card.dashboardGauges[$i] $entry.window;$i++}
+    $i=0;foreach($entry in ($Windows|Select-Object -First 2 -Wait)){Update-DashGauge $Card.dashboardGauges[$i] $entry.window;$i++}
     if($Card.dashboardFallback){$Card.dashboardFallback.Text=$Lines[0]}
     $view=Get-View $script:data $script:config (Now) $script:words
     if($Card.dashboardTicketRow){$value=if($null -ne $view.tickets.count){[string]$view.tickets.count}else{'—'};if($script:config.expiry){$value+=' · '+(T 'expires')+' '+(Get-Duration $view.tickets.expiry (Now) $true)};$Card.dashboardTicketRow.Tag.value.Text=$value;$Card.ticketLabel.ToolTip=Ticket-Tooltip $view}
@@ -166,7 +166,7 @@ function Fill-Dashboard($Card,[string[]]$Lines,[bool]$Visible){
     if($Card.dashboardKey -eq $key){if(-not $Card.window.IsVisible){$Card.window.Opacity=0;$Card.window.Show();$Card.window.UpdateLayout();Position-Dock;$Card.window.Opacity=1;$Card.unmask=$false};return}
     $windows=@()
     foreach($bucket in (Get-Buckets $script:data)){foreach($k in @('primary','secondary')){$window=$bucket.$k;if(-not $window){continue};$weekly=$window.windowDurationMins -ge 1440;if(($weekly -and $script:config.weekly) -or (-not $weekly -and $script:config.short -and -not (Test-Pro $script:data))){$windows+=@{window=$window;weekly=$weekly}}}}
-    $structure=@{theme=$script:dashboardTheme;language=$script:config.language;width=$script:dockGeometry.cardWidth;compact=$script:dockGeometry.compact;options=@($script:config.short,$script:config.weekly,$script:config.shortReset,$script:config.weeklyReset,$script:config.tickets,$script:config.expiry,$script:config.balance,$script:config.sessionTokens,$script:config.sessionCache,$script:config.sessionCost,$script:config.sessionSpeed);windows=@($windows|Select-Object -First 2|ForEach-Object {$_.weekly});styles=$script:config.styles}|ConvertTo-Json -Depth 5 -Compress
+    $structure=@{theme=$script:dashboardTheme;language=$script:config.language;width=$script:dockGeometry.cardWidth;compact=$script:dockGeometry.compact;options=@($script:config.short,$script:config.weekly,$script:config.shortReset,$script:config.weeklyReset,$script:config.tickets,$script:config.expiry,$script:config.balance,$script:config.sessionTokens,$script:config.sessionCache,$script:config.sessionCost,$script:config.sessionSpeed);windows=@($windows|Select-Object -First 2 -Wait|ForEach-Object {$_.weekly});styles=$script:config.styles}|ConvertTo-Json -Depth 5 -Compress
     if($Card.dashboardStructure -ceq $structure -and [object]::ReferenceEquals($Card.dashboardRoot,$Card.border.Child)){Update-DashboardContent $Card $Lines $snapshot $windows $collapsed;$Card.dashboardKey=$key;return}
     # 내용·접힘·폭 변경은 측정과 하단 좌표 확정까지 투명하게 처리한다. 중간 높이는 화면에 내보내지 않는다.
     $w=$Card.window;$w.Opacity=0;$w.Width=$script:dockGeometry.cardWidth;$Card.naturalWidth=$w.Width;$Card.forceWidth=$w.Width
@@ -185,7 +185,7 @@ function Fill-Dashboard($Card,[string[]]$Lines,[bool]$Visible){
     $body=New-Object Windows.Controls.StackPanel;$body.Margin='0,6,0,0';$scroll.Content=$body;$fold.Child=$scroll;$Card.dashboardScroll=$scroll
     if($collapsed){$fold.Height=0;$fold.IsHitTestVisible=$false}
     $dialGrid=New-Object Windows.Controls.Grid;$Card.dashboardGauges=@();$Card.dashboardFallback=$null;$Card.dashboardTicketRow=$null;$Card.dashboardCreditRow=$null;$Card.dashboardSource=$null
-    $i=0;foreach($entry in ($windows|Select-Object -First 2)){
+    $i=0;foreach($entry in ($windows|Select-Object -First 2 -Wait)){
         $col=New-Object Windows.Controls.ColumnDefinition;$dialGrid.ColumnDefinitions.Add($col)
         $gauge=Dash-Gauge $(if($entry.weekly){T 'weekly'}else{'5h'}) $entry.window $(if($entry.weekly){$script:config.weeklyReset}else{$script:config.shortReset})
         $Card.dashboardGauges+=,$gauge

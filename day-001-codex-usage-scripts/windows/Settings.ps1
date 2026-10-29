@@ -155,7 +155,7 @@ function Build-SettingsContent {
     $side=New-Object Windows.Controls.DockPanel;$side.Background=Brush '#151d1f';$null=$root.Children.Add($side)
     $art=New-Object Windows.Controls.Image;$art.Source=New-Object Windows.Media.Imaging.BitmapImage([Uri](Join-Path $script:root 'assets\gp-chan-monitor.png'));$art.Width=120;$art.Height=180;$art.Stretch='Uniform';$art.Margin='0,22,0,24';[Windows.Controls.DockPanel]::SetDock($art,'Top');$null=$side.Children.Add($art)
     $bottom=New-Object Windows.Controls.StackPanel;$bottom.Margin='22,0,22,20';[Windows.Controls.DockPanel]::SetDock($bottom,'Bottom')
-    foreach ($row in @(@('refresh',{$script:nextUsage=0;$script:nextFeed=0}),@('quit',{$script:quit=$true}))) {$b=Button (T $row[0]) $row[1];$b.Margin='0,0,0,8';$b.Height=36;$null=$bottom.Children.Add($b)}
+    foreach ($row in @(@('refresh',{$script:nextUsage=0;$script:nextFeed=0}),@('quit',{Request-MonitorStop 'settings'}))) {$b=Button (T $row[0]) $row[1];$b.Margin='0,0,0,8';$b.Height=36;$null=$bottom.Children.Add($b)}
     $version=UI-Text ("DAY 001`nv"+$script:defaults.version) 10 '#99aeaa';$version.Margin='2,12,0,0';$null=$bottom.Children.Add($version);$null=$side.Children.Add($bottom)
     $nav=New-Object Windows.Controls.StackPanel;$null=$side.Children.Add($nav)
     $main=New-Object Windows.Controls.DockPanel;$main.Margin='28,26,28,14';[Windows.Controls.Grid]::SetColumn($main,1);$null=$root.Children.Add($main)

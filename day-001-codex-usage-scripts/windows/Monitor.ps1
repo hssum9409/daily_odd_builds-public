@@ -5,18 +5,22 @@
     [string]$TracePath = $env:CODEX_USAGE_SCRIPTS_TRACE
 )
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot\Runtime.ps1"
+# 백그라운드 ConsoleHost는 출력 버퍼가 없다. 성공 스트림을 소비하고,
+# 마지막 예외는 파일에 남겨 원래 원인을 콘솔 핸들 오류로 덮지 않는다.
+try { . {
 if ($Once) { [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false) }
 $root = Split-Path $PSScriptRoot -Parent
 . "$PSScriptRoot\Core.ps1"
 $defaults = Get-Content -LiteralPath "$root\defaults.json" -Raw -Encoding UTF8 | ConvertFrom-Json
 $uiSpec = Get-Content -LiteralPath "$root\ui.json" -Raw -Encoding UTF8 | ConvertFrom-Json
 $allWords = Get-Content -LiteralPath "$root\strings.json" -Raw -Encoding UTF8 | ConvertFrom-Json
-$receipt=try {Get-Content -LiteralPath (Join-Path $root 'installed.json') -Raw -Encoding UTF8|ConvertFrom-Json} catch {$null}
+$receipt=try {if([IO.File]::Exists((Join-Path $root 'installed.json'))){[IO.File]::ReadAllText((Join-Path $root 'installed.json'))|ConvertFrom-Json}} catch {$null}
 $profile = if ($env:CODEX_USAGE_SCRIPTS_HOME) { $env:CODEX_USAGE_SCRIPTS_HOME } elseif ($receipt.product -eq 'CodexUsageMonitorScripts' -and $receipt.profile) { [string]$receipt.profile } else { Join-Path $env:LOCALAPPDATA 'DailyOddBuilds\CodexUsageMonitorScripts' }
 $null = New-Item -ItemType Directory -Path $profile -Force
 $settingsFile = Join-Path $profile 'settings.json'; $stateFile = Join-Path $profile 'notices.json'; $commandFolder = Join-Path $profile 'commands'
 $null=New-Item -ItemType Directory -Path $commandFolder -Force
-function Read-Json([string]$Path) { try { return Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json } catch { return $null } }
+function Read-Json([string]$Path) { try { if([IO.File]::Exists($Path)){return [IO.File]::ReadAllText($Path) | ConvertFrom-Json} } catch { return $null } }
 function Write-Json([string]$Path, $Value) {
     $temp = $Path + '.' + $PID + '.tmp'
     [IO.File]::WriteAllText($temp, ($Value | ConvertTo-Json -Depth 15), (New-Object Text.UTF8Encoding($false)))
@@ -48,11 +52,11 @@ if (-not $owns) {
     if ($Once) { Write-Error 'Monitor already running. Use refresh.cmd or stop.cmd first.'; exit 2 }
     $command = if ($Stop) { 'stop' } elseif ($Toggle) { 'toggle' } elseif ($Settings) { 'settings' } elseif ($Reopen) {'reopen'} else { 'refresh' }
     # PS 5.1의 경로 길이 제한을 고려해 GUID의 불필요한 구분자를 생략한다.
-    $id=[Guid]::NewGuid().ToString('N');Write-Json (Join-Path $commandFolder ($id+'.json')) @{command=$command;id=$id}
+    $id=[Guid]::NewGuid().ToString('N');Write-Json (Join-Path $commandFolder ($id+'.json')) @{command=$command;id=$id;source='external'}
     $mutex.Dispose(); exit 0
 }
 if ($Stop -or $Toggle) { $mutex.ReleaseMutex(); $mutex.Dispose(); exit 0 }
-if (-not $Once) {Write-Json (Join-Path $profile 'instance.json') @{pid=$PID;version=$defaults.version}}
+if (-not $Once) {Initialize-RuntimeLog $profile $defaults.version;Write-Json (Join-Path $profile 'instance.json') @{pid=$PID;version=$defaults.version}}
 if (-not $Once) {
     . (Join-Path $PSScriptRoot 'Launch.ps1') -LoadOnly
     Disconnect-MonitorConsole
@@ -248,11 +252,11 @@ function Request-MonitorRefresh {
     $script:manualFeedRefresh=$true
 }
 function Invoke-MonitorCommands {
-    foreach($file in @([IO.Directory]::GetFiles($commandFolder,'*.json')|ForEach-Object{Get-Item -LiteralPath $_}|Sort-Object LastWriteTimeUtc|Select-Object -First 16)){
+    foreach($file in @([IO.Directory]::GetFiles($commandFolder,'*.json')|ForEach-Object{Get-Item -LiteralPath $_}|Sort-Object LastWriteTimeUtc|Select-Object -First 16 -Wait)){
         $request=Read-Json $file.FullName;Remove-Item -LiteralPath $file.FullName -ErrorAction SilentlyContinue
         if((Now)-([DateTimeOffset]$file.LastWriteTimeUtc).ToUnixTimeSeconds() -ge 60){continue}
         switch($request.command){
-            'stop'{$script:quit=$true}
+            'stop'{$state=Read-Json (Join-Path $profile 'updates.json');Request-MonitorStop $(if($state.status -eq 'applying'){'update'}else{'external'})}
             'settings'{$script:lastSettingsRequestAt=$request.requestedAt;Show-Settings}
             'reopen'{if($script:config.placement -eq 'hidden'){Show-Settings}else{Request-MonitorRefresh}}
             'fold'{if($script:mode -eq 'dock'){Toggle-DashboardFold}}
@@ -275,13 +279,16 @@ function Sync-Tray {
     if (-not ($script:config.trayIcon -or $script:config.placement -eq 'hidden')) {Close-Tray;return}
     if ($script:tray) {return}
     Add-Type -AssemblyName System.Windows.Forms,System.Drawing
-    $script:tray=New-Object Windows.Forms.NotifyIcon; $script:tray.Icon=New-Object Drawing.Icon((Join-Path $root 'assets\gp-chan.ico')); $script:tray.Text='Codex Usage Monitor'; $script:tray.Visible=$true
+    if(-not ('UsageScripts.TrayIcon' -as [type])){Add-Type -Path "$PSScriptRoot/TrayIcon.cs" -ReferencedAssemblies @('System.dll',[Windows.Forms.Form].Assembly.Location,[Drawing.Icon].Assembly.Location)}
+    $script:tray=New-Object UsageScripts.TrayIcon($profile); $script:tray.Icon=New-Object Drawing.Icon((Join-Path $root 'assets\gp-chan.ico')); $script:tray.Text='Codex Usage Monitor'
+    $script:tray.OnError=[Action[Exception]]{param($failure) Write-RuntimeFailure 'tray-callback' ([Management.Automation.ErrorRecord]::new($failure,'TrayCallback',[Management.Automation.ErrorCategory]::NotSpecified,$null))}
+    $script:tray.Visible=$true
     $menu=New-Object Windows.Forms.ContextMenuStrip
     $item=$menu.Items.Add((T 'settings')); $item.Add_Click({Show-Settings})
     $script:toggleItem=$menu.Items.Add('Monitor OFF'); $script:toggleItem.Add_Click({ Toggle-Monitor })
     $item=$menu.Items.Add((T 'refresh')); $item.Add_Click({Request-MonitorRefresh})
     $script:startupItem=$menu.Items.Add((T 'startup_register')); $script:startupItem.Add_Click({Set-Startup $true})
-    $item=$menu.Items.Add((T 'quit')); $item.Add_Click({$script:quit=$true})
+    $item=$menu.Items.Add((T 'quit')); $item.Add_Click({Request-MonitorStop 'tray'})
     $menu.Add_Opening({$script:toggleItem.Text=if ($script:config.placement -eq 'hidden') {T 'monitorOn'} else {T 'monitorOff'}; $script:startupItem.Visible=-not (Get-ItemProperty -Path $runKey -Name $runName -ErrorAction SilentlyContinue)})
     $script:tray.ContextMenuStrip=$menu; $script:tray.Add_DoubleClick({Show-Settings})
 }
@@ -847,7 +854,7 @@ try {
             }
             # 클릭은 WindowSignals로 즉시 받는다. 신호 없는 외부 실행용 폴더 확인만 1초로 제한한다.
             if($now -ge $script:nextCommandPoll){Invoke-MonitorCommands;$script:nextCommandPoll=$now+1}
-            if ($SmokeSeconds -gt 0 -and $now-$started -ge $SmokeSeconds) {$script:quit=$true}
+            if ($SmokeSeconds -gt 0 -and $now-$started -ge $SmokeSeconds) {Request-MonitorStop 'smoke-complete'}
             if ($script:quit) {$timer.Stop();$frameLoop.Continue=$false;return}
             if (-not $FixturePath -and $now -ge $script:nextPresence) {
                 $present=[UsageScripts.Desktop]::Alive();if ($ForceIdle) {$present=$false};$script:nextPresence=$now+$(if ($present) {1} else {2})
@@ -863,7 +870,7 @@ try {
                     $script:settingsWarmScheduled=$true
                     $script:nextSettingsWarm=$now+30
                     $null=$script:mainCard.window.Dispatcher.BeginInvoke([Action]{
-                        try{Prepare-Settings}catch{$script:report.settingsPrepareError=$_.Exception.GetType().Name}
+                        try{Prepare-Settings}catch{$script:report.settingsPrepareError=$_.Exception.GetType().Name;Write-RuntimeFailure 'settings-prepare' $_}
                         finally{$script:settingsWarmScheduled=$false}
                     },[Windows.Threading.DispatcherPriority]::ApplicationIdle)
                 }
@@ -875,7 +882,7 @@ try {
                     if($script:config.placement -eq 'dock'){[UsageScripts.AppDock]::Refresh()}
                     $script:nextScan=$now+$(if($script:config.placement -eq 'dock'){2}else{$script:config.chromeMs/1000.0})
                 }
-                if (-not $script:rpc) {try {Start-Rpc} catch {$script:lastError='path'}}
+                if (-not $script:rpc) {try {Start-Rpc} catch {$script:lastError='path';Write-RuntimeFailure 'rpc-start' $_}}
                 if ($script:rpc -and -not $script:rpc.Busy) {
                     if ($script:rpc.Result) {
                         $incoming=$script:rpc.Result|ConvertFrom-Json
@@ -916,7 +923,7 @@ try {
                 }
                 if ([UsageScripts.Desktop]::Current.Pet) {$script:report.petDetected=$true}
             }
-        } catch {$script:lastError='runtime';$script:debugLine=$_.InvocationInfo.ScriptLineNumber;$script:debugType=$_.Exception.GetType().Name}
+        } catch {$script:lastError='runtime';$script:debugLine=$_.InvocationInfo.ScriptLineNumber;$script:debugType=$_.Exception.GetType().Name;Write-RuntimeFailure 'timer' $_}
         finally {Write-Diagnostic}
     })
     if(-not $Once){Write-Json (Join-Path $profile 'instance.json') @{pid=$PID;version=$defaults.version;ready=$true;root=$root}}
@@ -926,17 +933,32 @@ try {
     $report.workingMiB=[Math]::Round([Diagnostics.Process]::GetCurrentProcess().WorkingSet64/1MB,1)
     $report.loopCPUSeconds=[Math]::Round([Diagnostics.Process]::GetCurrentProcess().TotalProcessorTime.TotalSeconds-$loopCpu,3);$report.loopSeconds=[Math]::Round((Now)-$loopStart,1)
     $report.scanCPUSeconds=[Math]::Round([UsageScripts.Desktop]::ScanCPUSeconds-$script:scanCpuStart,3);$report.uiCPUSeconds=[Math]::Round([UsageScripts.Desktop]::ThreadCPUSeconds()-$loopUiCPU,3);$report.warmupExcludedSeconds=$MeasureAfterSeconds
+} catch {
+    $script:exitReason='loop-error';Write-RuntimeFailure 'main-loop' $_
+    throw
 } finally {
+    # 한 리소스의 정리 실패가 트레이 제거와 나머지 정리를 건너뛰지 않게 한다.
+    if($timer){Invoke-RuntimeCleanup 'timer' {$timer.Stop()}}
+    Invoke-RuntimeCleanup 'tray' {Close-Tray}
+    Invoke-RuntimeCleanup 'dock' {
     [UsageScripts.AppDock]::SetWakeWindow(0)
-    [UsageScripts.AppDock]::StopWatching()
-    Stop-Taskbar
-    Stop-UpdateCheck
-    if ($rpc) {$rpc.Dispose()};$report.ownedServerStopped=$true
-    $feed.Cancel()
-    Close-Tray
-    if ($settingsWindow) {$script:closingSettingsForExit=$true;$settingsWindow.Close()}
-    if ($uiLoaded) {foreach ($card in @($mainCard,$resetCard,$creditCard)) {$card.window.Close()}}
-    if ($ReportPath) {Write-Json $ReportPath $report}
+    [UsageScripts.AppDock]::StopWatching() }
+    Invoke-RuntimeCleanup 'taskbar' {Stop-Taskbar}
+    Invoke-RuntimeCleanup 'updater' {Stop-UpdateCheck}
+    Invoke-RuntimeCleanup 'rpc' {if ($rpc) {$rpc.Dispose()};$report.ownedServerStopped=$true}
+    Invoke-RuntimeCleanup 'feed' {$feed.Cancel()}
+    if ($settingsWindow) {Invoke-RuntimeCleanup 'settings' {$script:closingSettingsForExit=$true;$settingsWindow.Close()}}
+    if ($uiLoaded) {foreach ($card in @($mainCard,$resetCard,$creditCard)) {Invoke-RuntimeCleanup $card.kind {$card.window.Close()}}}
+    if ($ReportPath) {Invoke-RuntimeCleanup 'report' {Write-Json $ReportPath $report}}
     if (-not $Once) {$instance=Read-Json (Join-Path $profile 'instance.json');if ($instance.pid -eq $PID) {Remove-Item -LiteralPath (Join-Path $profile 'instance.json') -ErrorAction SilentlyContinue}}
-    if ($owns) {$mutex.ReleaseMutex()};$mutex.Dispose()
+    Invoke-RuntimeCleanup 'mutex' {if ($owns) {$mutex.ReleaseMutex()};$mutex.Dispose()}
+    Flush-RuntimeErrors;Write-RuntimeEvent 'exit' @{reason=$script:exitReason}
+}
+
+} 3>$null 4>$null 5>$null 6>$null | ForEach-Object { if($Once){$_} }
+} catch {
+    Write-RuntimeFailure 'unhandled' $_
+    Write-RuntimeEvent 'exit' @{reason='unhandled'}
+    if($Once){throw}
+    exit 1
 }

@@ -58,6 +58,10 @@ namespace UsageScripts {
                 SetStdHandle(-10 - index, IntPtr.Zero);
             }
             FreeConsole();
+            // .NET 직접 출력도 사용자 터미널이나 닫힌 콘솔 핸들에 쓰지 않는다.
+            // PowerShell 성공/오류 스트림은 Monitor/Taskbar 진입점에서 별도로 처리한다.
+            Console.SetOut(System.IO.TextWriter.Null);
+            Console.SetError(System.IO.TextWriter.Null);
             for (int index = 0; index < handles.Length; index++) {
                 var handle = handles[index];
                 if (handle == IntPtr.Zero || handle == new IntPtr(-1)) continue;
