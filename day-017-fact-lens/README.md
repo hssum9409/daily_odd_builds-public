@@ -7,13 +7,13 @@
 <p align="center">읽던 글, 근거까지.<br>페이지 옆에서 팩트체크하고 요약하세요.</p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.19"><img alt="버전 0.1.19" src="https://img.shields.io/badge/version-0.1.19-2955df"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.20"><img alt="버전 0.1.20" src="https://img.shields.io/badge/version-0.1.20-2955df"></a>
   <img alt="Windows Chrome 검증" src="https://img.shields.io/badge/Windows_Chrome-tested-2955df">
   <img alt="ZIP 수동 설치" src="https://img.shields.io/badge/install-ZIP-343c50">
   <img alt="원본 소스 비공개" src="https://img.shields.io/badge/source-private-343c50">
 </p>
 
-<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day017-fact-lens-v0.1.19/fact-lens-0.1.19.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="docs/INSTALLATION.md">설치·업데이트 안내</a> · <a href="docs/PRIVACY.md">데이터 처리</a></p>
+<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day017-fact-lens-v0.1.20/fact-lens-0.1.20.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="docs/INSTALLATION.md">설치·업데이트 안내</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/fact-lens">개인정보취급방침</a></p>
 
 ![팩트렌즈 — 페이지와 오른쪽 사이드패널을 표현한 대표 일러스트](docs/images/hero.webp)
 
@@ -70,7 +70,7 @@ Daily Odd Builds **Day 017 · 2026-10-28**. 첫 ZIP 공개는 2026-11-01이며, 
 
 검증이 필요하면 **팩트체크**, 먼저 글을 정리하고 싶으면 **요약정리**를 누릅니다. 진행 중인 기능의 버튼에만 진행 표시가 나타납니다. 페이지가 바뀌면 **페이지 내용 반영하기**를 눌러 새 내용을 읽습니다.
 
-톱니바퀴 설정에서 **언어, Fast, 최대 주장 수, 모델**을 바꿉니다. Fast는 기본으로 켜져 있으며 계정·모델 지원에 따라 일반 처리로 복구하고 결과에 알립니다. 원문 인용은 원래 언어로 유지합니다.
+톱니바퀴 설정에서 **언어, Fast, 최대 주장 수, 모델**을 바꿉니다. 설정 맨 아래의 작은 **개인정보취급방침** 링크로 공개 방침을 열 수 있습니다. Fast는 기본으로 켜져 있으며 계정·모델 지원에 따라 일반 처리로 복구하고 결과에 알립니다. 원문 인용은 원래 언어로 유지합니다.
 
 <details>
 <summary>설정 화면 보기</summary>
@@ -83,7 +83,9 @@ Daily Odd Builds **Day 017 · 2026-10-28**. 첫 ZIP 공개는 2026-11-01이며, 
 
 ChatGPT 로그인은 OpenAI의 화면에서 진행합니다. 로그인 정보는 해당 Chrome 프로필 안에서 관리하고 갱신합니다. 팩트체크·요약을 실행하면 선택한 페이지의 본문·제목·맥락과 포함한 댓글·이미지가 OpenAI로 전송됩니다. 팩트체크는 외부 웹 검색도 사용합니다. 민감한 글은 전송 내용을 먼저 확인해 주세요.
 
-페이지를 읽기 위한 **모든 사이트 접근 권한**을 요청합니다. 페이지 방문만으로 본문을 자동 업로드하지 않습니다. 입력 중인 폼·비밀번호·작성 초안 등은 추출에서 제외하도록 처리합니다. 오류 리포트는 별도 서버로 **사용자가 전송할 때만** 보내며 본문·URL·제목·계정·토큰을 포함하지 않습니다. [전체 데이터 처리 안내](docs/PRIVACY.md)
+페이지를 읽기 위한 **모든 사이트 접근 권한**을 요청합니다. 페이지 방문만으로 본문을 자동 업로드하지 않습니다. 입력 중인 폼·비밀번호·작성 초안 등은 추출에서 제외하도록 처리합니다. 오류 리포트는 별도 서버로 **사용자가 전송할 때만** 보내며 본문·URL·제목·계정·토큰을 포함하지 않습니다. [개인정보취급방침](https://daily-odd-builds-portal.web.app/privacy/fact-lens) · [간단한 데이터 처리 안내](docs/PRIVACY.md)
+
+패널 하단에는 **AI가 생성한 결과로, 정확성이나 사실 여부를 보장하지 않습니다.**라는 안내를 작은 글씨로 표시합니다. 중요한 내용은 원문과 출처를 직접 확인해 주세요.
 
 ## 지원 범위와 확인한 한계
 

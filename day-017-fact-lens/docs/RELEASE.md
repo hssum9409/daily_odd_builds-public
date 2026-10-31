@@ -1,4 +1,4 @@
-# 팩트렌즈 0.1.19 · Day 017
+# 팩트렌즈 0.1.20 · Day 017
 
 첫 ZIP 공개: 2026-11-01. 포털 Day 017의 기록 날짜는 챌린지 기준 2026-10-28입니다.
 
@@ -22,6 +22,10 @@ GitHub Actions를 사용하지 않습니다. 빌드·검사·ZIP 생성은 로�
 
 macOS·Linux, 다른 Chromium 브라우저, 모든 계정·모델·사이트 조합은 미검증입니다. Chrome 내부 페이지·PDF, 로그인·보안 정책으로 차단된 자료와 일부 동적 댓글·이미지는 읽지 못할 수 있습니다. AI의 논점 선정·OCR·요약·판정은 오류가 있을 수 있으며 독립적인 출처 확보를 보장하지 않습니다.
 
-[설치·업데이트](INSTALLATION.md) · [전용 릴리즈와 SHA-256](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.19)
+[설치·업데이트](INSTALLATION.md) · [전용 릴리즈와 SHA-256](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.20)
 
 0.1.19는 Apache-2.0 라이선스 전문을 ZIP 내부와 공개 문서에 함께 포함한 배포 고지 보완입니다. 검색·로그인·판정 기능은 0.1.18과 같습니다. 기존 0.1.18 태그·파일은 교체하지 않습니다.
+
+## 0.1.20
+
+설정의 일반·만든놈 탭 아래 공통 영역에 작은 글씨의 [개인정보취급방침](https://daily-odd-builds-portal.web.app/privacy/fact-lens) 링크를 추가했습니다. 새 탭에서 공개 방침을 엽니다. 패널 하단에는 AI가 생성한 결과이며 정확성·사실 여부를 보장하지 않는다는 안내를 작은 글씨로 표시합니다. 페이지 처리·인증 권한·모델 호출 동작은 변경하지 않았습니다.
