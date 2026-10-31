@@ -324,29 +324,21 @@ function Prepare-Settings {
         catch {$script:report.taskbarError=$_.Exception.Message}
     }
 }
-function Get-SettingsHostOwner {
-    if($script:config.placement -ne 'dock'){return [IntPtr]::Zero}
-    $frame=[UsageScripts.AppDock]::Read([UsageScripts.AppDock]::Current.Hwnd)
-    # 시작 메뉴의 -Settings는 감시 루프보다 먼저 실행된다. 첫 열기에서도 호스트를 직접 확인한다.
-    if(-not $frame.Visible){[UsageScripts.AppDock]::Refresh();$frame=[UsageScripts.AppDock]::Read([UsageScripts.AppDock]::Current.Hwnd)}
-    if($frame.Visible){return [IntPtr]$frame.Hwnd}
-    return [IntPtr]::Zero
+function Activate-SettingsWindow($Window) {
+    # 명시적인 사용자 열기에만 자체 창을 활성화한다. Codex HWND와 연결하지 않는다.
+    $Window.Topmost=$false;$null=$Window.Activate()
+    $hwnd=(New-Object Windows.Interop.WindowInteropHelper($Window)).Handle
+    [UsageScripts.Desktop]::DarkTitleBar($hwnd);$null=[UsageScripts.Desktop]::SetForegroundWindow($hwnd)
 }
 function Show-Settings {
     $watch=[Diagnostics.Stopwatch]::StartNew();$built=-not [bool]$script:settingsWindow
     Prepare-Settings;$script:report.settingsOpened=$true;$w=$script:settingsWindow
-    # dock 설정창도 Codex의 소유 창으로 묶는다. 대시보드 복원 시 호스트 창만 앞으로 올라와
-    # 설정창을 덮는 순서 역전을 막으며, 다른 앱 위에 전역 최상위 창으로 남기지 않는다.
-    $owner=Get-SettingsHostOwner
-    $interop=New-Object Windows.Interop.WindowInteropHelper($w)
-    if($interop.Owner -ne $owner){$interop.Owner=$owner}
+    # 호스트가 숨김·최소화·종료되어도 설정은 독립적으로 열고 닫을 수 있다.
     if($w.WindowState -eq 'Minimized'){$w.WindowState='Normal'}
     $w.Show();$w.UpdateLayout();Sync-PetAvailability
     if (-not $script:settingsSized) {$w.Width+=([Math]::Min(840,[Windows.SystemParameters]::WorkArea.Width-50)-$script:settingsRoot.ActualWidth);$w.Height+=([Math]::Min(720,[Windows.SystemParameters]::WorkArea.Height-60)-$script:settingsRoot.ActualHeight);$script:settingsSized=$true;$w.UpdateLayout()}
     # 명시적인 열기 요청에서만 활성화한다. Topmost를 켰다 끄는 임시 순서 변경은 하지 않는다.
-    $w.Topmost=$false;$null=$w.Activate()
-    $hwnd=(New-Object Windows.Interop.WindowInteropHelper($w)).Handle
-    [UsageScripts.Desktop]::DarkTitleBar($hwnd);$null=[UsageScripts.Desktop]::SetForegroundWindow($hwnd)
+    Activate-SettingsWindow $w
     $timing=@{built=$built;showMs=[Math]::Round($watch.Elapsed.TotalMilliseconds,1);requestedToVisibleMs=$null}
     if($script:lastSettingsRequestAt){$timing.requestedToVisibleMs=[Math]::Round([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()-$script:lastSettingsRequestAt,1)}
     $script:lastSettingsRequestAt=0;$script:report.settingsTiming=$timing

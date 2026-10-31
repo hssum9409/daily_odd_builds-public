@@ -30,7 +30,7 @@ namespace UsageScripts {
         public string Executable;
         // 기본은 Codex stdio 서버다. 격리 전송 QA는 OS 내장 스크립트 서버로 대체한다.
         public string ServerArguments = "app-server --listen stdio://";
-        public string ClientVersion = "1.5.3";
+        public string ClientVersion = "1.5.4";
         public int TimeoutMilliseconds = 20000;
         public int OwnedPid { get { return process == null ? 0 : process.Id; } }
         public Rpc(string path) { Executable = path; }
@@ -467,10 +467,41 @@ namespace UsageScripts {
         }
         static bool Same(Box a,Box b) {return a==null ? b==null : b!=null && a.x==b.x && a.y==b.y && a.w==b.w && a.h==b.h;}
     }
-    // 앱 내부 코드를 주입하지 않는다. 도구 창의 소유자만 Codex로 지정하고,
-    // 클라이언트 영역의 물리 좌표를 읽어 우측 하단에 배치한다.
+    // 독립 창의 순서 정책. 테스트는 OS 창 대신 이 경계를 대체해 같은 정책을 검증한다.
+    public interface IFollowerLayer {
+        bool IsLocal(long window);
+        bool HostVisible(long host);
+        long Previous(long host);
+        bool Topmost(long window);
+        bool Place(long window,long after);
+    }
+    public static class FollowerLayer {
+        public static bool Follow(IFollowerLayer platform,long window,long host) {
+            if(window==0 || host==0 || window==host || !platform.IsLocal(window) || !platform.HostVisible(host))return false;
+            long previous=platform.Previous(host);
+            if(previous==window)return true;
+            // 최상위 창을 따라 최상위 그룹으로 승격하지 않는다. 0은 일반 창 그룹의 맨 앞이다.
+            long after=previous==0 || platform.Topmost(previous) ? 0 : previous;
+            return platform.Place(window,after);
+        }
+    }
+    // 클라이언트 경계와 표시 상태만 읽는다. 다른 프로세스와 소유자/부모 관계를 만들지 않는다.
     public sealed class HostFrame { public long Hwnd; public Box Client,Caret; public bool Visible; }
     public static class AppDock {
+        sealed class NativeFollowerLayer : IFollowerLayer {
+            public bool IsLocal(long window){uint pid;uint thread=GetWindowThreadProcessId(new IntPtr(window),out pid);return pid==(uint)Process.GetCurrentProcess().Id && thread==GetCurrentThreadId();}
+            public bool HostVisible(long host){var frame=Read(host);return frame.Visible && frame.Client!=null;}
+            public long Previous(long host){return GetWindow(new IntPtr(host),3).ToInt64();}
+            public bool Topmost(long window){return (GetWindowLong(new IntPtr(window),-20)&8)!=0;}
+            public bool Place(long window,long after){
+                // 자체 UI 스레드의 창만 배치한다. 포커스·크기·좌표·소유자 순서와 변경 메시지는 건드리지 않는다.
+                return SetWindowPos(new IntPtr(window),new IntPtr(after),0,0,0,0,0x0613);
+            }
+        }
+        static readonly IFollowerLayer followerLayer=new NativeFollowerLayer();
+        public static bool FollowLayer(long window,long host){return FollowerLayer.Follow(followerLayer,window,host);}
+        [DllImport("kernel32.dll")]static extern uint GetCurrentThreadId();
+        [DllImport("user32.dll")]static extern bool SetWindowPos(IntPtr window,IntPtr after,int x,int y,int width,int height,uint flags);
         [DllImport("user32.dll")]static extern bool EnumChildWindows(IntPtr hwnd,EnumProc proc,IntPtr unused);
         [DllImport("user32.dll",CharSet=CharSet.Unicode)]static extern int GetClassName(IntPtr hwnd,StringBuilder name,int length);
         [DllImport("user32.dll")]static extern bool GetWindowRect(IntPtr hwnd,out Rect rect);

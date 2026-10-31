@@ -1,6 +1,14 @@
-# Codex Usage Monitor Scripts 1.5.3 — 배포 안내
+# Codex Usage Monitor Scripts 1.5.4 — 배포 안내
 
-모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.5.3은 Windows 트레이 중복 등록과 반복 오류를 줄이고 종료 원인 기록·정리를 보강합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+모든 배포물은 OS 내장 런타임으로 실행되는 스크립트입니다. 1.5.4는 Windows 창 부착 모드에서 Codex와의 소유자 관계를 제거합니다. 기존 공개 ZIP은 교체하지 않고 새 버전으로 제공합니다. Mac은 **전체 기능 실기기 미검증 preview**를 유지합니다.
+
+## 1.5.4 변경 사항
+
+- Windows 내부 패널과 모니터 설정창을 Codex의 소유 창으로 연결하지 않습니다. 서로 다른 프로그램의 입력 큐가 암묵적으로 연결될 수 있던 경로를 제거했습니다.
+- 독립 패널은 포커스를 활성화하지 않고 위치·창 순서를 추종합니다. 호스트 숨김·최소화·종료 시 숨기고, 복원 시 안정된 위치에서 다시 표시하는 정책을 유지합니다.
+- 설정창은 Codex 상태와 무관하게 열기·최소화 복원·닫기·재열기를 처리합니다. 닫아 숨긴 창에도 Codex 소유자 연결이 남지 않습니다. 기존 Pet 표시 모드는 유지합니다.
+- 정적 분석·모의 OS/창 경계 회귀·HWND 없는 레이아웃·배포 ZIP/체크섬을 검사했습니다. 사용자 요청으로 실제 창 실행·먹통 재현·이번 버전의 실제 설치/업데이트/제거 검사는 하지 않았습니다. 실제 장애의 원인 확정이나 실사용 해결 검증을 뜻하지 않습니다.
+- Windows/Mac 설치형·포터블·자동 업데이트 파일을 함께 갱신했습니다. 이번 창 부착 수정은 Windows 대상이며 Mac은 preview를 유지합니다.
 
 ## 1.5.3 변경 사항
 
@@ -128,10 +136,10 @@ Windows 포터블의 실행용 CMD 창을 자동으로 닫고, 모니터는 콘�
 
 | 플랫폼 / 방식 | 다운로드 | 실행 |
 | --- | --- | --- |
-| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.5.3-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
-| Windows 포터블 | `CodexUsageMonitorScripts-1.5.3-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
-| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.5.3-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
-| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.5.3-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
+| Windows 설치형 · 권장 | `CodexUsageMonitorScripts-1.5.4-windows-installer.zip` | 전체 압축 해제 → `Install.cmd` |
+| Windows 포터블 | `CodexUsageMonitorScripts-1.5.4-windows-portable.zip` | 전체 압축 해제 → `Start.cmd` |
+| macOS 설치형 · preview | `CodexUsageMonitorScripts-1.5.4-macos-installer-preview.zip` | 전체 압축 해제 → `Install.command` |
+| macOS 포터블 · preview | `CodexUsageMonitorScripts-1.5.4-macos-portable-preview.zip` | 전체 압축 해제 → `Start.command` |
 
 설치형은 Windows `%LOCALAPPDATA%/Programs/CodexUsageMonitorScripts`, Mac `~/Library/Application Support/DailyOddBuilds/CodexUsageMonitorScripts/app`에 복사됩니다. 설치 후 다운로드 ZIP과 원본 폴더를 삭제해도 됩니다. 포터블은 실행 폴더를 유지해야 합니다. 원본 ZIP은 삭제해도 됩니다. 관리자 권한이나 Python/Node 설치는 필요 없습니다.
 
