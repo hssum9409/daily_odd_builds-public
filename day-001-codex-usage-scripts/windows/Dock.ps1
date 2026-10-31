@@ -1,5 +1,5 @@
 ﻿# Codex 창 안쪽에 붙는 도구 창이다. 앱 파일·DOM·프로세스 메모리는 수정하지 않는다.
-# 소유자 지정으로 최소화와 Z 순서를 따르고, 빈 우측 여백이 부족하면 숨긴다.
+# 소유자 연결 없이 관찰한 경계·최소화 상태·창 순서만 따라간다.
 function Get-DockGeometry($Client,[double]$Scale=1,[double]$Sidebar=0) {
     if(-not $Client -or $Scale -le 0){return $null}
     $width=$Client.w/$Scale;$height=$Client.h/$Scale
@@ -15,14 +15,17 @@ function Get-DockGeometry($Client,[double]$Scale=1,[double]$Sidebar=0) {
     if($height-$bottomInset-100 -lt 120){return $null}
     return @{x=$Client.x/$Scale;y=$Client.y/$Scale;w=$width;h=$height;cardWidth=$cardWidth;compact=$compact;bottomInset=$bottomInset;maxBodyHeight=[Math]::Max(80,$height-$bottomInset-112)}
 }
+function Get-DockScale($Window) {
+    $source=[Windows.PresentationSource]::FromVisual($Window)
+    if($source){return $source.CompositionTarget.TransformToDevice.M11};return 1.0
+}
 function Sync-DockSurface {
     $docked=$script:config.placement -eq 'dock'
     if(-not $docked -and -not $script:mainCard.docked){$script:dockReady=$false;return}
     if($docked){$null=Update-CodexAppearance}
     $hostFrame=if($script:dockTestHost){$script:dockTestHost}else{[UsageScripts.AppDock]::Read([UsageScripts.AppDock]::Current.Hwnd)}
     $hostForeground=[UsageScripts.AppDock]::IsForeground($hostFrame.Hwnd)
-    $source=[Windows.PresentationSource]::FromVisual($script:mainCard.window)
-    $scale=if($source){$source.CompositionTarget.TransformToDevice.M11}else{1.0}
+    $scale=Get-DockScale $script:mainCard.window
     $sidebar=0
     if($docked -and $script:alive -and $hostFrame.Visible -and -not $script:dockTestHost -and $hostForeground){
         $codexStateHome=if($env:CODEX_HOME){$env:CODEX_HOME}else{Join-Path $env:USERPROFILE '.codex'}
@@ -77,7 +80,7 @@ function Sync-DockSurface {
     $initialKnown=$script:dockTestHost -or $script:dockProbe.Known -or ($script:dockProbeStarted -gt 0 -and $now-$script:dockProbeStarted -ge 2)
     $rawReady=$docked -and $script:alive -and $hostFrame.Visible -and [bool]$script:dockGeometry -and $initialKnown -and $contextKnown -and -not $script:dockClearance.pending -and ($script:dockTestHost -or [UsageScripts.AppDock]::IsSettled)
     # 다른 앱이나 트레이 팝업이 전면이어도 창 전체를 숨기지 않는다.
-    # Codex 소유·비최상위 창의 Z 순서로 덮인 부분만 자연스럽게 가려진다.
+    # 독립된 비최상위 창을 Codex 바로 앞에 배치하며 다른 앱의 가림은 유지한다.
     $entering=$docked -and -not $script:mainCard.docked
     $signature=[string]$hostFrame.Hwnd+':'+($hostFrame.Client|ConvertTo-Json -Compress)+':'+$script:dockGeometry.cardWidth+':'+$script:dockGeometry.compact+':'+$script:dockGeometry.bottomInset
     if(-not $rawReady){$script:dockStableSignature='';$script:dockStableAfter=$now+0.18}
@@ -100,9 +103,6 @@ function Sync-DockSurface {
             $card.border.Effect=if($docked){$null}else{$card.shadow}
             if(-not $docked){$card.border.BorderBrush=Brush '#ffffff' (48/255);$card.border.Child=$card.stack;$card.border.Padding='15,7';$card.dashboardKey=$null}
         }
-        $owner=if($docked -and $hostFrame.Hwnd){[IntPtr]$hostFrame.Hwnd}else{[IntPtr]::Zero}
-        $interop=New-Object Windows.Interop.WindowInteropHelper($w)
-        if($interop.Owner -ne $owner){$interop.Owner=$owner}
     }
 }
 function Resolve-DockClearance($State,$Probe,[double]$Scale) {
@@ -152,6 +152,11 @@ function Position-Dock {
         $top=$bottom-$h
         if($top -lt $g.y+80){$card.window.Hide();continue}
         Move-Card $card ($g.x+$g.w-$card.window.Width-8) ($top-$card.border.Margin.Top) $false
+        # HWND를 새로 만들지 않는다. 표시 후 생성된 자체 창에만 비활성 Z 순서 갱신을 적용한다.
+        if(-not $script:dockTestHost){
+            $handle=(New-Object Windows.Interop.WindowInteropHelper($card.window)).Handle
+            if(-not [UsageScripts.AppDock]::FollowLayer($handle.ToInt64(),$script:dockHost.Hwnd)){$card.window.Hide()}
+        }
         $bottom=$top-8
     }
 }
