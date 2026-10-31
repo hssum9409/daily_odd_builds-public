@@ -4,7 +4,7 @@
 
 ## 처음 설치
 
-1. [0.1.20 ZIP 다운로드](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day017-fact-lens-v0.1.20/fact-lens-0.1.20.zip).
+1. [0.1.21 ZIP 다운로드](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day017-fact-lens-v0.1.21/fact-lens-0.1.21.zip).
 2. 계속 보관할 폴더에 압축을 풉니다. 예: `문서/팩트렌즈`. 파일 탐색기에서 ZIP 안을 열어 보기만 하는 것으로는 설치되지 않습니다.
 3. Chrome에서 `chrome://extensions`를 엽니다.
 4. 오른쪽 위 **개발자 모드**를 켭니다.
@@ -18,7 +18,7 @@
 
 ## 업데이트하면서 로그인·설정 유지
 
-1. [팩트렌즈 전용 릴리즈](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.20)의 ZIP을 받습니다. 저장소 전체의 Latest는 다른 Day일 수 있습니다.
+1. [팩트렌즈 전용 릴리즈](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.21)의 ZIP을 받습니다. 저장소 전체의 Latest는 다른 Day일 수 있습니다.
 2. **처음 설치에 사용한 같은 폴더**에 새 파일을 덮어씁니다.
 3. `chrome://extensions`에서 기존 팩트렌즈의 **새로고침**을 누르고 패널을 다시 엽니다.
 

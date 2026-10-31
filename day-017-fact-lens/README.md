@@ -7,13 +7,13 @@
 <p align="center">읽던 글, 근거까지.<br>페이지 옆에서 팩트체크하고 요약하세요.</p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.20"><img alt="버전 0.1.20" src="https://img.shields.io/badge/version-0.1.20-2955df"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.21"><img alt="버전 0.1.21" src="https://img.shields.io/badge/version-0.1.21-2955df"></a>
   <img alt="Windows Chrome 검증" src="https://img.shields.io/badge/Windows_Chrome-tested-2955df">
   <img alt="ZIP 수동 설치" src="https://img.shields.io/badge/install-ZIP-343c50">
   <img alt="원본 소스 비공개" src="https://img.shields.io/badge/source-private-343c50">
 </p>
 
-<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day017-fact-lens-v0.1.20/fact-lens-0.1.20.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="docs/INSTALLATION.md">설치·업데이트 안내</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/fact-lens">개인정보취급방침</a></p>
+<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day017-fact-lens-v0.1.21/fact-lens-0.1.21.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="docs/INSTALLATION.md">설치·업데이트 안내</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/fact-lens">개인정보취급방침</a></p>
 
 ![팩트렌즈 — 페이지와 오른쪽 사이드패널을 표현한 대표 일러스트](docs/images/hero.webp)
 
