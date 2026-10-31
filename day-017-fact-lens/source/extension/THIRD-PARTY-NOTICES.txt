@@ -297,3 +297,5 @@ Full Apache-2.0 license text for @mozilla/readability follows:
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+ChatGPT auth 0.1.0 — Copyright (c) 2026 Daily Odd Builds contributors — MIT. See CHATGPT-AUTH-LICENSE.txt.

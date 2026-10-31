@@ -1,3 +1,4 @@
+import './verify-auth.mjs';
 import { readdir, readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 for (const directory of ['extension', 'shared', 'scripts', 'tests']) for (const file of await readdir(directory)) {

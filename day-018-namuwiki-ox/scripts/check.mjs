@@ -1,3 +1,4 @@
+import './verify-auth.mjs';
 import {readdir,readFile} from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
 import assert from 'node:assert/strict';

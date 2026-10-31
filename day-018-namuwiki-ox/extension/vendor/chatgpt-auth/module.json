@@ -1,0 +1,12 @@
+{
+  "name": "@daily-odd-builds/chatgpt-auth",
+  "version": "0.1.0",
+  "source": "https://github.com/hssum9409/daily_odd_builds-public/tree/chatgpt-auth-v0.1.0/packages/chatgpt-auth",
+  "files": {
+    "chrome.js": "634e547928d75914da3a16a7c4dffdc7ad534f234c63e550546cf905e3744362",
+    "connection.js": "50fbe894b996c18b6edbc96cd4c2f26cd96cd1f3315f9729580046fd4f745edd",
+    "credentials.js": "b0284bb0654cb55c7c50b97e82b70c1000d322e1ac4680f04478b2c3d60648c6",
+    "renewal.js": "0507c909a50259d37318d496928e9d5ec77b13ae2d41eb9f35fb2db973c202c0",
+    "LICENSE.txt": "5f86afa3a336dea283e0f8af69ba8a4dcc4b418c50f298671a02801561453071"
+  }
+}

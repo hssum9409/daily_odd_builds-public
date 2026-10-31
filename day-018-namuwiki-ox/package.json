@@ -1,6 +1,6 @@
 {
   "name": "gpichan-namuwiki-ox",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "type": "module",
   "engines": {
@@ -17,5 +17,8 @@
   },
   "devDependencies": {
     "playwright": "1.64.1"
+  },
+  "chatgptAuth": {
+    "version": "0.1.0"
   }
 }

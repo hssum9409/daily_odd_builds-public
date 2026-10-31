@@ -1,6 +1,6 @@
 # 설치와 업데이트
 
-1. [0.1.5 실행 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day018-namuwiki-ox-v0.1.5/gpichan-namuwiki-ox-0.1.5.zip)을 받아 계속 보관할 폴더에 전부 압축 해제합니다.
+1. [0.1.6 실행 ZIP](https://github.com/hssum9409/daily_odd_builds-public/releases/download/day018-namuwiki-ox-v0.1.6/gpichan-namuwiki-ox-0.1.6.zip)을 받아 계속 보관할 폴더에 전부 압축 해제합니다.
 2. Chrome에서 `chrome://extensions`를 열고 **개발자 모드**를 켭니다.
 3. **압축해제된 확장 프로그램을 로드합니다**를 눌러 `manifest.json`이 있는 폴더를 선택합니다.
 4. 나무위키 문서 탭에서 확장 아이콘을 눌러 사이드패널을 엽니다.
@@ -14,4 +14,4 @@
 
 잘못되거나 애매한 초안은 자동으로 수정·교체합니다. 본문 길이 때문에 출제할 수 없으면 출제 버튼에 이유를 표시합니다. 문서가 로딩된 뒤 ‘다시 읽기’를 누르세요. 갱신을 완료하면 갱신 알림이 사라집니다. 나무위키의 접근 확인·로그인 제한을 우회하지 않습니다.
 
-공개 소스를 사용한다면 이 폴더의 `extension/`을 직접 로드할 수 있습니다. [개발·로컬 검사](DEVELOPMENT.md) · [데이터 처리](DATA.md) · [릴리즈](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day018-namuwiki-ox-v0.1.5)
+공개 소스를 사용한다면 이 폴더의 `extension/`을 직접 로드할 수 있습니다. [개발·로컬 검사](DEVELOPMENT.md) · [데이터 처리](DATA.md) · [릴리즈](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day018-namuwiki-ox-v0.1.6)

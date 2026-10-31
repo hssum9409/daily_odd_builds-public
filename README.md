@@ -117,7 +117,7 @@ Chrome Manifest V3 · 설치 후보 사전 공개 · 실제 게임 인증/티어
 
 읽던 페이지의 핵심 주장과 외부 근거를 Chrome 사이드패널에서 확인하고, 선택한 언어로 요약합니다. ChatGPT 계정 연결, 이미지·댓글 맥락과 원문 이동을 지원합니다.
 
-[ZIP 다운로드 · 0.1.21](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.21) · [소개·수동 설치 방법](day-017-fact-lens/README.md) · [소스 코드](day-017-fact-lens/source/) · [개인정보취급방침](https://daily-odd-builds-portal.web.app/privacy/fact-lens) · [포털](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-28)
+[ZIP 다운로드 · 0.1.22](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.22) · [소개·수동 설치 방법](day-017-fact-lens/README.md) · [소스 코드](day-017-fact-lens/source/) · [개인정보취급방침](https://daily-odd-builds-portal.web.app/privacy/fact-lens) · [포털](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-28)
 
 Windows Chrome 검증 · 개발자 모드로 압축 해제 폴더를 로드하는 파일 배포 · 확장·오류 서버 소스 공개(MIT).
 <!-- day017:end -->
@@ -127,7 +127,13 @@ Windows Chrome 검증 · 개발자 모드로 압축 해제 폴더를 로드하�
 
 읽던 나무위키가 OX 퀴즈로. 지피쨩이 본문에서 문제 내줌.
 
-[소개·공개 소스](day-018-namuwiki-ox/README.md) · [ZIP 다운로드 · 0.1.5 preview](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day018-namuwiki-ox-v0.1.5) · [개인정보취급방침](https://daily-odd-builds-portal.web.app/privacy/namuwiki-ox)
+[소개·공개 소스](day-018-namuwiki-ox/README.md) · [ZIP 다운로드 · 0.1.6 preview](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day018-namuwiki-ox-v0.1.6) · [개인정보취급방침](https://daily-odd-builds-portal.web.app/privacy/namuwiki-ox)
 
 데스크톱 Chrome · ChatGPT 로그인 · 본문만으로 5–20문제와 인용·해설 · 자체 서버·외부 검색 없음 · 코드 MIT / 이미지 별도 범위. 실제 계정의 모델 사용은 별도 확인이 필요한 ZIP preview입니다.
 <!-- day018:end -->
+
+<!-- shared-packages:start -->
+## 공통 모듈
+
+[공통 모듈 목록](packages/) · [ChatGPT 로그인 0.1.0](packages/chatgpt-auth/) · MIT · 모듈별 버전 고정 및 로컬 검증. 제품 간 로그인 정보는 공유하지 않습니다.
+<!-- shared-packages:end -->

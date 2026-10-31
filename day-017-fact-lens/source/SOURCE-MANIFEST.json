@@ -1,5 +1,5 @@
 {
-  "version": "0.1.21",
+  "version": "0.1.22",
   "description": "Committed release source files, without private development history or operator evidence.",
   "files": [
     {
@@ -8,7 +8,7 @@
     },
     {
       "path": "extension/THIRD-PARTY-NOTICES.txt",
-      "sha256": "e526e3751488dce72e6024859554b4fe555833c381ad41065a3412f59573339b"
+      "sha256": "3fec7a45ab92824db8567a26654873fd43bf583d1c9afbb5abb8a8e290d75e8f"
     },
     {
       "path": "extension/auth-result.html",
@@ -24,15 +24,15 @@
     },
     {
       "path": "extension/background.js",
-      "sha256": "e2175933b7495fa399629eaa9b0c99a3b9b7138f986909ecad060b6fea7342ff"
+      "sha256": "b2e035f7db261b2084d6bbab5acf8c4e948464be6f91f1aa9c4d0ec06524cde5"
     },
     {
       "path": "extension/connection.js",
-      "sha256": "c627417a678eb9fb113741c637eb1449177297670c1f0ea6c2c3edc5632ef2b4"
+      "sha256": "ee76bd810505de39ed3219b8b74c89bf977cf299371c46b6208eba1f9cbf5d0f"
     },
     {
       "path": "extension/credentials.js",
-      "sha256": "dbe00910f5fef4c6ddd8c699e2cb5facaae0e660a82f63adbb6ca6b5fc4c98e4"
+      "sha256": "89383753fba0dcb6414fed6495756442a5ee556f5403b05809359e6100027546"
     },
     {
       "path": "extension/demo.js",
@@ -80,7 +80,7 @@
     },
     {
       "path": "extension/manifest.json",
-      "sha256": "1f2dd285530ee48cf69bac55f82f616fa5d9c2fecd6066e6625adc8688f2649f"
+      "sha256": "c8a2d2ee72200a4c44672570f1f21567d3391ebd52c8c7a0030eee2c34af4b61"
     },
     {
       "path": "extension/panel.css",
@@ -92,7 +92,7 @@
     },
     {
       "path": "extension/renewal.js",
-      "sha256": "0507c909a50259d37318d496928e9d5ec77b13ae2d41eb9f35fb2db973c202c0"
+      "sha256": "7855334813f6d809ca89f18dca45f7b831714d7578d5ea0f14e55a08750fc269"
     },
     {
       "path": "extension/sidepanel.html",
@@ -103,12 +103,36 @@
       "sha256": "16d7a69019fec1770eaa437e36f4023b78b4eb04f61433b95b2f16608d5c048d"
     },
     {
+      "path": "extension/vendor/chatgpt-auth/LICENSE.txt",
+      "sha256": "5f86afa3a336dea283e0f8af69ba8a4dcc4b418c50f298671a02801561453071"
+    },
+    {
+      "path": "extension/vendor/chatgpt-auth/chrome.js",
+      "sha256": "634e547928d75914da3a16a7c4dffdc7ad534f234c63e550546cf905e3744362"
+    },
+    {
+      "path": "extension/vendor/chatgpt-auth/connection.js",
+      "sha256": "50fbe894b996c18b6edbc96cd4c2f26cd96cd1f3315f9729580046fd4f745edd"
+    },
+    {
+      "path": "extension/vendor/chatgpt-auth/credentials.js",
+      "sha256": "b0284bb0654cb55c7c50b97e82b70c1000d322e1ac4680f04478b2c3d60648c6"
+    },
+    {
+      "path": "extension/vendor/chatgpt-auth/module.json",
+      "sha256": "2cb1ab6605cc92a5419283f5483a59da48ff4d8713a3958c9ab5451c5b199c25"
+    },
+    {
+      "path": "extension/vendor/chatgpt-auth/renewal.js",
+      "sha256": "0507c909a50259d37318d496928e9d5ec77b13ae2d41eb9f35fb2db973c202c0"
+    },
+    {
       "path": "package-lock.json",
-      "sha256": "5025115ce6dfb971f4bc8100e3992500d448809a8bbb3000560fb97eb52b4e39"
+      "sha256": "8349e4b80a9bd344ec877447b880a7343fd98349bf886b05d0cd86f11eccbd2d"
     },
     {
       "path": "package.json",
-      "sha256": "f9d8448ef02ff1838d79fc6368180db4a288b5002c32763431b909c21c35838c"
+      "sha256": "48fd6d53e9a5d9b7265016811a3dd607e9b5d20a7543559fccfeda146189d296"
     },
     {
       "path": "reporting-server/.gitignore",
@@ -152,15 +176,19 @@
     },
     {
       "path": "scripts/build.mjs",
-      "sha256": "3a4594ab9d049078bc4df5de381d203d7693f57fae2586aa00442939a3f8e5df"
+      "sha256": "8383ffa78b415cf70f91e1b0e481487b30f83f257b48d1bd5f7ade5ae8c273f2"
     },
     {
       "path": "scripts/check.mjs",
-      "sha256": "0ddc2aa9dc5941ec63e6a8ac8892a121b1565fd90e83e657fe9de2c4c00a1cfe"
+      "sha256": "90fa8bf996b75bc11344c521c3b82652160d2803473f563838eaf1e74a251359"
     },
     {
       "path": "scripts/package.mjs",
-      "sha256": "17dfba613be40712e1559b07874679f8fa2d57277356c7855c321693e88cec44"
+      "sha256": "1a79b0b8e87a0225fca77552492f371d4bb6d4fe7d2c1c8e082811110f82d9a5"
+    },
+    {
+      "path": "scripts/verify-auth.mjs",
+      "sha256": "7fc57bb8acd6b3185628df1e86b1e99098081e5855ca4ea86bebf0f04489b12e"
     },
     {
       "path": "shared/analysis.mjs",

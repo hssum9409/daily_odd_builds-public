@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "팩트렌즈 — 페이지 팩트체커",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "description": "현재 페이지의 본문·이미지·댓글을 선택한 언어로 팩트체크하거나 요약하고, 원문 위치와 검증 근거·출처를 확인합니다.",
   "minimum_chrome_version": "120",
   "incognito": "not_allowed",
