@@ -1,0 +1,27 @@
+{
+  "name": "fact-lens-extension",
+  "version": "0.1.21",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "test:persistence": "node tests/persistence.mjs",
+    "package": "node scripts/package.mjs",
+    "test:images": "node tests/dcinside-browser.mjs",
+    "test:forum": "node tests/tribalwars-browser.mjs"
+  },
+  "dependencies": {
+    "@mozilla/readability": "0.6.0",
+    "jose": "6.2.13"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright": "1.64.1"
+  }
+}

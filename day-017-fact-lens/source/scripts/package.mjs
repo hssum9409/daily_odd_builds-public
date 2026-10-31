@@ -1,0 +1,11 @@
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+await mkdir('build', { recursive: true });
+const {version}=JSON.parse(await readFile('extension/manifest.json','utf8'));
+const archive = `build/fact-lens-${version}.zip`;
+const result = spawnSync('tar', ['-a', '-cf', archive, '-C', 'dist', ...await readdir('dist')], { encoding: 'utf8' });
+if (result.status) throw new Error(result.stderr || 'Archive failed');
+const hash = createHash('sha256').update(await readFile(archive)).digest('hex');
+await writeFile(`${archive}.sha256`, `${hash}  fact-lens-${version}.zip\n`);
+console.log(`Packaged ${archive}; SHA-256 manifest written.`);

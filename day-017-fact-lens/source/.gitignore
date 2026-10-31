@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.private/
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+playwright-report/
+test-results/
+reporting-server/functions/diagnostics.mjs
+reporting-server/functions/.secret.local
+.firebase/

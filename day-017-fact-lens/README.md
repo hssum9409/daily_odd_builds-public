@@ -10,10 +10,10 @@
   <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.21"><img alt="버전 0.1.21" src="https://img.shields.io/badge/version-0.1.21-2955df"></a>
   <img alt="Windows Chrome 검증" src="https://img.shields.io/badge/Windows_Chrome-tested-2955df">
   <img alt="ZIP 수동 설치" src="https://img.shields.io/badge/install-ZIP-343c50">
-  <img alt="원본 소스 비공개" src="https://img.shields.io/badge/source-private-343c50">
+  <a href="source/"><img alt="소스 공개 · MIT" src="https://img.shields.io/badge/source-MIT-148447"></a>
 </p>
 
-<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day017-fact-lens-v0.1.21/fact-lens-0.1.21.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="docs/INSTALLATION.md">설치·업데이트 안내</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/fact-lens">개인정보취급방침</a></p>
+<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day017-fact-lens-v0.1.21/fact-lens-0.1.21.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="source/">소스 코드</a> · <a href="docs/INSTALLATION.md">설치·업데이트 안내</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/fact-lens">개인정보취급방침</a></p>
 
 ![팩트렌즈 — 페이지와 오른쪽 사이드패널을 표현한 대표 일러스트](docs/images/hero.webp)
 
@@ -112,6 +112,8 @@ Chrome 120 이상을 대상으로 합니다. macOS·Linux, 다른 Chromium 브�
 
 ## 공개 범위
 
-이 폴더에는 소개·설치·검증 안내와 이미지만 공개합니다. 확장 실행 파일은 해당 버전의 ZIP으로 제공합니다. 앱·서버의 원본 소스, 개발 이력과 운영 자료는 비공개입니다. 저장소의 다른 제품에 적용된 라이선스가 이 제품 전체에 자동 적용되는 것은 아닙니다. 포함된 오픈소스의 권리와 고지는 [THIRD-PARTY-NOTICES.txt](docs/THIRD-PARTY-NOTICES.txt)를 따릅니다.
+[확장·오류 리포트 서버 소스와 빌드·테스트 코드](source/)를 0.1.21 스냅샷으로 공개합니다. 자체 작성 소스는 [MIT 라이선스](source/LICENSE)이며 빌드 방법은 [개발 안내](source/README.md)에 있습니다. 설치용 실행 ZIP도 계속 제공합니다.
+
+비공개 개발 저장소의 이력, 사용자 데이터·운영 로그와 인증정보는 포함하지 않습니다. 소개·홍보 이미지에는 소스 라이선스를 자동 적용하지 않습니다. 포함된 오픈소스의 권리와 고지는 [THIRD-PARTY-NOTICES.txt](docs/THIRD-PARTY-NOTICES.txt)를 따릅니다.
 
 팩트렌즈는 OpenAI·ChatGPT·Chrome 또는 확인 대상 사이트의 공식 제품이 아닙니다.

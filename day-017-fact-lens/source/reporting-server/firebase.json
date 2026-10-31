@@ -1,0 +1,31 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "factlens-diagnostics",
+      "runtime": "nodejs22",
+      "ignore": [
+        "node_modules",
+        "*.test.mjs",
+        ".git",
+        "firebase-debug.log"
+      ],
+      "predeploy": [
+        "node \"$RESOURCE_DIR/prepare.cjs\""
+      ]
+    }
+  ],
+  "emulators": {
+    "firestore": {
+      "host": "127.0.0.1",
+      "port": 8193
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

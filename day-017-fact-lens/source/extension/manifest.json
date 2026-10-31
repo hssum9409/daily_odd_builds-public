@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "팩트렌즈 — 페이지 팩트체커",
+  "version": "0.1.21",
+  "description": "현재 페이지의 본문·이미지·댓글을 선택한 언어로 팩트체크하거나 요약하고, 원문 위치와 검증 근거·출처를 확인합니다.",
+  "minimum_chrome_version": "120",
+  "incognito": "not_allowed",
+  "permissions": [
+    "sidePanel",
+    "scripting",
+    "storage",
+    "webRequest",
+    "alarms",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "팩트렌즈 열기",
+    "default_icon": {
+      "16": "icon-16.png",
+      "32": "icon-32.png",
+      "48": "icon-48.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src https: http:"
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  }
+}
