@@ -111,3 +111,13 @@ DCInside 작성자 닉네임 옆에 공개 동의한 LoL 솔로 랭크 티어·L
 
 Chrome Manifest V3 · 설치 후보 사전 공개 · 실제 게임 인증/티어 제공 및 Chrome 웹스토어 공개 전. 설치용 실행 번들과 사용 안내·소개 이미지만 공개하며 개발 소스·서버 코드·운영 설정은 비공개입니다. 포털 기록일 2026-10-24, 사전 공개 2026-10-27.
 <!-- day013-community-game-badges:end -->
+
+<!-- day017:start -->
+## Day 017 · 팩트렌즈
+
+읽던 페이지의 핵심 주장과 외부 근거를 Chrome 사이드패널에서 확인하고, 선택한 언어로 요약합니다. ChatGPT 계정 연결, 이미지·댓글 맥락과 원문 이동을 지원합니다.
+
+[ZIP 다운로드 · 0.1.18](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.18) · [소개·수동 설치 방법](day-017-fact-lens/README.md) · [데이터 처리](day-017-fact-lens/docs/PRIVACY.md) · [포털](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-28)
+
+Windows Chrome 검증 · 개발자 모드로 압축 해제 폴더를 로드하는 파일 배포 · 원본 소스 비공개.
+<!-- day017:end -->
