@@ -1,0 +1,3 @@
+// Keep node:test suites in one process on the shared Windows desktop.
+import {readdir} from 'node:fs/promises';
+for(const name of (await readdir(new URL('./',import.meta.url))).filter(n=>n.endsWith('.test.mjs')).sort())await import(new URL(name,import.meta.url));

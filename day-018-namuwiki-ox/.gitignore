@@ -1,0 +1,12 @@
+node_modules/
+dist/
+releases/
+.private/
+.local/
+.env
+.env.*
+*.log
+__pycache__/
+*.pyc
+art/references/
+art/originals/

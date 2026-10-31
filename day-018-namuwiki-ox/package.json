@@ -1,0 +1,21 @@
+{
+  "name": "gpichan-namuwiki-ox",
+  "version": "0.1.5",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "node tests/run.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "test:live-page": "node tests/live-page.mjs",
+    "build": "node scripts/build.mjs",
+    "package": "node scripts/package.mjs",
+    "catalog:draft": "node scripts/catalog.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
+  }
+}

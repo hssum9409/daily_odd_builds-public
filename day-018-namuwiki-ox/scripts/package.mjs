@@ -1,0 +1,15 @@
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+await import('./build.mjs');
+const {version}=JSON.parse(await readFile('package.json','utf8'));
+await mkdir('releases',{recursive:true});
+const name=`gpichan-namuwiki-ox-${version}.zip`;
+const r=spawnSync('python',[fileURLToPath(new URL('./zip.py',import.meta.url)),name],{encoding:'utf8'});
+if(r.status)throw Error(r.stderr);
+if(r.error)throw r.error;
+if(r.stdout)process.stdout.write(r.stdout);
+const bytes=await readFile(`releases/${name}`),hash=createHash('sha256').update(bytes).digest('hex');
+await writeFile('releases/SHA256SUMS.txt',`${hash}  ${name}\n`);
+console.log(`${name}: ${bytes.length} bytes; SHA256 ${hash}`);

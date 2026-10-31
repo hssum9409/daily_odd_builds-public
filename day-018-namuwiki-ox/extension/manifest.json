@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "지피쨩 나무위키 OX 퀴즈",
+  "version": "0.1.5",
+  "description": "읽고 있는 나무위키 본문으로 지피쨩과 OX 퀴즈! 5~20문제를 풀고 본문 근거를 확인하세요.",
+  "minimum_chrome_version": "120",
+  "incognito": "not_allowed",
+  "permissions": [
+    "sidePanel",
+    "scripting",
+    "storage",
+    "webRequest",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://namu.wiki/*",
+    "https://auth.openai.com/*",
+    "https://api.openai.com/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "지피쨩 OX 퀴즈 열기",
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "32": "assets/icon-32.png",
+      "48": "assets/icon-48.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icon-16.png",
+    "32": "assets/icon-32.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src https://auth.openai.com https://api.openai.com"
+  }
+}

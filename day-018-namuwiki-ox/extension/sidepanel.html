@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>지피쨩 OX 퀴즈</title><link rel="stylesheet" href="panel.css"></head>
+<body><main>
+  <section id="settings" hidden aria-labelledby="settings-heading">
+    <div class="settings-header"><div class="row"><h1 id="settings-heading">퀴즈 설정</h1><button id="settings-close" class="settings-close">닫기</button></div>
+    <div class="settings-tabs" role="tablist" aria-label="설정 분류"><button id="settings-tab-general" role="tab" aria-selected="true" aria-controls="settings-general">일반</button><button id="settings-tab-creator" role="tab" aria-selected="false" aria-controls="settings-creator" tabindex="-1">만든놈</button></div></div>
+    <div id="settings-general" role="tabpanel" aria-labelledby="settings-tab-general">
+    <p id="account-status" class="muted">ChatGPT 연결 확인 중</p>
+    <div class="row"><button id="login" class="secondary">ChatGPT로 로그인</button><button id="cancel-login" class="secondary" hidden>로그인 취소</button><button id="logout" class="secondary" hidden>연결 해제</button></div>
+    <label for="model">사용 모델</label><select id="model"><option value="gpt-6.1-terra">GPT-6.1 Terra · 기본</option></select><button id="reload-models" class="text-button">내 계정의 모델 불러오기</button>
+    <label class="toggle"><span><b>Fast 모드</b></span><input id="fast" type="checkbox" role="switch" checked></label>
+    <p class="small muted">Fast를 사용할 수 없으면 일반 속도로 진행해요.</p>
+    <details><summary>데이터와 연결</summary><p class="small">별도 자체 서버 없이 Chrome 확장 안에서 동작해요. 로그인·갱신·모델 조회는 OpenAI에 직접 연결하며, 퀴즈 만들기를 누르면 현재 문서의 추출된 본문이 OpenAI로 전송돼요. 외부 검색은 사용하지 않아요.</p><p class="small">모델·문제 수·Fast 설정은 이 Chrome 프로필에만 저장해요. 문제와 답은 브라우저 세션 동안만 보관하며 연결 해제 시 지워요. 인증정보는 확장 전용 IndexedDB에 암호화해 저장해요.</p></details>
+    <button id="clear-quiz" class="text-button">현재 문제와 답 지우기</button>
+    </div>
+    <div id="settings-creator" class="creator" role="tabpanel" aria-labelledby="settings-tab-creator" hidden>
+      <a class="creator-name" href="https://github.com/hssum9409" target="_blank" rel="noopener noreferrer">hssum9409</a>
+      <p>매일 한개씩 잡동사니 만드는 사람<br>요청사항은 <a href="https://github.com/hssum9409/daily_odd_builds-public/issues" target="_blank" rel="noopener noreferrer">github</a> 에 보내면 수정할지도 안할지도. 버그는 가능한 빠르게 수정함.</p>
+      <p>그 외 잡동사니가 보고싶은 사람은 <a href="https://daily-odd-builds-portal.web.app/" target="_blank" rel="noopener noreferrer">여기</a>로.<br>AI 슬롭 같다구요? 으쩌라구요</p>
+      <p id="creator-version" class="small muted"></p>
+    </div>
+    <p class="settings-footer"><a id="privacy-policy" href="https://daily-odd-builds-portal.web.app/privacy/namuwiki-ox" target="_blank" rel="noopener noreferrer">개인정보취급방침</a></p>
+  </section>
+<div id="panel-content">
+  <header><span class="brand">지피쨩 OX 퀴즈</span><button id="settings-toggle" class="icon" aria-label="설정 열기" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 3-.5 2-2 .9-1.9-.5-2 3.4L4 10.2v2.3l-1.4 1.4 2 3.4 1.9-.5 2 .9.5 2h4l.5-2 2-.9 1.9.5 2-3.4-1.4-1.4v-2.3l1.4-1.4-2-3.4-1.9.5-2-.9-.5-2Z"/><circle cx="11" cy="11.5" r="3"/></svg></button></header>
+  <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
+  <section id="unsupported" class="unsupported" hidden aria-labelledby="unsupported-heading"><img src="assets/gpichan-wiki-guide.webp" alt="위키 책을 펼치고 문서로 안내하는 지피쨩" width="220" height="220"><h1 id="unsupported-heading">나무위키 문서에서 만나요</h1><p class="muted">지금 탭은 나무위키 문서가 아니에요.<br>궁금한 문서를 열면 지피쨩이<br>그 본문으로 OX 퀴즈를 만들어 드려요.</p><a id="namuwiki-open" class="primary" href="https://namu.wiki/" target="_blank" rel="noopener noreferrer">나무위키 바로가기 ↗</a><p class="small muted">문서를 연 뒤 이 패널로 돌아오세요.</p><p id="unsupported-quiz" class="small muted" hidden>풀던 퀴즈와 답은 그대로 보관하고 있어요.</p></section>
+  <section id="page-update" class="page-update" hidden><p>현재 문서의 내용을 다시 반영할 수 있어요.</p><button id="refresh-page" class="primary">문서 내용 갱신하기 ↻</button><small>문제는 자동으로 새로 만들지 않아요.</small></section>
+  <section id="generation" class="generation" aria-labelledby="generation-heading" aria-busy="true" hidden>
+    <div class="generation-portrait"><img src="assets/gpichan-quiz.png" alt="문제를 준비하는 지피쨩" width="170" height="170"><span class="generation-spinner" aria-hidden="true"></span></div>
+    <h1 id="generation-heading" tabindex="-1">지피쨩이 출제 중이에요</h1>
+    <p id="generation-meta" class="muted"></p>
+    <p id="generation-status" class="generation-status" role="status" aria-live="polite">현재 탭의 본문을 읽고 있어요…</p>
+    <ol class="generation-steps" aria-label="출제 단계"><li id="stage-reading" aria-current="step">본문 읽기</li><li id="stage-creating">문제 만들기</li><li id="stage-checking">정답·근거 확인</li></ol>
+    <progress class="generation-progress" aria-label="퀴즈 출제 진행 중"></progress>
+    <p id="generation-elapsed" class="small muted">0초 경과</p>
+    <button id="stop" class="secondary">출제 취소</button><p class="small muted">완성되면 자동으로 퀴즈가 열려요.<br>취소해도 이미 전송한 요청은 사용량에 포함될 수 있어요.</p>
+  </section>
+  <section id="welcome">
+    <img class="host" src="assets/gpichan-quiz.png" alt="O와 X 팻말을 든 지피쨩" width="290" height="290">
+    <h1 class="headline">읽던 문서가<br>오늘의 퀴즈로</h1>
+    <div id="login-gate"><p>나무위키 읽다가, 지피쨩과 한 판!<br>ChatGPT 계정을 연결하고 시작해요.</p><button id="gate-login" class="primary">ChatGPT로 로그인</button><button id="gate-cancel" class="secondary" hidden>로그인 취소</button></div>
+    <div id="workspace" hidden>
+      <section class="document"><div class="row"><span class="muted">현재 문서</span><button id="read-page" class="text-button">다시 읽기 ↻</button></div><h2 id="article-title">나무위키 문서를 열어 주세요</h2><p id="article-info" class="muted">본문에서만 출제해요</p></section>
+      <div class="quantity"><label for="count">문제 수</label><div class="stepper"><button id="minus" aria-label="문제 수 줄이기">−</button><input id="count" aria-label="문제 수" type="number" min="5" max="20" step="1" value="10"><button id="plus" aria-label="문제 수 늘리기">+</button></div><small class="muted">5–20문제</small></div>
+    </div>
+  </section>
+  <section id="game" hidden aria-label="OX 퀴즈">
+    <div class="game-top"><img src="assets/gpichan-quiz.png" alt="" width="100" height="100"><div><p id="game-article" class="muted"></p><h1>본문에 따르면, O일까 X일까?</h1></div></div>
+    <div class="row"><b id="progress-label"></b><span id="live-score" class="muted"></span></div><progress id="progress" value="0" max="10"></progress>
+    <article class="question"><p id="question" tabindex="-1"></p><div class="answers"><button id="answer-o" aria-label="O, 맞아요">O<span>맞아요</span></button><button id="answer-x" aria-label="X, 아니에요">X<span>아니에요</span></button></div></article>
+    <section id="feedback" hidden aria-live="polite"><h2 id="verdict"></h2><p id="explanation"></p><p id="correction"></p><div class="evidence"><b>나무위키 본문 근거</b><p id="source-section" class="small muted"></p><blockquote id="quote"></blockquote></div></section>
+    <button id="leave-game" class="text-button">출제 화면으로</button>
+  </section>
+  <section id="result" hidden>
+    <img class="result-host" src="assets/gpichan-quiz.png" alt="퀴즈를 마친 지피쨩" width="180" height="180"><h1>오늘도 한 문서 클리어!</h1><p id="final-score" class="final-score"></p><p id="result-comment" class="muted"></p><p id="request-meta" class="small muted"></p>
+    <button id="new-quiz" class="primary new-quiz">새 퀴즈 만들기 →</button><div class="replay-actions"><button id="retry-all" class="text-button">같은 문제 다시 풀기</button><button id="retry-wrong" class="text-button">틀린 문제 다시 풀기</button></div>
+    <details class="review"><summary>정답과 본문 근거 다시 보기</summary><div id="review-list"></div></details>
+  </section>
+  <footer>나무위키 본문 기준 · 외부 검색 없음</footer>
+</div><nav id="quiz-navigation" aria-label="퀴즈 실행 및 진행" hidden><button id="generate" class="primary" disabled>퀴즈 만들기</button><p id="generation-disclosure" class="disclosure" hidden>문제 생성 시 본문을 OpenAI로 전송합니다.</p><button id="next" class="primary" aria-controls="game result" hidden>다음 문제</button></nav></main><script type="module" src="sidepanel.js"></script></body></html>
