@@ -1,0 +1,32 @@
+{
+  "day": "016",
+  "date": "2026-10-27",
+  "published_at": "2026-11-05",
+  "name": "디시 글쓰기 도우미",
+  "slug": "dc-writer",
+  "version": "0.1.7",
+  "one_line_description": "글과 사진을 디시 글로 정리해봄. 게시 버튼은 직접 누르세요.",
+  "status": "downloadable",
+  "release_status": "preview",
+  "source_visibility": "public",
+  "code_license": "MIT",
+  "technologies": [
+    "Chrome Manifest V3",
+    "JavaScript",
+    "ChatGPT OAuth",
+    "OpenAI Responses",
+    "IndexedDB"
+  ],
+  "source_path": "day-016-dc-writer",
+  "live_url": null,
+  "download_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/download/day016-dc-writer-v0.1.7/dc-writer-0.1.7.zip",
+  "release_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day016-dc-writer-v0.1.7",
+  "source_url": "https://github.com/hssum9409/daily_odd_builds-public/tree/main/day-016-dc-writer",
+  "portal_url": "https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-27",
+  "platform": [
+    "Chrome 데스크톱"
+  ],
+  "tokens": 64879617,
+  "day_numbering_note": "사용자 요청으로 Day 016에 등록. 포털 시작일 2026-10-12 기준 2026-10-27에 해당하며 첫 공개일과 다르다. 기존 Chrome 설치 경로 apps/dc_writer/extension은 유지하고 이후 같은 Day에서 업데이트한다.",
+  "tokens_note": "확인 가능한 메인 1개와 이번 아트워크 1개 누적; 미식별 초기 UI 세션과 스냅샷 이후 유지보수 제외"
+}

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>디시 글쓰기 도우미</title><link rel="stylesheet" href="panel.css"></head>
+<body>
+  <div class="app">
+    <header class="header">
+      <svg class="brand-icon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M18 3H7a3 3 0 0 0-3 3v22h19V15M9 9h9M9 14h5M9 20h3M15 22l2-7L27 5l4 4-10 10-6 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h1>디시 글쓰기 도우미</h1>
+      <button id="account-toggle" class="icon-button" aria-label="ChatGPT 연결 관리" title="ChatGPT 연결 관리"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3H4Z"/></svg></button>
+      <button id="settings-toggle" class="icon-button" aria-label="설정" title="설정"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 3 1-2h4l1 2 3 2 2 1 2 4-2 2v3l-1 2-3 2-2 2h-4l-1-2-3-2-2-1-2-4 2-2V7l1-2 4-2Z"/><circle cx="12" cy="11" r="3"/></svg></button>
+    </header>
+    <div id="message" role="status" aria-live="polite" hidden></div>
+    <section id="welcome" class="welcome">
+      <svg class="welcome-icon" viewBox="0 0 80 80" fill="none" aria-hidden="true"><path d="M47 8H17a8 8 0 0 0-8 8v55h45V43M23 25h25M23 39h14M23 53h9M38 62l5-18L66 20l10 10-25 25-13 7Z" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h2>내 글을, 디시 글로.</h2><p>글과 사진을 넣고 원하는 방식으로 정리하세요.</p>
+      <button id="connect" class="primary wide">ChatGPT로 계속하기</button>
+      <p class="hint">사용자 동의 후 ChatGPT 사용량이 적용됩니다. 로그인은 이 Chrome 프로필에 유지됩니다.</p>
+      <button id="cancel-login" class="text-button" hidden>로그인 취소</button>
+      <button id="prepare-first" class="text-button">먼저 글과 사진 준비하기</button>
+      <div id="connected" hidden><p id="account-name"></p><label class="model-label">사용할 모델<select id="model"><option value="">모델 선택</option></select></label><button id="disconnect" class="text-button">연결 해제</button><p class="hint">연결을 이 Chrome 프로필에 암호화해 저장합니다. 갱신 유효기간이 약 10일 남으면, 패널이 닫혀 있어도 Chrome 창이 열린 동안 자동 갱신합니다. 30일간 갱신하지 못하면 다시 로그인해야 합니다.</p></div>
+      <ol class="steps"><li><span>1</span><div><strong>재료 넣기</strong><p>글과 사진을 모으세요</p></div></li><li><span>2</span><div><strong>글 다듬기</strong><p>원하는 방식과 스타일로</p></div></li><li><span>3</span><div><strong>디시에 넣기</strong><p>확인한 뒤 편집기에 적용</p></div></li></ol>
+    </section>
+    <section id="settings" class="settings" hidden><h2>설정</h2><label class="check"><input type="checkbox" id="compress" checked>새 사진을 가볍게 줄이기</label><p class="hint">PNG·JPG만 긴 변 1,600px 이하로 조정합니다. GIF·WebP는 원본을 유지합니다.</p><label class="check"><input type="checkbox" id="save-draft" checked>이 기기에 초안과 사진 자동 저장</label><p class="hint">사진은 ‘디시 편집기에 넣기’를 누를 때 업로드합니다.</p><button id="clear-draft" class="secondary">저장한 초안과 사진 삭제</button><button id="close-settings" class="text-button">작성으로 돌아가기</button></section>
+    <main id="workspace" hidden>
+      <nav class="tabs" aria-label="글쓰기 단계"><button id="write-tab" class="active" aria-current="page">작성</button><button id="preview-tab">미리보기</button></nav>
+      <section id="write-view" class="view">
+        <label class="field-label" for="source">글과 소재</label><textarea id="source" rows="5" placeholder="글을 붙여넣거나, 쓸 내용을 자유롭게 적어 주세요."></textarea>
+        <label class="small-label" for="title">제목 <span>선택 · 최대 40자</span></label><input id="title" maxlength="40" placeholder="비워 두면 AI가 제안합니다">
+        <div id="dropzone" class="photo-section" tabindex="0" aria-label="사진을 드래그하거나 붙여넣기">
+          <div id="photos" class="photos"></div>
+          <label class="secondary upload-button" for="files"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m4 18 6-6 4 4 3-3 4 5"/></svg>사진 추가<input id="files" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" multiple hidden></label>
+          <p class="hint">파일 선택 · 드래그 · 붙여넣기</p>
+          <button id="import-photos" class="text-button small">디시 편집기의 첨부사진 가져오기</button>
+        </div>
+        <fieldset class="mode-field"><legend>작성 방식</legend><div id="modes" class="modes"><button type="button" data-mode="preserve" class="selected" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H5v20h14V7l-5-5ZM14 2v5h5M8 11h8M8 15h8M8 18h5"/></svg>원문 유지</button><button type="button" data-mode="structure" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h13M8 12h13M8 19h13"/><circle cx="3" cy="5" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="19" r="1"/></svg>구조 정리</button><button type="button" data-mode="polish" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 16-1 6 6-1L22 7l-5-5L3 16ZM14 5l5 5M3 16l5 5"/></svg>다듬어 쓰기</button><button type="button" data-mode="create" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 2 2.5 6.5L19 11l-6.5 2.5L10 20l-2.5-6.5L1 11l6.5-2.5L10 2ZM20 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3Z"/></svg>소재로 작성</button></div></fieldset>
+        <label class="style-row" for="style"><strong>서식·스타일</strong><select id="style"><option value="plain">담백하게</option><option value="review">담백한 후기</option><option value="info">정보 정리</option></select></label>
+        <details><summary>저장한 양식</summary><label class="small-label" for="preset">기본 양식</label><select id="preset"><option value="">자유롭게</option><option value="요약 → 주요 내용 → 정리 순서로 작성">정보글</option><option value="방문 계기 → 사진과 후기 → 좋았던 점 → 아쉬운 점 → 결론">후기</option></select><textarea id="template" rows="3" placeholder="원하는 순서와 형식을 적어 주세요."></textarea><button id="save-template" class="text-button small">이 양식 저장</button><select id="saved-template" aria-label="저장된 양식 선택"><option value="">저장한 양식 선택</option></select></details>
+        <details><summary>레퍼런스</summary><textarea id="reference" rows="4" placeholder="참고할 글이나 문체 예시를 붙여넣어 주세요."></textarea><p class="hint">레퍼런스의 말투와 구성을 가장 먼저 따릅니다. 내 지침·양식·스타일은 충돌하지 않는 범위에서 반영합니다. 링크만 넣으면 본문을 읽지 못하므로 참고할 내용을 함께 붙여넣어 주세요.</p></details>
+        <details><summary>내 지침</summary><textarea id="instructions" rows="3" placeholder="예: 반말로, 과한 강조 없이. 수치와 인용은 그대로."></textarea></details>
+        <label class="check analysis"><input type="checkbox" id="analyze">사진 내용도 AI에게 보여주기</label><p class="hint">선택하면 새로 추가한 사진의 축소본을 함께 보냅니다.</p>
+        <button id="generate" class="primary wide">원문으로 미리보기</button><button id="cancel-generation" class="secondary wide" hidden>생성 취소</button>
+      </section>
+      <section id="preview-view" class="view" hidden>
+        <div class="preview-tools"><button id="compare" class="secondary small">원문과 비교</button></div><pre id="original" hidden></pre>
+        <article id="preview"><p class="empty">글과 사진을 넣고 초안을 만들어 주세요.</p></article>
+        <div id="direct-editor" hidden><label class="small-label" for="edit-title">제목</label><input id="edit-title" maxlength="40"><label class="small-label" for="edit-body">본문</label><textarea id="edit-body" rows="12"></textarea><p class="hint">[[사진:…]] 표시는 사진 위치입니다.</p><button id="save-edit" class="primary wide">수정 반영</button></div>
+        <div class="refine-actions"><button id="shorten" class="secondary">짧게</button><button id="retone" class="secondary">말투 바꾸기</button><button id="direct" class="secondary">직접 수정</button></div>
+        <div class="target-box"><label class="small-label" for="target">적용할 디시 글쓰기 탭</label><div class="target-row"><select id="target"><option value="">글쓰기 탭을 열어 주세요</option></select><button id="refresh-target" class="secondary" aria-label="글쓰기 탭 새로 불러오기">새로고침</button></div><p class="hint" id="target-status">일반·마이너·미니 갤러리의 PC 글쓰기를 지원합니다.</p><label class="check"><input type="checkbox" id="replace">기존 제목과 본문 교체</label></div>
+        <div class="apply-actions"><button id="regenerate" class="secondary">다시 만들기</button><button id="apply" class="primary">디시 편집기에 넣기</button></div><button id="undo" class="text-button small" hidden>방금 적용 되돌리기</button><p class="hint centered">게시 전 마지막 확인은 직접 해주세요.</p>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="panel.js"></script>
+</body></html>

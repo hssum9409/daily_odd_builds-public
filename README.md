@@ -112,6 +112,16 @@ DCInside 작성자 닉네임 옆에 공개 동의한 LoL 솔로 랭크 티어·L
 Chrome Manifest V3 · 설치 후보 사전 공개 · 실제 게임 인증/티어 제공 및 Chrome 웹스토어 공개 전. 설치용 실행 번들과 사용 안내·소개 이미지만 공개하며 개발 소스·서버 코드·운영 설정은 비공개입니다. 포털 기록일 2026-10-24, 사전 공개 2026-10-27.
 <!-- day013-community-game-badges:end -->
 
+<!-- day016:start -->
+## Day 016 · 디시 글쓰기 도우미
+
+글과 사진을 디시 글로 정리해봄. 게시 버튼은 직접 누르세요.
+
+[소개·공개 소스](day-016-dc-writer/README.md) · [0.1.7 ZIP preview](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day016-dc-writer-v0.1.7) · [설치·업데이트](day-016-dc-writer/docs/INSTALLATION.md) · [Day 016 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-27)
+
+Chrome 데스크톱 · 코드 MIT · 글·사진 미리보기 후 디시 기본 편집기에 적용 · 계속 업데이트하는 preview입니다.
+<!-- day016:end -->
+
 <!-- day017:start -->
 ## Day 017 · 팩트렌즈
 

@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-05",
+  "reference_commit": "5735543a421e81dfbd9ef7ee315627533b366593",
+  "images": [
+    {
+      "path": "images/hero.webp",
+      "size": [
+        1672,
+        941
+      ],
+      "sha256": "c993abc39aa0c5abec70ada624c3d2ad22700b11d06887a8a383c3002fe15e4a",
+      "kind": "generated concept illustration"
+    },
+    {
+      "path": "images/promotion.webp",
+      "size": [
+        1200,
+        630
+      ],
+      "sha256": "489ef4f4aff01292c57ecf87c949db07d6bc660b528ebae66f06f0b920f49986",
+      "kind": "generated concept illustration"
+    },
+    {
+      "path": "images/features.webp",
+      "size": [
+        1672,
+        941
+      ],
+      "sha256": "0c15b4cee858ad7be93581656ca1d5792907ec61640d279976fbd30bc786c427",
+      "kind": "generated concept illustration"
+    },
+    {
+      "path": "images/ui-compose.webp",
+      "size": [
+        440,
+        1442
+      ],
+      "sha256": "f196de45b759e34acfac459b5b6a3d2cf0476504c3e770bbe62a193dce29d0f0",
+      "kind": "real Chrome extension capture with synthetic inputs/provider"
+    },
+    {
+      "path": "images/ui-preview.webp",
+      "size": [
+        440,
+        1139
+      ],
+      "sha256": "ea14562e1a47998fb78f26834c2d7d6fc938ce3b9f493f7c8043512b8f2e5580",
+      "kind": "real Chrome extension capture with synthetic inputs/provider"
+    }
+  ]
+}

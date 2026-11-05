@@ -1,0 +1,8 @@
+ChatGPT authentication runtime
+@daily-odd-builds/chatgpt-auth 0.1.0
+Copyright (c) 2026 hssum9409
+MIT License: extension/vendor/chatgpt-auth/LICENSE.txt
+Pinned public source: https://github.com/hssum9409/daily_odd_builds-public/tree/chatgpt-auth-v0.1.0/packages/chatgpt-auth
+
+The extension packages no other third-party runtime libraries. Node.js, Python and Playwright are development tools and are not bundled in the runtime ZIP.
+Generated illustrations are outside the software MIT grant; see docs/ARTWORK.md.
