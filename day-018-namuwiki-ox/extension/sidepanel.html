@@ -24,8 +24,7 @@
 <div id="panel-content">
   <header><span class="brand">지피쨩 OX 퀴즈</span><button id="settings-toggle" class="icon" aria-label="설정 열기" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 3-.5 2-2 .9-1.9-.5-2 3.4L4 10.2v2.3l-1.4 1.4 2 3.4 1.9-.5 2 .9.5 2h4l.5-2 2-.9 1.9.5 2-3.4-1.4-1.4v-2.3l1.4-1.4-2-3.4-1.9.5-2-.9-.5-2Z"/><circle cx="11" cy="11.5" r="3"/></svg></button></header>
   <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
-  <section id="unsupported" class="unsupported" hidden aria-labelledby="unsupported-heading"><img src="assets/gpichan-wiki-guide.webp" alt="위키 책을 펼치고 문서로 안내하는 지피쨩" width="220" height="220"><h1 id="unsupported-heading">나무위키 문서에서 만나요</h1><p class="muted">지금 탭은 나무위키 문서가 아니에요.<br>궁금한 문서를 열면 지피쨩이<br>그 본문으로 OX 퀴즈를 만들어 드려요.</p><a id="namuwiki-open" class="primary" href="https://namu.wiki/" target="_blank" rel="noopener noreferrer">나무위키 바로가기 ↗</a><p class="small muted">문서를 연 뒤 이 패널로 돌아오세요.</p><p id="unsupported-quiz" class="small muted" hidden>풀던 퀴즈와 답은 그대로 보관하고 있어요.</p></section>
-  <section id="page-update" class="page-update" hidden><p>현재 문서의 내용을 다시 반영할 수 있어요.</p><button id="refresh-page" class="primary">문서 내용 갱신하기 ↻</button><small>문제는 자동으로 새로 만들지 않아요.</small></section>
+  <section id="unsupported" class="unsupported" hidden aria-labelledby="unsupported-heading"><img src="assets/gpichan-wiki-guide.webp" alt="위키 책을 펼치고 문서로 안내하는 지피쨩" width="220" height="220"><h1 id="unsupported-heading">나무위키 문서에서 만나요</h1><p class="muted">지금 탭은 나무위키 문서가 아니에요.<br>궁금한 문서를 열면 지피쨩이<br>그 본문으로 OX 퀴즈를 만들어 드려요.</p><a id="namuwiki-open" class="primary" href="https://namu.wiki/" target="_blank" rel="noopener noreferrer">나무위키 바로가기 ↗</a><p class="small muted">문서를 열면 출제 대상을 자동으로 바꿔요.</p></section>
   <section id="generation" class="generation" aria-labelledby="generation-heading" aria-busy="true" hidden>
     <div class="generation-portrait"><img src="assets/gpichan-quiz.png" alt="문제를 준비하는 지피쨩" width="170" height="170"><span class="generation-spinner" aria-hidden="true"></span></div>
     <h1 id="generation-heading" tabindex="-1">지피쨩이 출제 중이에요</h1>
@@ -41,7 +40,7 @@
     <h1 class="headline">읽던 문서가<br>오늘의 퀴즈로</h1>
     <div id="login-gate"><p>나무위키 읽다가, 지피쨩과 한 판!<br>ChatGPT 계정을 연결하고 시작해요.</p><button id="gate-login" class="primary">ChatGPT로 로그인</button><button id="gate-cancel" class="secondary" hidden>로그인 취소</button></div>
     <div id="workspace" hidden>
-      <section class="document"><div class="row"><span class="muted">현재 문서</span><button id="read-page" class="text-button">다시 읽기 ↻</button></div><h2 id="article-title">나무위키 문서를 열어 주세요</h2><p id="article-info" class="muted">본문에서만 출제해요</p></section>
+      <section class="document"><span class="muted">현재 문서</span><h2 id="article-title">나무위키 문서를 열어 주세요</h2><p id="article-info" class="muted">본문에서만 출제해요</p></section>
       <div class="quantity"><label for="count">문제 수</label><div class="stepper"><button id="minus" aria-label="문제 수 줄이기">−</button><input id="count" aria-label="문제 수" type="number" min="5" max="20" step="1" value="10"><button id="plus" aria-label="문제 수 늘리기">+</button></div><small class="muted">5–20문제</small></div>
     </div>
   </section>

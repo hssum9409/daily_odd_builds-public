@@ -25,7 +25,8 @@ const jwk={...await crypto.subtle.exportKey('jwk',pair.publicKey),kid:'qa',alg:'
 let nonce,redirect,tokenCalls=0,responseCalls=0,badQuote=false,rejectVerification=false,delay=false,fastRejected=false,shortBody=false;
 let unblock;
 ctx.on('request',r=>requests.push(r.url().split('?')[0]));
-await ctx.route('https://namu.wiki/**',r=>r.fulfill({contentType:'text/html',body:shortBody?'<meta charset="utf-8"><h1>고양이</h1><div class="wiki-content"><div class="wiki-paragraph">출제하기에는 짧은 본문입니다.</div></div>':fixture}));
+await ctx.route('https://namu.wiki/**',r=>r.fulfill({contentType:'text/html',body:shortBody?'<meta charset="utf-8"><h1>고양이</h1><div class="wiki-content"><div class="wiki-paragraph">출제하기에는 짧은 본문입니다.</div></div>':decodeURI(r.request().url()).includes('강아지')?fixture.replaceAll('고양이','강아지'):fixture}));
+await ctx.route('https://example.test/**',r=>r.fulfill({contentType:'text/html',body:'<h1>Not NamuWiki</h1>'}));
 await ctx.route('https://auth.openai.com/**',async r=>{
   const u=new URL(r.request().url());
   if(u.pathname.endsWith('/authorize')){nonce=u.searchParams.get('nonce');redirect=u.searchParams.get('redirect_uri');return r.fulfill({contentType:'text/html',body:'<title>Mock ChatGPT login</title><p>Synthetic provider only</p>'});}
@@ -72,7 +73,8 @@ try{
   await panel.waitForFunction(async()=>!!(await chrome.runtime.sendMessage({type:'auth.status'}))?.data?.sharing);
   await source.bringToFront();
   await panel.locator('#workspace').waitFor({state:'visible'});assert.equal(tokenCalls,1);
-  await panel.locator('#read-page').click();await panel.locator('#article-title').filter({hasText:'고양이'}).waitFor();
+  await panel.locator('#article-title').filter({hasText:'고양이'}).waitFor();
+  assert.equal(await panel.locator('#page-update,#refresh-page,#read-page').count(),0);
   const snapshot=await panel.evaluate(async()=>{const [tab]=await chrome.tabs.query({url:'https://namu.wiki/w/*'});return (await chrome.scripting.executeScript({target:{tabId:tab.id},func:(await import('./extract.js')).extractArticle}))[0].result;});
   assert.ok(snapshot.blocks.length>=24);assert.ok(!JSON.stringify(snapshot).includes('SECRET'));
   // Current NamuWiki hashes class names: section anchors + renderer boundary
@@ -82,7 +84,16 @@ try{
   const hashedSnapshot=await panel.evaluate(async()=>{const tabs=await chrome.tabs.query({url:'https://namu.wiki/w/*'});const tab=tabs.find(t=>t.url.includes('%ED%95%B4%EC%8B%9C') || t.url.includes('해시검사'));return (await chrome.scripting.executeScript({target:{tabId:tab.id},func:(await import('./extract.js')).extractArticle}))[0].result;});
   assert.equal(hashedSnapshot.extractor,'section-renderer');assert.ok(!JSON.stringify(hashedSnapshot).includes('SECRET'));assert.ok(hashedSnapshot.blocks.some(b=>b.text.includes('온전히 읽습니다. 굵은 본문도')));
   await hashed.close();await source.bringToFront();
-  await panel.locator('#page-update').waitFor({state:'visible'});const beforeRefresh=responseCalls;await panel.locator('#refresh-page').click();await panel.locator('#page-update').waitFor({state:'hidden'});assert.equal(responseCalls,beforeRefresh);
+  await panel.locator('#article-title').filter({hasText:'고양이'}).waitFor();
+  const beforeNavigation=responseCalls;
+  await source.goto('https://namu.wiki/w/강아지');await panel.locator('#article-title').filter({hasText:'강아지'}).waitFor();assert.ok(await panel.locator('#generate').isEnabled());
+  const alternate=await ctx.newPage();await alternate.goto('https://namu.wiki/w/고양이');await alternate.bringToFront();await panel.locator('#article-title').filter({hasText:'고양이'}).waitFor();
+  await source.bringToFront();await panel.locator('#article-title').filter({hasText:'강아지'}).waitFor();await alternate.close();
+  await source.goto('https://namu.wiki/w/고양이');await panel.locator('#article-title').filter({hasText:'고양이'}).waitFor();assert.equal(responseCalls,beforeNavigation);
+  // Client-side navigation may finish rendering after the URL event, without a full load.
+  await source.evaluate(()=>{history.pushState({},'','/w/강아지');setTimeout(()=>{document.querySelector('h1').textContent='강아지';document.title='강아지 - 나무위키';},150);});
+  await panel.locator('#article-title').filter({hasText:'강아지'}).waitFor();assert.equal(responseCalls,beforeNavigation);
+  await source.goto('https://namu.wiki/w/고양이');await panel.locator('#article-title').filter({hasText:'고양이'}).waitFor();
   assert.equal(await panel.locator('#count').inputValue(),'10');
   await panel.screenshot({path:path.join(work,'ready.png'),fullPage:true});
   for(const size of [{width:440,height:950},{width:320,height:560}]){
@@ -90,7 +101,7 @@ try{
     assert.ok(await panel.locator('#generate').isEnabled());assert.ok(await panel.locator('#generation-disclosure').isVisible());
     const before=await panel.locator('#generate').boundingBox();assert.ok(before && before.y>=0 && before.y+before.height<=size.height);
     await panel.mouse.move(size.width/2,180);await panel.mouse.wheel(0,10000);
-    await panel.waitForFunction(()=>{const n=document.getElementById('panel-content');return n.scrollTop>0 && n.scrollTop+n.clientHeight>=n.scrollHeight-2;});
+    await panel.waitForFunction(()=>{const n=document.getElementById('panel-content');return n.scrollHeight<=n.clientHeight || n.scrollTop>0 && n.scrollTop+n.clientHeight>=n.scrollHeight-2;});
     const after=await panel.locator('#generate').boundingBox();assert.ok(Math.abs(after.y-before.y)<1);
     const plus=await panel.locator('#plus').boundingBox(),dock=await panel.locator('#quiz-navigation').boundingBox();assert.ok(plus.y+plus.height<=dock.y);
     assert.ok(await panel.evaluate(()=>document.documentElement.scrollWidth<=innerWidth && document.scrollingElement.scrollTop===0));
@@ -117,7 +128,12 @@ try{
   await panel.waitForFunction(()=>parseInt(document.getElementById('generation-elapsed').textContent,10)>0);
   await panel.screenshot({path:path.join(work,'generating.png'),fullPage:true});
   await panel.waitForFunction(()=>document.getElementById('stage-creating').getAttribute('aria-current')==='step');
+  await source.goto('https://namu.wiki/w/강아지');await source.bringToFront();
+  await panel.locator('#article-title').filter({hasText:'강아지'}).waitFor({state:'attached'});assert.ok(await panel.locator('#generation').isVisible());
+  await source.goto('https://example.test/');await source.bringToFront();assert.ok(await panel.locator('#generation').isVisible());assert.ok(await panel.locator('#unsupported').isHidden());
   delay=false;unblock?.();await panel.locator('#game').waitFor({state:'visible'});assert.equal(responseCalls,2);assert.ok(await panel.locator('#generation').isHidden());
+  assert.equal(await panel.locator('#game-article').innerText(),'고양이');assert.ok(await panel.locator('#unsupported').isHidden());
+  await panel.screenshot({path:path.join(work,'generated-after-leaving-wiki.png')});
   console.log('Generation passed');
   assert.ok(await panel.locator('#feedback').isHidden());assert.ok(await panel.locator('#quiz-navigation').isHidden());
   async function checkPinnedNavigation(label){
@@ -148,20 +164,26 @@ try{
   await panel.locator('#result').waitFor({state:'visible'});assert.equal(await panel.locator('#final-score').innerText(),'9 / 10');assert.ok(await panel.locator('#quiz-navigation').isHidden());
   await panel.screenshot({path:path.join(work,'result.png'),fullPage:true});
   const buttonSizes=await panel.evaluate(()=>({primary:document.getElementById('new-quiz').getBoundingClientRect().height,replay:document.getElementById('retry-all').getBoundingClientRect().height}));assert.ok(buttonSizes.primary>buttonSizes.replay);assert.ok((await panel.locator('#new-quiz').getAttribute('class')).includes('primary'));
-  const callsBeforeReplay=responseCalls;await panel.locator('#retry-wrong').click();assert.equal(await panel.locator('#progress-label').innerText(),'1 / 1 문제');await panel.locator('#answer-x').click();await panel.locator('#next').click();assert.equal(await panel.locator('#final-score').innerText(),'1 / 1');assert.equal(responseCalls,callsBeforeReplay);
+  const callsBeforeReplay=responseCalls;await panel.locator('#retry-wrong').click();assert.equal(await panel.locator('#progress-label').innerText(),'1 / 1 문제');await panel.locator('#answer-x').click();
+  const answered=await panel.locator('#question').innerText();
+  const other=await ctx.newPage();await other.goto('https://example.test/');await other.bringToFront();
+  assert.ok(await panel.locator('#game').isVisible());assert.ok(await panel.locator('#unsupported').isHidden());assert.ok(await panel.locator('#next').isVisible());
+  await panel.reload();await panel.locator('#feedback').waitFor({state:'visible'});assert.equal(await panel.locator('#question').innerText(),answered);assert.ok(await panel.locator('#answer-x').isDisabled());
+  await source.goto('https://namu.wiki/w/강아지');await source.bringToFront();assert.equal(await panel.locator('#question').innerText(),answered);assert.equal(await panel.locator('#game-article').innerText(),'고양이');
+  await other.bringToFront();await panel.locator('#next').click();assert.equal(await panel.locator('#final-score').innerText(),'1 / 1');assert.equal(responseCalls,callsBeforeReplay);
   await panel.reload();await panel.locator('#result').waitFor({state:'visible'});assert.equal(await panel.locator('#final-score').innerText(),'1 / 1');
-  await ctx.route('https://example.test/**',r=>r.fulfill({contentType:'text/html',body:'<h1>Not NamuWiki</h1>'}));
-  const other=await ctx.newPage();await other.goto('https://example.test/');await other.bringToFront();await panel.locator('#unsupported').waitFor({state:'visible'});assert.ok(await panel.locator('#unsupported-quiz').isVisible());const beforeUnsupported=responseCalls;
+  await other.bringToFront();assert.ok(await panel.locator('#result').isVisible());assert.ok(await panel.locator('#unsupported').isHidden());const beforeUnsupported=responseCalls;
+  await panel.locator('#new-quiz').click();await panel.locator('#unsupported').waitFor({state:'visible'});
   await panel.setViewportSize({width:320,height:850});await panel.screenshot({path:path.join(work,'unsupported-narrow.png'),fullPage:true});assert.ok(await panel.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-  await source.bringToFront();await panel.locator('#result').waitFor({state:'visible'});assert.equal(await panel.locator('#final-score').innerText(),'1 / 1');assert.equal(responseCalls,beforeUnsupported);await other.close();await panel.setViewportSize({width:440,height:950});
-  await panel.locator('#new-quiz').click();await source.bringToFront();await panel.locator('#read-page').click();
+  await source.bringToFront();await panel.locator('#welcome').waitFor({state:'visible'});await panel.locator('#article-title').filter({hasText:'강아지'}).waitFor();assert.equal(responseCalls,beforeUnsupported);
+  await panel.reload();await panel.locator('#welcome').waitFor({state:'visible'});assert.ok(await panel.locator('#game').isHidden());
+  await source.goto('https://namu.wiki/w/고양이');await source.bringToFront();await panel.locator('#article-title').filter({hasText:'고양이'}).waitFor();await other.close();await panel.setViewportSize({width:440,height:950});
   badQuote=true;await panel.locator('#generate').click();await panel.locator('#game').waitFor({state:'visible'});assert.ok(!(await panel.locator('#question').innerText()).includes('외부'));badQuote=false;
   await panel.locator('#answer-o').click();assert.ok((await panel.locator('#quote').innerText()).includes('흰색'));await panel.locator('#leave-game').click();
   rejectVerification=true;const beforeRepair=responseCalls;await panel.locator('#generate').click();await panel.locator('#game').waitFor({state:'visible'});assert.equal(responseCalls,beforeRepair+3);const repaired=await panel.evaluate(async()=>Object.values(await chrome.storage.session.get(null)).find(x=>x?.report)?.report);assert.equal(repaired.editorPasses,2);await panel.locator('#leave-game').click();
-  const beforeShort=responseCalls;shortBody=true;await source.reload();await source.bringToFront();await panel.locator('#page-update').waitFor({state:'visible'});await panel.locator('#refresh-page').click();await panel.locator('#generate.unavailable').waitFor({state:'visible'});assert.ok(await panel.locator('#generate').isDisabled());assert.ok((await panel.locator('#generate').innerText()).includes('본문이 너무 짧아요'));await panel.locator('#page-update').waitFor({state:'hidden'});assert.equal(responseCalls,beforeShort);await panel.screenshot({path:path.join(work,'short-body.png'),fullPage:true});
-  // Repeated refreshes of a short, but successfully read, page must stay dismissed.
-  await panel.locator('#read-page').click();assert.ok(await panel.locator('#page-update').isHidden());assert.ok(await panel.locator('#generate').isDisabled());
-  shortBody=false;await source.reload();await source.bringToFront();await panel.locator('#page-update').waitFor({state:'visible'});await panel.locator('#refresh-page').click();await panel.locator('#page-update').waitFor({state:'hidden'});assert.ok(await panel.locator('#generate').isEnabled());assert.equal(await panel.locator('#generate').innerText(),'퀴즈 만들기');
+  const beforeShort=responseCalls;shortBody=true;await source.reload();await source.bringToFront();await panel.locator('#generate.unavailable').waitFor({state:'visible'});assert.ok(await panel.locator('#generate').isDisabled());assert.ok((await panel.locator('#generate').innerText()).includes('본문이 너무 짧아요'));assert.equal(responseCalls,beforeShort);await panel.screenshot({path:path.join(work,'short-body.png'),fullPage:true});
+  await source.reload();await panel.locator('#generate.unavailable').waitFor({state:'visible'});assert.ok(await panel.locator('#generate').isDisabled());
+  shortBody=false;await source.reload();await source.bringToFront();await panel.waitForFunction(()=>!document.getElementById('generate').disabled && document.getElementById('generate').textContent==='퀴즈 만들기');
   fastRejected=true;await panel.locator('#generate').click();await panel.locator('#game').waitFor({state:'visible'});const diagnostic=await panel.evaluate(async()=>Object.values(await chrome.storage.session.get(null)).find(x=>x?.report)?.report);assert.ok(diagnostic.compatibility.includes('standard_fallback'));assert.deepEqual(diagnostic.effectiveTiers,['default']);fastRejected=false;
   await panel.locator('#leave-game').click();delay=true;await source.bringToFront();await panel.locator('#generate').click();await panel.locator('#stop').waitFor({state:'visible'});await panel.locator('#stop').click();await panel.locator('#message').filter({hasText:'취소했어요'}).waitFor();unblock?.();delay=false;
   await panel.setViewportSize({width:320,height:850});await panel.screenshot({path:path.join(work,'narrow.png'),fullPage:true});assert.ok(await panel.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
@@ -171,5 +193,5 @@ try{
   assert.deepEqual(errors,[]);
   assert.deepEqual(consoleIssues,[]);
   assert.ok(!requests.some(u=>/firebase|googleapis|github|localhost/.test(u)));
-  console.log(JSON.stringify({result:'PASS',environment:'isolated Chrome + synthetic NamuWiki/OpenAI',checks:['production MV3 permissions','PKCE callback state/tab matching','signed synthetic OIDC login','visible body only extraction','5/10/20 count','default Terra + Fast','dedicated generation view/stages/elapsed','creator tab/keyboard/settings preserved','public privacy link','document refresh without generation','non-NamuWiki dedicated guide/restore','primary new quiz/compact replay','10 answers -> score','quote feedback','wrong-only offline replay','session reload','bad draft automatically corrected','bad edit automatically retried','short-body reason on disabled quiz button','successful short-body refresh dismisses banner','body recovers and quiz button re-enables','Fast fallback','cancel','320px overflow','no plaintext tokens','logout clears quiz','no relevant console or JS errors'],expectedHttpErrors,responseCalls,screenshots:work},null,2));
+  console.log(JSON.stringify({result:'PASS',environment:'isolated Chrome + synthetic NamuWiki/OpenAI',checks:['production MV3 permissions','PKCE callback state/tab matching','signed synthetic OIDC login','visible body only extraction','5/10/20 count','default Terra + Fast','dedicated generation view/stages/elapsed','creator tab/keyboard/settings preserved','public privacy link','automatic target on document/tab/client-side navigation without model calls','removed page-change notices and all document refresh controls','generation survives document change and leaving NamuWiki with original source','active quiz/answers/next/results survive other sites and panel reload','non-NamuWiki guide only on creation view','creation view restored without reviving previous quiz','primary new quiz/compact replay','10 answers -> score','quote feedback','wrong-only offline replay','bad draft automatically corrected','bad edit automatically retried','short-body reason on disabled quiz button','automatic short-body recovery','Fast fallback','cancel','320px overflow and pinned actions','no plaintext tokens','logout clears quiz','no relevant console or JS errors'],expectedHttpErrors,responseCalls,screenshots:work},null,2));
 }catch(e){console.error(e);await panel.screenshot({path:path.join(work,'failure.png'),fullPage:true}).catch(()=>{});throw e;}finally{unblock?.();await ctx.close();}

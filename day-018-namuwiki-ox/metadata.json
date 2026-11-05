@@ -4,7 +4,7 @@
   "development_date": "2026-11-01",
   "name": "지피쨩 나무위키 OX 퀴즈",
   "slug": "namuwiki-ox",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "one_line_description": "읽던 나무위키가 OX 퀴즈로. 지피쨩이 본문에서 문제 내줌.",
   "status": "downloadable",
   "statusLabel": "ZIP preview",
@@ -17,7 +17,7 @@
   "source_path": "day-018-namuwiki-ox",
   "source_visibility": "public",
   "live_url": null,
-  "download_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/download/day018-namuwiki-ox-v0.1.6/gpichan-namuwiki-ox-0.1.6.zip",
+  "download_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/download/day018-namuwiki-ox-v0.1.7/gpichan-namuwiki-ox-0.1.7.zip",
   "platform": [
     "Chrome 데스크톱"
   ],
@@ -30,5 +30,5 @@
   },
   "limitations": "실제 나무위키 본문 추출과 격리 Chrome의 합성 OAuth·모델 흐름을 검사했습니다. 실제 ChatGPT 계정 최초 동의·모델 사용, macOS 실기기, Chrome 웹 스토어 설치는 별도 검증이 필요합니다.",
   "source_url": "https://github.com/hssum9409/daily_odd_builds-public/tree/main/day-018-namuwiki-ox",
-  "release_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day018-namuwiki-ox-v0.1.6"
+  "release_url": "https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day018-namuwiki-ox-v0.1.7"
 }

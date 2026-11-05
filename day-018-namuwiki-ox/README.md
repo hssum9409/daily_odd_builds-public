@@ -7,13 +7,13 @@
 <p align="center">읽던 문서가 오늘의 퀴즈로.<br>눈팅하다가 시험 보게 생김.</p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day018-namuwiki-ox-v0.1.6"><img alt="버전 0.1.6" src="https://img.shields.io/badge/version-0.1.6-205c4d"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day018-namuwiki-ox-v0.1.7"><img alt="버전 0.1.7" src="https://img.shields.io/badge/version-0.1.7-205c4d"></a>
   <img alt="Chrome 데스크톱 확장" src="https://img.shields.io/badge/Chrome-MV3-205c4d">
   <img alt="ZIP preview" src="https://img.shields.io/badge/status-preview-dc9f62">
   <img alt="릴리즈 소스 공개" src="https://img.shields.io/badge/source-public-718b81">
 </p>
 
-<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day018-namuwiki-ox-v0.1.6/gpichan-namuwiki-ox-0.1.6.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="docs/INSTALLATION.md">이 확장 설치 방법</a> · <a href="docs/DATA.md">데이터 처리</a></p>
+<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day018-namuwiki-ox-v0.1.7/gpichan-namuwiki-ox-0.1.7.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="docs/INSTALLATION.md">이 확장 설치 방법</a> · <a href="docs/DATA.md">데이터 처리</a></p>
 
 ![지피쨩 나무위키 OX 퀴즈 — 읽던 문서가 오늘의 퀴즈로 이어지는 소개 일러스트](docs/images/hero.webp)
 
@@ -23,14 +23,14 @@
 
 문서 읽는 김에 얼마나 기억했는지도 확인합니다. 판정 기준은 **해당 문서가 서술한 내용**입니다. 나무위키 내용의 현실 세계 정확성을 검증하는 팩트체커는 아닙니다.
 
-Day 018 · **0.1.6 ZIP preview와 릴리즈 소스를 공개합니다.** Chrome 웹 스토어에는 제출하지 않았습니다. 포털 기록일은 2026-10-29, 첫 ZIP 공개일은 2026-11-01입니다. 실제 나무위키 「고양이」 문서 본문 추출을 확인했으며, 실제 ChatGPT 계정의 권한·모델 사용은 별도 확인이 필요합니다.
+Day 018 · **0.1.7 ZIP preview와 릴리즈 소스를 공개합니다.** Chrome 웹 스토어에는 제출하지 않았습니다. 포털 기록일은 2026-10-29, 첫 ZIP 공개일은 2026-11-01입니다. 실제 나무위키 「고양이」 문서 본문 추출을 확인했으며, 실제 ChatGPT 계정의 권한·모델 사용은 별도 확인이 필요합니다.
 
 ## 빠른 시작
 
 1. [설치 안내](docs/INSTALLATION.md)에 따라 다운로드한 ZIP을 푼 폴더 또는 공개 소스의 `extension/` 폴더를 Chrome 개발자 모드로 로드합니다.
 2. 나무위키 문서 탭에서 확장 아이콘을 눌러 사이드패널을 엽니다.
 3. **ChatGPT로 로그인**하고 요금제 사용에 동의합니다. API 키나 별도 로컬 프로그램은 사용하지 않습니다.
-4. **다시 읽기**로 문서 제목을 확인하고 문제 수를 고릅니다. 기본 **10개**, 최소 **5개**, 최대 **20개**입니다.
+4. 자동으로 읽은 문서 제목을 확인하고 문제 수를 고릅니다. 기본 **10개**, 최소 **5개**, 최대 **20개**입니다.
 5. **퀴즈 만들기**를 누른 뒤 O 또는 X를 고릅니다. 해설과 본문 인용을 읽고 **다음 문제**로 넘어갑니다.
 
 로그인과 출제에는 인터넷 연결이 필요합니다. **자체 서버는 없으며, 로그인과 문제 생성은 OpenAI에 직접 요청합니다.** 퀴즈 만들기를 누르면 추출한 본문을 전송합니다. 출제가 끝난 문제의 풀이·채점·다시 풀기는 로컬에서 동작합니다.
@@ -83,9 +83,9 @@ Fast를 허용하지 않는 계정·모델에서는 일반 처리로 재요청�
 
 ### 출제 중에도, 다른 탭에서도
 
-출제 전용 화면에서 **본문 읽기 → 문제 만들기 → 정답·근거 확인** 단계와 경과 시간을 보여줍니다. 기다리는 동안 취소할 수 있고 완성되면 퀴즈로 전환합니다. 탭이나 문서를 바꾸면 **문서 내용 갱신하기** 버튼으로 새 본문을 반영합니다.
+출제 전용 화면에서 **본문 읽기 → 문제 만들기 → 정답·근거 확인** 단계와 경과 시간을 보여줍니다. 기다리는 동안 취소할 수 있고 완성되면 퀴즈로 전환합니다. 탭이나 문서를 바꾸면 다음 출제 대상의 본문을 자동으로 반영합니다. 갱신 버튼을 누를 필요가 없습니다.
 
-나무위키 문서가 아닌 탭에서는 책을 든 지피쨩과 **나무위키 바로가기**를 보여줍니다. 돌아오면 풀던 문제와 답을 이어 볼 수 있습니다. 결과 화면에서는 큰 **새 퀴즈 만들기** 버튼으로 다음 문서를 준비하고, 같은 문제·오답 복습은 작은 버튼으로 선택합니다.
+출제 중이거나 문제를 풀고 있다면 나무위키를 벗어나도 원래 본문과 진행 상태를 유지합니다. 새 퀴즈를 준비하는 화면에서 나무위키 문서가 아닌 탭을 열면 책을 든 지피쨩과 **나무위키 바로가기**를 보여줍니다. 나무위키로 돌아오면 현재 문서를 자동으로 준비합니다. 결과 화면에서는 큰 **새 퀴즈 만들기** 버튼으로 다음 문서를 준비하고, 같은 문제·오답 복습은 작은 버튼으로 선택합니다.
 
 ## 데이터와 지원 범위
 
@@ -99,6 +99,6 @@ Fast를 허용하지 않는 계정·모델에서는 일반 처리로 재요청�
 
 [hssum9409](https://github.com/hssum9409) · [요청·버그 제보](https://github.com/hssum9409/daily_odd_builds-public/issues) · [다른 잡동사니](https://daily-odd-builds-portal.web.app/)
 
-이 폴더는 **0.1.6 릴리즈 소스 스냅샷**입니다. `extension/`을 직접 로드하거나 [개발 안내](docs/DEVELOPMENT.md)에 따라 검사·빌드할 수 있습니다. 비공개 개발 이력·인증정보·세션 로그는 포함하지 않습니다. 코드는 [MIT](LICENSE)이며 이미지는 별도 [아트워크 안내](docs/ARTWORK.md)를 따릅니다. 나무위키 또는 OpenAI의 공식 제품이 아닙니다.
+이 폴더는 **0.1.7 릴리즈 소스 스냅샷**입니다. `extension/`을 직접 로드하거나 [개발 안내](docs/DEVELOPMENT.md)에 따라 검사·빌드할 수 있습니다. 비공개 개발 이력·인증정보·세션 로그는 포함하지 않습니다. 코드는 [MIT](LICENSE)이며 이미지는 별도 [아트워크 안내](docs/ARTWORK.md)를 따릅니다. 나무위키 또는 OpenAI의 공식 제품이 아닙니다.
 
-로그인 공통 코드와 기존 연결 정보 호환성은 [이번 업데이트 안내](docs/AUTH-MODULE.md)를 참고하세요.
+업데이트와 검증 범위는 [릴리즈 기록](docs/RELEASE.md), 로그인 공통 코드와 기존 연결 정보 호환성은 [인증 모듈 안내](docs/AUTH-MODULE.md)를 참고하세요.
