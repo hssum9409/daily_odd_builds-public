@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "지피쨩 나무위키 OX 퀴즈",
-  "version": "0.1.7",
+  "name": "나무위키 OX 퀴즈",
+  "version": "0.1.10",
   "description": "읽고 있는 나무위키 본문으로 지피쨩과 OX 퀴즈! 5~20문제를 풀고 본문 근거를 확인하세요.",
   "minimum_chrome_version": "120",
   "incognito": "not_allowed",
@@ -23,7 +23,7 @@
     "type": "module"
   },
   "action": {
-    "default_title": "지피쨩 OX 퀴즈 열기",
+    "default_title": "나무위키 OX 퀴즈 열기",
     "default_icon": {
       "16": "assets/icon-16.png",
       "32": "assets/icon-32.png",

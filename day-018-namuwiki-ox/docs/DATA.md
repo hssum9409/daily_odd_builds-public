@@ -11,7 +11,7 @@
 | 저장 위치 | 내용 | 수명 |
 | --- | --- | --- |
 | 확장 IndexedDB | AES-GCM 암호화된 access/refresh token, 계정 이름·ID·scope, 비추출 키 | 연결 해제 또는 확장 제거까지 |
-| `chrome.storage.local` | 모델·Fast·문제 수, 공개 client ID·host ID·동일 계정 확인용 subject, 토큰 갱신 일정 | 해당 프로필에 유지 |
+| `chrome.storage.local` | 모델·추론 수준·Fast·문제 수, 공개 client ID·host ID·동일 계정 확인용 subject, 토큰 갱신 일정 | 해당 프로필에 유지 |
 | `chrome.storage.session` | 진행 중 PKCE/로그인 시도, 창별 출제 본문·문제·답·점수·진행 위치 | 브라우저 세션; 로그아웃 시 해당 확장의 퀴즈 전부 삭제 |
 
 동기화 저장소·자체 수집 서버·원격 분석·신고 기능이 없습니다. 콘텐츠 스크립트에는 Chrome 저장소 접근을 허용하지 않습니다. 토큰을 패널 요청으로 전달하는 메시지는 확장 자체의 패널·인증결과 페이지로 제한합니다. 다른 앱·Day의 인증정보를 읽거나 복사하지 않습니다.

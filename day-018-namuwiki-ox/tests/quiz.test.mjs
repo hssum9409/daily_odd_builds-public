@@ -24,7 +24,7 @@ test('editor corrects its own draft and automatically repairs invalid evidence',
   let calls=0,scenario='normal',editorCalls=0;
   globalThis.fetch=async(url,opts)=>{
     assert.equal(url,'https://api.openai.com/v1/responses');const b=JSON.parse(opts.body);
-    assert.equal(b.model,DEFAULT_MODEL);assert.equal(b.store,false);assert.equal(b.service_tier,'priority');assert.ok(!('tools' in b));assert.ok(!('include' in b));assert.equal(opts.credentials,'omit');
+    assert.equal(b.model,DEFAULT_MODEL);assert.equal(b.store,false);assert.equal(b.service_tier,'priority');assert.deepEqual(b.reasoning,{effort:'medium'});assert.ok(!('tools' in b));assert.ok(!('include' in b));assert.equal(opts.credentials,'omit');
     calls++;const input=JSON.parse(b.input[0].content),editing=Object.hasOwn(input,'proposedQuestions');const parsed=fixture(5);
     if(editing){editorCalls++;assert.equal(input.questionCount,5);assert.deepEqual(input.sourceBlocks,blocks);assert.ok(b.instructions.includes('FINAL QUIZ EDITOR'));}
     if(!editing && scenario==='draft'){parsed.questions[0].quote='처음 생성한 잘못된 근거는 편집 단계에서 고쳐야 합니다.';parsed.questions[1].answer=true;}
@@ -69,13 +69,13 @@ test('Fast alias, disclosed fallback, JSON compatibility keep model and source i
   const oldFetch=globalThis.fetch,oldChrome=globalThis.chrome;globalThis.chrome={runtime:{sendMessage:async()=>({ok:true,data:'synthetic-token'})}};
   const tiers=[],phases=[];let calls=0;
   globalThis.fetch=async(url,opts)=>{
-    const b=JSON.parse(opts.body);tiers.push(b.service_tier);assert.equal(b.model,DEFAULT_MODEL);assert.ok(!b.tools);
+    const b=JSON.parse(opts.body);tiers.push(b.service_tier);assert.equal(b.model,DEFAULT_MODEL);assert.deepEqual(b.reasoning,{effort:'high'});assert.ok(!b.tools);
     calls++;
     if(calls===1)return Response.json({error:{code:'unsupported_value',param:'service_tier',message:'service_tier unsupported value'}},{status:400});
     if(calls===2)return Response.json({error:{param:'service_tier',message:'service_tier not allowed'}},{status:400});
     if(calls===3)return Response.json({error:{param:'text.format',message:'json_schema unsupported'}},{status:400});
     assert.ok(!b.text);return Response.json({status:'completed',service_tier:'default',output:[{type:'message',content:[{type:'output_text',text:'{}'}]}]});
   };
-  try{const r=await request(DEFAULT_MODEL,'test',{body:'original'}, {}, undefined,{onPhase:s=>phases.push(s)});assert.deepEqual(tiers,['priority','fast','default','default']);assert.ok(phases[0].includes('일반'));assert.equal(r.effectiveTier,'default');assert.deepEqual(r.compatibility,['fast_alias','standard_fallback','prompt_json']);}
+  try{const r=await request(DEFAULT_MODEL,'test',{body:'original'}, {}, undefined,{effort:'high',onPhase:s=>phases.push(s)});assert.deepEqual(tiers,['priority','fast','default','default']);assert.ok(phases[0].includes('일반'));assert.equal(r.effectiveTier,'default');assert.deepEqual(r.compatibility,['fast_alias','standard_fallback','prompt_json']);}
   finally{globalThis.fetch=oldFetch;globalThis.chrome=oldChrome;}
 });

@@ -133,11 +133,11 @@ Windows Chrome 검증 · 개발자 모드로 압축 해제 폴더를 로드하�
 <!-- day017:end -->
 
 <!-- day018:start -->
-## Day 018 · 지피쨩 나무위키 OX 퀴즈
+## Day 018 · 나무위키 OX 퀴즈
 
 읽던 나무위키가 OX 퀴즈로. 지피쨩이 본문에서 문제 내줌.
 
-[소개·공개 소스](day-018-namuwiki-ox/README.md) · [ZIP 다운로드 · 0.1.7 preview](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day018-namuwiki-ox-v0.1.7) · [개인정보취급방침](https://daily-odd-builds-portal.web.app/privacy/namuwiki-ox)
+[소개·공개 소스](day-018-namuwiki-ox/README.md) · [ZIP 다운로드 · 0.1.10 preview](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day018-namuwiki-ox-v0.1.10) · [개인정보취급방침](https://daily-odd-builds-portal.web.app/privacy/namuwiki-ox)
 
 데스크톱 Chrome · ChatGPT 로그인 · 본문만으로 5–20문제와 인용·해설 · 자체 서버·외부 검색 없음 · 코드 MIT / 이미지 별도 범위. 실제 계정의 모델 사용은 별도 확인이 필요한 ZIP preview입니다.
 <!-- day018:end -->

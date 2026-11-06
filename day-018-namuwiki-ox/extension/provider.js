@@ -2,25 +2,28 @@ import {readModelResponse} from './shared/model-response.mjs';
 import {responseText} from './shared/report.mjs';
 import {validateArticle,validateQuiz,questionCount,quizSchema} from './shared/quiz.mjs';
 const API='https://api.openai.com/v1';
+export const DEFAULT_EFFORT='medium';
 async function token(){const r=await chrome.runtime.sendMessage({type:'auth.token'});if(!r?.ok)throw Error(r?.error || 'ChatGPT에 다시 로그인해 주세요.');return r.data;}
 export async function models(signal){
   const r=await fetch(`${API}/models`,{headers:{Authorization:`Bearer ${await token()}`},credentials:'omit',cache:'no-store',signal});
+  if(r.status===403)throw Error('이 계정의 ChatGPT 요금제 사용 권한을 확인해 주세요.');
   if(!r.ok)throw Error('계정의 모델 목록을 읽지 못했습니다. 연결과 사용 권한을 확인해 주세요.');
   const data=await r.json();
-  if(!Array.isArray(data.models))throw Error('계정별 모델 목록 형식을 확인하지 못했습니다.');
-  return data.models.filter(m=>m.visibility==='list' && typeof m.slug==='string').map(m=>({id:m.slug,name:m.display_name || m.slug}));
+  if(!Array.isArray(data?.models))throw Error('계정별 모델 목록 형식을 확인하지 못했습니다.');
+  return data.models.filter(m=>m?.visibility==='list' && typeof m.slug==='string' && m.slug.trim()).map(m=>({id:m.slug,name:m.display_name || m.slug}));
 }
 // Day 17 wire compatibility: priority -> fast alias -> disclosed standard fallback.
 // Never change models, enable a tool, or relax the local evidence checks.
 export async function request(model,instructions,input,schema,signal,options={}){
   let tier=options.fast===false?'default':'priority',format=true;
+  const effort=options.effort ?? DEFAULT_EFFORT;
   const compatibility=[];
   for(let attempt=0;attempt<5;attempt++){
     signal?.throwIfAborted();
     try{
       const requestSignal=AbortSignal.any([...(signal?[signal]:[]),AbortSignal.timeout(150000)]);
       const r=await fetch(`${API}/responses`,{method:'POST',headers:{Authorization:`Bearer ${await token()}`,'Content-Type':'application/json',Accept:'text/event-stream, application/json'},
-        credentials:'omit',cache:'no-store',signal:requestSignal,body:JSON.stringify({model,store:false,stream:true,...(tier?{service_tier:tier}:{}),instructions:`${instructions}\nReturn ONLY JSON matching this schema: ${JSON.stringify(schema)}. No markdown fences.`,input:[{role:'user',content:JSON.stringify(input)}],...(format?{text:{format:{type:'json_schema',name:'namuwiki_ox',strict:true,schema}}}:{})})});
+        credentials:'omit',cache:'no-store',signal:requestSignal,body:JSON.stringify({model,store:false,stream:true,...(tier?{service_tier:tier}:{}),...(effort?{reasoning:{effort}}:{}),instructions:`${instructions}\nReturn ONLY JSON matching this schema: ${JSON.stringify(schema)}. No markdown fences.`,input:[{role:'user',content:JSON.stringify(input)}],...(format?{text:{format:{type:'json_schema',name:'namuwiki_ox',strict:true,schema}}}:{})})});
       const {completed}=await readModelResponse(r,requestSignal);
       if(completed.output.some(o=>o.type!=='message' && o.type!=='reasoning'))throw Error('요청하지 않은 외부 도구 결과가 있어 문제를 표시하지 않았어요.');
       if(completed.output.some(o=>(o.content || []).some(c=>c.type==='refusal')))throw Error('이 문서로 문제를 만들 수 없다는 응답을 받았어요. 다른 문서로 시도해 주세요.');
@@ -61,7 +64,7 @@ export async function generateQuiz(article,model,count,signal,options={}){
       responses.push(edited);draft=edited.parsed;
       const questions=validateQuiz(draft,article,count);
       if(!questions.some(q=>q.answer) || !questions.some(q=>!q.answer))throw Object.assign(Error('O와 X가 모두 필요합니다.'),{code:'quiz_balance'});
-      return {questions,article,model,fast:options.fast!==false,effectiveTiers:[...new Set(responses.map(r=>r.effectiveTier))],compatibility:[...new Set(responses.flatMap(r=>r.compatibility))],editorPasses:pass+1,createdAt:new Date().toISOString()};
+      return {questions,article,model,effort:options.effort ?? DEFAULT_EFFORT,fast:options.fast!==false,effectiveTiers:[...new Set(responses.map(r=>r.effectiveTier))],compatibility:[...new Set(responses.flatMap(r=>r.compatibility))],editorPasses:pass+1,createdAt:new Date().toISOString()};
     }catch(error){
       if(!['quiz_json','quiz_evidence','quiz_balance'].includes(error.code))throw error;
       feedback=error.code==='quiz_balance'?'Include both true and false questions.':error.code==='quiz_json'?'Return the complete questions JSON, not commentary.':'Fix the exact question count, nonduplicate statements (1-300 characters), valid sourceIds, VERBATIM contiguous quotes (12-1400 characters), concise explanations (1-700 characters) without URLs, and factual corrections for false answers (1-300 characters). Use ONLY original sourceBlocks. Distinct facts may share a source paragraph or quote.';

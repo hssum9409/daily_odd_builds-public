@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>지피쨩 OX 퀴즈</title><link rel="stylesheet" href="panel.css"></head>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>나무위키 OX 퀴즈</title><link rel="stylesheet" href="panel.css"></head>
 <body><main>
   <section id="settings" hidden aria-labelledby="settings-heading">
     <div class="settings-header"><div class="row"><h1 id="settings-heading">퀴즈 설정</h1><button id="settings-close" class="settings-close">닫기</button></div>
@@ -7,10 +7,14 @@
     <div id="settings-general" role="tabpanel" aria-labelledby="settings-tab-general">
     <p id="account-status" class="muted">ChatGPT 연결 확인 중</p>
     <div class="row"><button id="login" class="secondary">ChatGPT로 로그인</button><button id="cancel-login" class="secondary" hidden>로그인 취소</button><button id="logout" class="secondary" hidden>연결 해제</button></div>
-    <label for="model">사용 모델</label><select id="model"><option value="gpt-6.1-terra">GPT-6.1 Terra · 기본</option></select><button id="reload-models" class="text-button">내 계정의 모델 불러오기</button>
+    <label for="model">사용 모델</label><select id="model" aria-describedby="model-status"><option value="">자동 선택</option></select><button id="reload-models" class="text-button">내 계정의 모델 새로고침</button>
+    <p id="model-status" class="small muted" role="status">ChatGPT를 연결하면 사용 가능한 모델을 불러와요.</p>
+    <label for="effort">추론 수준</label>
+    <select id="effort" aria-describedby="effort-help"><option value="none">None</option><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="xhigh">Extra High</option><option value="max">Max</option><option value="">모델 기본값</option></select>
+    <p id="effort-help" class="small muted">지원하는 추론 수준은 모델마다 달라요.</p>
     <label class="toggle"><span><b>Fast 모드</b></span><input id="fast" type="checkbox" role="switch" checked></label>
     <p class="small muted">Fast를 사용할 수 없으면 일반 속도로 진행해요.</p>
-    <details><summary>데이터와 연결</summary><p class="small">별도 자체 서버 없이 Chrome 확장 안에서 동작해요. 로그인·갱신·모델 조회는 OpenAI에 직접 연결하며, 퀴즈 만들기를 누르면 현재 문서의 추출된 본문이 OpenAI로 전송돼요. 외부 검색은 사용하지 않아요.</p><p class="small">모델·문제 수·Fast 설정은 이 Chrome 프로필에만 저장해요. 문제와 답은 브라우저 세션 동안만 보관하며 연결 해제 시 지워요. 인증정보는 확장 전용 IndexedDB에 암호화해 저장해요.</p></details>
+    <details><summary>데이터와 연결</summary><p class="small">별도 자체 서버 없이 Chrome 확장 안에서 동작해요. 로그인·갱신·모델 조회는 OpenAI에 직접 연결하며, 퀴즈 만들기를 누르면 현재 문서의 추출된 본문이 OpenAI로 전송돼요. 외부 검색은 사용하지 않아요.</p><p class="small">모델·추론 수준·문제 수·Fast 설정은 이 Chrome 프로필에만 저장해요. 문제와 답은 브라우저 세션 동안만 보관하며 연결 해제 시 지워요. 인증정보는 확장 전용 IndexedDB에 암호화해 저장해요.</p></details>
     <button id="clear-quiz" class="text-button">현재 문제와 답 지우기</button>
     </div>
     <div id="settings-creator" class="creator" role="tabpanel" aria-labelledby="settings-tab-creator" hidden>
@@ -22,7 +26,7 @@
     <p class="settings-footer"><a id="privacy-policy" href="https://daily-odd-builds-portal.web.app/privacy/namuwiki-ox" target="_blank" rel="noopener noreferrer">개인정보취급방침</a></p>
   </section>
 <div id="panel-content">
-  <header><span class="brand">지피쨩 OX 퀴즈</span><button id="settings-toggle" class="icon" aria-label="설정 열기" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 3-.5 2-2 .9-1.9-.5-2 3.4L4 10.2v2.3l-1.4 1.4 2 3.4 1.9-.5 2 .9.5 2h4l.5-2 2-.9 1.9.5 2-3.4-1.4-1.4v-2.3l1.4-1.4-2-3.4-1.9.5-2-.9-.5-2Z"/><circle cx="11" cy="11.5" r="3"/></svg></button></header>
+  <header><span class="brand">나무위키 OX 퀴즈</span><button id="settings-toggle" class="icon" aria-label="설정 열기" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 3-.5 2-2 .9-1.9-.5-2 3.4L4 10.2v2.3l-1.4 1.4 2 3.4 1.9-.5 2 .9.5 2h4l.5-2 2-.9 1.9.5 2-3.4-1.4-1.4v-2.3l1.4-1.4-2-3.4-1.9.5-2-.9-.5-2Z"/><circle cx="11" cy="11.5" r="3"/></svg></button></header>
   <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
   <section id="unsupported" class="unsupported" hidden aria-labelledby="unsupported-heading"><img src="assets/gpichan-wiki-guide.webp" alt="위키 책을 펼치고 문서로 안내하는 지피쨩" width="220" height="220"><h1 id="unsupported-heading">나무위키 문서에서 만나요</h1><p class="muted">지금 탭은 나무위키 문서가 아니에요.<br>궁금한 문서를 열면 지피쨩이<br>그 본문으로 OX 퀴즈를 만들어 드려요.</p><a id="namuwiki-open" class="primary" href="https://namu.wiki/" target="_blank" rel="noopener noreferrer">나무위키 바로가기 ↗</a><p class="small muted">문서를 열면 출제 대상을 자동으로 바꿔요.</p></section>
   <section id="generation" class="generation" aria-labelledby="generation-heading" aria-busy="true" hidden>
@@ -38,7 +42,7 @@
   <section id="welcome">
     <img class="host" src="assets/gpichan-quiz.png" alt="O와 X 팻말을 든 지피쨩" width="290" height="290">
     <h1 class="headline">읽던 문서가<br>오늘의 퀴즈로</h1>
-    <div id="login-gate"><p>나무위키 읽다가, 지피쨩과 한 판!<br>ChatGPT 계정을 연결하고 시작해요.</p><button id="gate-login" class="primary">ChatGPT로 로그인</button><button id="gate-cancel" class="secondary" hidden>로그인 취소</button></div>
+    <div id="login-gate"><p>나무위키 읽다가, 지피쨩과 한 판!<br><span id="login-hint">ChatGPT 계정을 연결하고 시작해요.</span></p><button id="gate-login" class="primary">ChatGPT로 로그인</button><button id="gate-cancel" class="secondary" hidden>로그인 취소</button></div>
     <div id="workspace" hidden>
       <section class="document"><span class="muted">현재 문서</span><h2 id="article-title">나무위키 문서를 열어 주세요</h2><p id="article-info" class="muted">본문에서만 출제해요</p></section>
       <div class="quantity"><label for="count">문제 수</label><div class="stepper"><button id="minus" aria-label="문제 수 줄이기">−</button><input id="count" aria-label="문제 수" type="number" min="5" max="20" step="1" value="10"><button id="plus" aria-label="문제 수 늘리기">+</button></div><small class="muted">5–20문제</small></div>

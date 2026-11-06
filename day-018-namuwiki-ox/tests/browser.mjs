@@ -23,6 +23,12 @@ const fixture=`<!doctype html><meta charset="utf-8"><title>고양이 - 나무위
 const pair=await crypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['sign','verify']);
 const jwk={...await crypto.subtle.exportKey('jwk',pair.publicKey),kid:'qa',alg:'RS256',use:'sig'};
 let nonce,redirect,tokenCalls=0,responseCalls=0,badQuote=false,rejectVerification=false,delay=false,fastRejected=false,shortBody=false;
+const terra={slug:'gpt-6.1-terra',display_name:'GPT-6.1 Terra',visibility:'list'};
+const luna={slug:'gpt-6-luna',display_name:'GPT-6 Luna',visibility:'list'};
+const sol={slug:'gpt-6.1-sol',display_name:'GPT-6.1 Sol',visibility:'list'};
+const hiddenModel={slug:'hidden-model',visibility:'hidden'};
+let accountModels=[luna,terra,sol,hiddenModel];
+let expectedSettings={model:terra.slug,effort:'medium',tier:'priority'};
 let unblock;
 ctx.on('request',r=>requests.push(r.url().split('?')[0]));
 await ctx.route('https://namu.wiki/**',r=>r.fulfill({contentType:'text/html',body:shortBody?'<meta charset="utf-8"><h1>고양이</h1><div class="wiki-content"><div class="wiki-paragraph">출제하기에는 짧은 본문입니다.</div></div>':decodeURI(r.request().url()).includes('강아지')?fixture.replaceAll('고양이','강아지'):fixture}));
@@ -43,8 +49,10 @@ await ctx.route('https://auth.openai.com/**',async r=>{
   return r.abort();
 });
 await ctx.route('https://api.openai.com/**',async r=>{
-  if(r.request().url().endsWith('/models'))return r.fulfill({json:{models:[{slug:'gpt-6.1-terra',display_name:'GPT-6.1 Terra',visibility:'list'},{slug:'gpt-6.1-sol',display_name:'GPT-6.1 Sol',visibility:'list'}]}});
+  if(r.request().url().endsWith('/models'))return r.fulfill({json:{models:accountModels}});
   const data=r.request().postDataJSON();assert.ok(!data.tools);assert.ok(!data.include);assert.equal(data.store,false);responseCalls++;
+  assert.equal(data.model,expectedSettings.model);assert.equal(data.reasoning?.effort,expectedSettings.effort);
+  if(!fastRejected)assert.equal(data.service_tier,expectedSettings.tier);
   if(delay)await new Promise(resolve=>{unblock=resolve;});
   if(fastRejected && data.service_tier!=='default')return r.fulfill({status:400,json:{error:{param:'service_tier',message:'service_tier not allowed'}}});
   const input=JSON.parse(data.input[0].content);
@@ -57,7 +65,7 @@ await ctx.route('https://api.openai.com/**',async r=>{
 });
 const panel=await ctx.newPage();await panel.goto(`${origin}/sidepanel.html`);
 try{
-  assert.equal(await panel.title(),'지피쨩 OX 퀴즈');await panel.locator('#unsupported').waitFor({state:'visible'});
+  assert.equal(await panel.title(),'나무위키 OX 퀴즈');await panel.locator('#unsupported').waitFor({state:'visible'});
   assert.equal(await panel.locator('#namuwiki-open').getAttribute('href'),'https://namu.wiki/');assert.equal(await panel.locator('#namuwiki-open').getAttribute('target'),'_blank');
   await panel.screenshot({path:path.join(work,'unsupported.png'),fullPage:true});
   const source=await ctx.newPage();await source.goto('https://namu.wiki/w/고양이');await source.bringToFront();
@@ -65,7 +73,7 @@ try{
   await panel.screenshot({path:path.join(work,'login.png')});
   const loginPromise=ctx.waitForEvent('page');await panel.locator('#gate-login').click();const login=await loginPromise;
   await login.waitForURL('https://auth.openai.com/**');
-  const authURL=new URL(login.url());assert.equal(authURL.searchParams.get('agent_name_hint'),'지피쨩 나무위키 OX 퀴즈');
+  const authURL=new URL(login.url());assert.equal(authURL.searchParams.get('agent_name_hint'),'나무위키 OX 퀴즈');
   const state=authURL.searchParams.get('state');
   await login.goto(`${redirect}?code=SYNTHETIC_CODE&state=wrong&client_id=oaiapp_qa`).catch(()=>{});
   assert.equal(tokenCalls,0);
@@ -108,10 +116,26 @@ try{
     if(size.width===320)await panel.screenshot({path:path.join(work,'create-pinned.png')});
   }
   await panel.setViewportSize({width:440,height:950});console.log('Pinned create button passed');
-  await panel.locator('#settings-toggle').click();await panel.locator('#reload-models').click();await panel.locator('#model option[value="gpt-6.1-sol"]').waitFor({state:'attached'});assert.ok(await panel.locator('#fast').isChecked());
+  await panel.locator('#settings-toggle').click();
+  const modelSelect=panel.locator('#model'),effortSelect=panel.locator('#effort'),fastToggle=panel.locator('#fast');
+  await modelSelect.locator('option').filter({hasText:'자동 · GPT-6.1 Terra'}).waitFor({state:'attached'});
+  assert.equal(await modelSelect.inputValue(),'');assert.equal(await effortSelect.inputValue(),'medium');assert.ok(await fastToggle.isChecked());
+  assert.equal(await modelSelect.locator('option[value="hidden-model"]').count(),0);
+  accountModels=[luna,hiddenModel];
+  await panel.locator('#reload-models').click();
+  await modelSelect.locator('option').filter({hasText:'자동 · GPT-6 Luna'}).waitFor({state:'attached'});
+  assert.equal(await modelSelect.locator('option[value="gpt-6.1-terra"]').count(),0);
+  accountModels=[hiddenModel];
+  await panel.locator('#reload-models').click();
+  await panel.locator('#model-status').filter({hasText:'사용할 수 있는 모델이 없어요'}).waitFor();
+  await panel.locator('#settings-close').click();assert.ok(await panel.locator('#generate').isDisabled());
+  await panel.locator('#settings-toggle').click();
+  accountModels=[luna,terra,sol,hiddenModel];
+  await panel.locator('#reload-models').click();
+  await modelSelect.locator('option').filter({hasText:'자동 · GPT-6.1 Terra'}).waitFor({state:'attached'});
   assert.ok(await panel.locator('#panel-content').isHidden());assert.ok(await panel.locator('#quiz-navigation').isHidden());
   assert.deepEqual(await panel.locator('#settings').boundingBox(),{x:0,y:0,width:440,height:950});
-  assert.ok((await panel.locator('#message').innerText()).includes('모델'));assert.ok(await panel.locator('#message').isVisible());
+  assert.ok((await panel.locator('#model-status').innerText()).includes('모델'));assert.ok(await panel.locator('#model-status').isVisible());
   const closeStyle=await panel.locator('#settings-close').evaluate(n=>({background:getComputedStyle(n).backgroundColor,color:getComputedStyle(n).color,height:n.getBoundingClientRect().height}));assert.notEqual(closeStyle.background,'rgba(0, 0, 0, 0)');assert.notEqual(closeStyle.background,closeStyle.color);assert.ok(closeStyle.height>=44);
   await panel.screenshot({path:path.join(work,'settings.png'),fullPage:true});
   await panel.setViewportSize({width:320,height:560});await panel.locator('#settings-general summary').click();await panel.mouse.move(160,400);await panel.mouse.wheel(0,10000);await panel.waitForFunction(()=>document.getElementById('settings').scrollTop>0);
@@ -178,8 +202,24 @@ try{
   await source.bringToFront();await panel.locator('#welcome').waitFor({state:'visible'});await panel.locator('#article-title').filter({hasText:'강아지'}).waitFor();assert.equal(responseCalls,beforeUnsupported);
   await panel.reload();await panel.locator('#welcome').waitFor({state:'visible'});assert.ok(await panel.locator('#game').isHidden());
   await source.goto('https://namu.wiki/w/고양이');await source.bringToFront();await panel.locator('#article-title').filter({hasText:'고양이'}).waitFor();await other.close();await panel.setViewportSize({width:440,height:950});
+  await panel.locator('#settings-toggle').click();
+  await modelSelect.selectOption(sol.slug);await effortSelect.selectOption('high');await fastToggle.uncheck();
+  await panel.waitForFunction(async()=>{const p=await chrome.storage.local.get(['selectedModel','selectedEffort','fastMode']);return p.selectedModel==='gpt-6.1-sol' && p.selectedEffort==='high' && p.fastMode===false;});
+  await panel.reload();
+  await panel.locator('#settings-toggle').click();
+  await modelSelect.locator('option[value="gpt-6.1-sol"]').waitFor({state:'attached'});
+  assert.equal(await modelSelect.inputValue(),sol.slug);assert.equal(await effortSelect.inputValue(),'high');assert.ok(!(await fastToggle.isChecked()));
+  await panel.locator('#settings-close').click();
+  expectedSettings={model:sol.slug,effort:'high',tier:'default'};
   badQuote=true;await panel.locator('#generate').click();await panel.locator('#game').waitFor({state:'visible'});assert.ok(!(await panel.locator('#question').innerText()).includes('외부'));badQuote=false;
   await panel.locator('#answer-o').click();assert.ok((await panel.locator('#quote').innerText()).includes('흰색'));await panel.locator('#leave-game').click();
+  await panel.locator('#settings-toggle').click();
+  await modelSelect.selectOption('');await effortSelect.selectOption('medium');await fastToggle.check();
+  accountModels=[luna,hiddenModel];
+  await panel.locator('#reload-models').click();
+  await modelSelect.locator('option').filter({hasText:'자동 · GPT-6 Luna'}).waitFor({state:'attached'});
+  await panel.locator('#settings-close').click();
+  expectedSettings={model:luna.slug,effort:'medium',tier:'priority'};
   rejectVerification=true;const beforeRepair=responseCalls;await panel.locator('#generate').click();await panel.locator('#game').waitFor({state:'visible'});assert.equal(responseCalls,beforeRepair+3);const repaired=await panel.evaluate(async()=>Object.values(await chrome.storage.session.get(null)).find(x=>x?.report)?.report);assert.equal(repaired.editorPasses,2);await panel.locator('#leave-game').click();
   const beforeShort=responseCalls;shortBody=true;await source.reload();await source.bringToFront();await panel.locator('#generate.unavailable').waitFor({state:'visible'});assert.ok(await panel.locator('#generate').isDisabled());assert.ok((await panel.locator('#generate').innerText()).includes('본문이 너무 짧아요'));assert.equal(responseCalls,beforeShort);await panel.screenshot({path:path.join(work,'short-body.png'),fullPage:true});
   await source.reload();await panel.locator('#generate.unavailable').waitFor({state:'visible'});assert.ok(await panel.locator('#generate').isDisabled());

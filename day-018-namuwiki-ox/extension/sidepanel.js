@@ -1,11 +1,13 @@
 import {extractArticle} from './extract.js';
-import {models,generateQuiz} from './provider.js';
+import {DEFAULT_EFFORT,models,generateQuiz} from './provider.js';
 import {DEFAULT_MODEL,questionCount,isArticleUrl,validateArticle,score} from './shared/quiz.mjs';
 const $=id=>document.getElementById(id);
 const el=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
 let auth={},article=null,report=null,questions=[],answers={},index=0,sourceTabId=null,busy=false,reading=false,controller=null;
 let view='welcome',contextSupported=false,contextRevision=0,generationTimer=null,generationStartedAt=0;
 let articleIssue='';
+const LUNA_MODEL='gpt-6-luna';
+let preferredModel='',defaultModel='',modelIssue='',modelRequest=null;
 const windowId=(await chrome.windows.getCurrent()).id;
 const sessionKey=`quiz-window-${windowId}`;
 async function rpc(type){const r=await chrome.runtime.sendMessage({type});if(!r?.ok)throw Error(r?.error || '연결 요청을 완료하지 못했어요.');return r.data;}
@@ -67,11 +69,14 @@ function generationStage(stage){
   stages.forEach((name,i)=>{const node=$(`stage-${name}`);node.classList.toggle('done',i<current);node.classList.toggle('current',i===current);if(i===current)node.setAttribute('aria-current','step');else node.removeAttribute('aria-current');});
 }
 function controls(){
-  $('generate').disabled=busy || reading || !contextSupported || !auth.sharing || !article || !!articleIssue || !$('count').validity.valid;
-  $('generate').textContent=reading?'본문 읽는 중…':articleIssue || '퀴즈 만들기';
-  $('generate').classList.toggle('unavailable',!!articleIssue);
-  $('generate').title=articleIssue;
-  for(const id of ['count','model','fast','reload-models','clear-quiz'])$(id).disabled=busy || reading;
+  const issue=articleIssue || modelIssue;
+  $('generate').disabled=busy || reading || !contextSupported || !auth.sharing || !article || !!issue || !$('count').validity.valid;
+  $('generate').textContent=reading?'본문 읽는 중…':issue || '퀴즈 만들기';
+  $('generate').classList.toggle('unavailable',!!issue && !reading);
+  $('generate').title=issue;
+  for(const id of ['count','effort','fast','clear-quiz'])$(id).disabled=busy || reading;
+  $('model').disabled=busy || !!modelRequest || $('model').options.length===1;
+  $('reload-models').disabled=busy || !auth.sharing || !!modelRequest;
   $('minus').disabled=busy || Number($('count').value)<=5;$('plus').disabled=busy || Number($('count').value)>=20;
   $('stop').disabled=!busy;renderView();
 }
@@ -80,14 +85,22 @@ async function save(){
   await chrome.storage.session.set({[sessionKey]:{report,questions,answers,index,sourceTabId,view}});
 }
 function clear(){controller?.abort();contextRevision++;reading=false;article=null;articleIssue='';report=null;questions=[];answers={};index=0;sourceTabId=null;view='welcome';void chrome.storage.session.remove(sessionKey);$('article-title').textContent='나무위키 문서를 열어 주세요';$('article-info').textContent='본문에서만 출제해요';controls();}
-async function refreshAuth(){
+async function refreshAuth({reloadModels=false}={}){
   const was=auth.sharing;auth=await rpc('auth.status');
   $('login-gate').hidden=!!auth.sharing;$('workspace').hidden=!auth.sharing;
   for(const id of ['login','gate-login'])$(id).hidden=!!auth.pending || !!auth.sharing;
   for(const id of ['cancel-login','gate-cancel'])$(id).hidden=!auth.pending;
   $('logout').hidden=!auth.connected;
   $('account-status').textContent=auth.pending?'열린 탭에서 ChatGPT 로그인을 완료해 주세요.':auth.connected?`${auth.email || 'ChatGPT 계정'} · ${auth.sharing?'연결됨':'요금제 사용 권한 필요'}`:'ChatGPT 계정으로 연결해 주세요.';
-  if(!auth.sharing){clear();if(auth.pending)message('열린 탭에서 ChatGPT 로그인을 완료해 주세요.');}
+  $('login-hint').textContent=auth.connected?'이 계정에 출제용 ChatGPT 요금제 사용 권한이 없어요.':'ChatGPT 계정을 연결하고 시작해요.';
+  if(!auth.sharing){
+    modelRequest?.abort();modelRequest=null;modelIssue='';
+    renderModels([]);
+    $('model-status').textContent=auth.connected?'출제하려면 ChatGPT 요금제 사용 권한이 필요해요.':'ChatGPT를 연결하면 사용 가능한 모델을 불러와요.';
+    clear();if(auth.pending)message('열린 탭에서 ChatGPT 로그인을 완료해 주세요.');
+  }else if(!was || reloadModels){
+    void loadModels();
+  }
   if(auth.error)message(auth.error);
   controls();return !!auth.sharing && !was;
 }
@@ -99,13 +112,52 @@ async function capture(tab){
   if(captured.url.split('#')[0]!==tab.url.split('#')[0])throw Error('이동한 문서의 본문을 읽고 있어요. 잠시 후 다시 시도해 주세요.');
   return {captured,issue};
 }
+function renderModels(available){
+  const choices=new Map(available.map(model=>[model.id,model.name]));
+  // OAuth does not expose a subscription tier. Prefer Terra, then Luna if offered.
+  defaultModel=[DEFAULT_MODEL,LUNA_MODEL].find(id=>choices.has(id)) || '';
+  const autoLabel=defaultModel?`자동 · ${choices.get(defaultModel)}`:'자동 선택';
+  const options=[new Option(autoLabel,''),...[...choices].map(([id,name])=>new Option(name,id))];
+  if(preferredModel && !choices.has(preferredModel) && choices.size){
+    const unavailable=new Option(`${preferredModel} · 계정에서 사용 불가`,preferredModel);
+    unavailable.disabled=true;options.push(unavailable);
+  }
+  $('model').replaceChildren(...options);
+  $('model').value=choices.size?preferredModel:'';
+}
+function selectedModel(){
+  const option=$('model').selectedOptions[0];
+  return option && !option.disabled ? option.value || defaultModel : '';
+}
+function showModelSelection(){
+  const selected=selectedModel();
+  modelIssue=selected?'':'설정에서 사용 모델을 선택해 주세요';
+  $('model-status').textContent=selected?'계정에서 사용할 수 있는 모델을 표시해요.':modelIssue;
+}
 async function loadModels(){
-  if(!auth.sharing)throw Error('ChatGPT를 먼저 연결해 주세요.');
-  const saved=$('model').value || DEFAULT_MODEL,available=await models(AbortSignal.timeout(25000));
-  const unique=new Map([[DEFAULT_MODEL,{id:DEFAULT_MODEL,name:'GPT-6.1 Terra · 기본'}],...available.map(m=>[m.id,m])]);
-  if(!unique.has(saved))unique.set(saved,{id:saved,name:`${saved} · 목록에서 미확인`});
-  $('model').replaceChildren(...[...unique.values()].map(m=>{const o=el('option',m.name);o.value=m.id;return o;}));$('model').value=saved;
-  message(available.some(m=>m.id===saved)?'계정에서 사용할 수 있는 모델 목록을 불러왔어요.':'선택한 모델은 계정 목록에서 확인되지 않았어요. 기본값은 유지하며, 실제 사용 가능 여부는 요청 시 확인돼요.');
+  if(!auth.sharing)return;
+  modelRequest?.abort();
+  const request=new AbortController();
+  modelRequest=request;
+  modelIssue='계정의 모델을 확인하고 있어요…';
+  $('model-status').textContent=modelIssue;controls();
+  try{
+    const available=await models(AbortSignal.any([request.signal,AbortSignal.timeout(25000)]));
+    if(request.signal.aborted)return;
+    renderModels(available);
+    if(available.length)showModelSelection();
+    else {
+      modelIssue='이 계정에서 사용할 수 있는 모델이 없어요';
+      $('model-status').textContent=modelIssue;
+    }
+  }catch(error){
+    if(request.signal.aborted)return;
+    renderModels([]);
+    modelIssue='설정에서 모델 목록을 다시 불러와 주세요';
+    $('model-status').textContent=error.message;
+  }finally{
+    if(modelRequest===request){modelRequest=null;controls();}
+  }
 }
 function game(){
   const q=questions[index];if(!q)return results();
@@ -133,7 +185,8 @@ function results(){
   $('result-comment').textContent=correct===questions.length?'전부 맞혔어요! 지피쨩도 박수 짝짝 👏':'읽었는데 헷갈리는 건 정상! 본문 근거와 함께 다시 봐요.';
   $('retry-wrong').hidden=correct===questions.length;
   const tier={priority:'Fast',fast:'Fast',default:'일반',unreported:'미확인'};
-  $('request-meta').textContent=`${report.model} · ${report.fast?'Fast 요청':'일반 요청'}${report.compatibility.includes('standard_fallback')?' → 일반 처리 재요청':''} · 실제 처리: ${report.effectiveTiers.map(t=>tier[t] || t).join(', ')}${report.article.truncated?' · 일부 본문으로 출제':''} · ${new Date(report.article.capturedAt).toLocaleString('ko-KR')} 본문 기준`;
+  const effort=report.effort===undefined?'':` · 추론 ${report.effort || '모델 기본값'}`;
+  $('request-meta').textContent=`${report.model}${effort} · ${report.fast?'Fast 요청':'일반 요청'}${report.compatibility.includes('standard_fallback')?' → 일반 처리 재요청':''} · 실제 처리: ${report.effectiveTiers.map(t=>tier[t] || t).join(', ')}${report.article.truncated?' · 일부 본문으로 출제':''} · ${new Date(report.article.capturedAt).toLocaleString('ko-KR')} 본문 기준`;
   const list=$('review-list');list.replaceChildren();
   for(const [i,q] of questions.entries()){
     const a=el('article','');a.append(el('h2',`${i+1}. ${q.statement}`),el('p',`정답 ${q.answer?'O':'X'} · 내 답 ${answers[q.id]===true?'O':answers[q.id]===false?'X':'미응답'}`),el('p',q.explanation));
@@ -141,7 +194,8 @@ function results(){
   }
 }
 async function generate(){
-  if(busy || reading || !contextSupported || !auth.sharing || !article || articleIssue || !$('count').reportValidity())return;
+  const model=selectedModel();
+  if(busy || reading || !contextSupported || !auth.sharing || !article || articleIssue || modelIssue || !model || !$('count').reportValidity())return;
   // Freeze this quiz's source before yielding. Automatic context updates only affect the next quiz.
   const captured=article;
   busy=true;controller=new AbortController();settings(false);generationStage('reading');
@@ -150,8 +204,8 @@ async function generate(){
   controls();message('읽어 둔 본문으로 문제를 준비하고 있어요…');$('generation-heading').focus();
   try{
     controller.signal.throwIfAborted();
-    const selectedModel=$('model').value || DEFAULT_MODEL,count=questionCount($('count').value);
-    const next=await generateQuiz(captured,selectedModel,count,controller.signal,{fast:$('fast').checked,onPhase:message,onStage:generationStage});
+    const count=questionCount($('count').value);
+    const next=await generateQuiz(captured,model,count,controller.signal,{fast:$('fast').checked,effort:$('effort').value,onPhase:message,onStage:generationStage});
     controller.signal.throwIfAborted();
     report=next;questions=next.questions;answers={};index=0;game();
     await save();settings(false);message('');$('question').focus();
@@ -162,7 +216,8 @@ function home(){view='welcome';renderView();void syncContext().catch(e=>message(
 function retry(onlyWrong){const missed=questions.filter(q=>answers[q.id]!==q.answer);questions=onlyWrong?missed:report.questions;answers={};index=0;message('같은 문제로 다시 풀어요. 새 모델 요청은 보내지 않아요.');game();void save();}
 function wire(id,fn){$(id).addEventListener('click',()=>Promise.resolve().then(fn).catch(e=>message(e.message)));}
 wire('settings-toggle',()=>settings($('settings').hidden));wire('settings-close',()=>settings(false));
-$('creator-version').textContent=`지피쨩 나무위키 OX 퀴즈 · v${chrome.runtime.getManifest().version}`;
+const {name:extensionName,version:extensionVersion}=chrome.runtime.getManifest();
+$('creator-version').textContent=`${extensionName} · v${extensionVersion}`;
 for(const name of ['general','creator']){
   wire(`settings-tab-${name}`,()=>selectSettingsTab(name));
   $(`settings-tab-${name}`).addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();selectSettingsTab(event.key==='Home'?'general':event.key==='End'?'creator':name==='general'?'creator':'general',true);});
@@ -177,17 +232,23 @@ wire('leave-game',home);wire('new-quiz',home);wire('retry-all',()=>retry(false))
 async function changeCount(delta){$('count').value=Math.min(20,Math.max(5,questionCount($('count').value)+delta));await chrome.storage.local.set({questionCount:Number($('count').value)});controls();}
 wire('minus',()=>changeCount(-1));wire('plus',()=>changeCount(1));
 $('count').addEventListener('input',controls);$('count').addEventListener('change',()=>{if($('count').validity.valid)void chrome.storage.local.set({questionCount:Number($('count').value)});controls();});
-$('model').addEventListener('change',()=>void chrome.storage.local.set({selectedModel:$('model').value}));
+$('model').addEventListener('change',()=>{
+  preferredModel=$('model').value;
+  void chrome.storage.local.set({selectedModel:preferredModel});
+  showModelSelection();controls();
+});
+$('effort').addEventListener('change',()=>void chrome.storage.local.set({selectedEffort:$('effort').value}));
 $('fast').addEventListener('change',()=>void chrome.storage.local.set({fastMode:$('fast').checked}));
 document.addEventListener('keydown',e=>{if(e.repeat || e.ctrlKey || e.metaKey || e.altKey || /INPUT|SELECT|TEXTAREA|BUTTON/.test(e.target.tagName) || !$('settings').hidden || $('game').hidden)return;if(e.key.toLowerCase()==='o')answer(true);if(e.key.toLowerCase()==='x')answer(false);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape' && !$('settings').hidden){e.preventDefault();settings(false);}});
 chrome.tabs.onUpdated.addListener((id,info,tab)=>{if(tab.windowId===windowId && (tab.active || id===sourceTabId) && (info.url || info.status || info.title))void syncContext({reload:info.status==='complete' || !!info.title}).catch(e=>message(e.message));});
 chrome.tabs.onActivated.addListener(({windowId:id})=>{if(id===windowId)void syncContext().catch(e=>message(e.message));});
 chrome.tabs.onRemoved.addListener(()=>{void syncContext().catch(()=>{});});
-chrome.runtime.onMessage.addListener(event=>{if(event?.type==='auth.changed')void refreshAuth().then(added=>{if(added)return syncContext();}).catch(e=>message(e.message));});
-const prefs=await chrome.storage.local.get(['selectedModel','fastMode','questionCount']);
+chrome.runtime.onMessage.addListener(event=>{if(event?.type==='auth.changed')void refreshAuth({reloadModels:true}).then(added=>{if(added)return syncContext();}).catch(e=>message(e.message));});
+const prefs=await chrome.storage.local.get(['selectedModel','selectedEffort','fastMode','questionCount']);
 $('fast').checked=prefs.fastMode!==false;$('count').value=questionCount(prefs.questionCount);
-if(prefs.selectedModel && prefs.selectedModel!==DEFAULT_MODEL){const o=el('option',prefs.selectedModel);o.value=prefs.selectedModel;$('model').append(o);$('model').value=prefs.selectedModel;}
+preferredModel=typeof prefs.selectedModel==='string'?prefs.selectedModel:'';
+$('effort').value=[...$('effort').options].some(option=>option.value===prefs.selectedEffort)?prefs.selectedEffort:DEFAULT_EFFORT;
 try{
   await syncContext();
   await refreshAuth();
