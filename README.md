@@ -117,7 +117,7 @@ Chrome Manifest V3 · 설치 후보 사전 공개 · 실제 게임 인증/티어
 
 글과 사진을 디시 글로 정리해봄. 게시 버튼은 직접 누르세요.
 
-[소개·공개 소스](day-016-dc-writer/README.md) · [0.1.7 ZIP preview](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day016-dc-writer-v0.1.7) · [설치·업데이트](day-016-dc-writer/docs/INSTALLATION.md) · [Day 016 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-27)
+[소개·공개 소스](day-016-dc-writer/README.md) · [0.1.9 ZIP preview](https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day016-dc-writer-v0.1.9) · [설치·업데이트](day-016-dc-writer/docs/INSTALLATION.md) · [Day 016 기록](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-27)
 
 Chrome 데스크톱 · 코드 MIT · 글·사진 미리보기 후 디시 기본 편집기에 적용 · 계속 업데이트하는 preview입니다.
 <!-- day016:end -->

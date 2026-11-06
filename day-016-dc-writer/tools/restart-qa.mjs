@@ -29,7 +29,11 @@ async function boot(){
     }
     if(u.origin==='https://api.openai.com'&&u.pathname==='/v1/models')return route.fulfill({json:{models:[{visibility:'list',slug:'qa-model',display_name:'QA 전용 모델'},{visibility:'list',slug:'qa-alternate',display_name:'QA 두 번째 모델'}]}});
     if(u.origin==='https://api.openai.com'&&u.pathname==='/v1/responses'){
-      generations++;assert.equal(route.request().postDataJSON().model,'qa-alternate');
+      generations++;
+      const body = route.request().postDataJSON();
+      assert.equal(body.model, 'qa-alternate');
+      assert.deepEqual(body.reasoning, {effort: 'medium'});
+      assert.equal(body.service_tier, 'fast');
       const doc={title:'브라우저 재시작 검증',blocks:[{type:'paragraph',text:'Chrome 재시작 후 저장된 연결로 만든 모의 초안입니다.'}]};
       return route.fulfill({contentType:'text/event-stream',body:`data: ${JSON.stringify({type:'response.output_text.delta',delta:JSON.stringify(doc)})}\n\ndata: {"type":"response.completed"}\n\n`});
     }
@@ -58,12 +62,19 @@ try{
   // Reload the extension so its owner also starts without the prior test run's memory.
   await shutdown();report.processIds=[];await boot();await openPanel();await panel.locator('#connect').click();await panel.waitForFunction(()=>document.querySelector('#model').value==='qa-model');
   await panel.locator('#model').selectOption('qa-alternate');await panel.waitForFunction(async()=>(await chrome.storage.local.get('chatgptModel')).chatgptModel==='qa-alternate');assert.equal(authorizations,1);check('synthetic login with PKCE/OIDC validation and initial refresh');
+  await panel.locator('#settings-toggle').click();
+  await panel.locator('#settings-effort').selectOption('medium');
+  await panel.locator('#settings-fast').selectOption('on');
+  await panel.waitForFunction(async () => {
+    const {chatgptEffort, chatgptFast} = await chrome.storage.local.get(['chatgptEffort', 'chatgptFast']);
+    return chatgptEffort === 'medium' && chatgptFast === true;
+  });
   const vault=await inspectVault();assert.equal(vault.present,true);assert.equal(vault.keyExtractable,false);assert.equal(vault.exportRejected,true);assert.equal(vault.plaintextAbsent,true);assert.equal(vault.ciphertextHasPlaintext,false);assert.deepEqual(vault.recordKeys,['ciphertext','iv','key','version']);report.vault=vault;check('encrypted credential record and non-exportable key persist without plaintext Chrome storage');
   await expireSavedToken();await worker.evaluate(()=>chrome.storage.session.set({qaMemoryMarker:true}));await shutdown();
   await boot();assert.notEqual(report.processIds[0],report.processIds[1]);assert.equal(await worker.evaluate(async()=>!!(await chrome.storage.session.get('qaMemoryMarker')).qaMemoryMarker),false);
   await worker.evaluate(()=>{self.qaAuth.expectedRefresh='FAKE_QA_REFRESH_ROTATED';});await openPanel();await restored();assert.equal(authorizations,1);assert.equal(await worker.evaluate(()=>self.qaAuth.refreshes),1);check('new Chrome process restores account/model and renews expired access with saved replacement refresh token');
   await panel.screenshot({path:path.join(out,'restart-restored-account.png'),fullPage:true});
-  await panel.locator('#prepare-first').click();await panel.locator('#source').fill('재시작 검증용 가상 메모');await panel.locator('[data-mode="structure"]').click();await panel.locator('#generate').click();await panel.waitForFunction(()=>document.querySelector('#preview').textContent.includes('Chrome 재시작 후'));assert.equal(generations,1);check('restored connection generates a synthetic Responses draft');
+  await panel.locator('#prepare-first').click();await panel.locator('#source').fill('재시작 검증용 가상 메모');await panel.locator('[data-mode="structure"]').click();await panel.locator('#generate').click();await panel.waitForFunction(()=>document.querySelector('#preview').textContent.includes('Chrome 재시작 후'));assert.equal(generations,1);check('restored connection generates a synthetic Responses draft with the saved model, effort and Fast');
   // A temporary provider error must not destroy the durable connection.
   await expireSavedToken();await shutdown();await boot();await worker.evaluate(()=>{self.qaAuth.refreshError={code:'server_error',status:503};});await openPanel();await panel.waitForFunction(()=>document.querySelector('#message').textContent.includes('HTTP 503'));assert.equal((await inspectVault()).present,true);check('restart during temporary refresh failure keeps encrypted credentials');
   await worker.evaluate(()=>{self.qaAuth.refreshError=null;});await panel.reload();await restored();assert.equal(authorizations,1);check('retry after transient provider error restores without login');

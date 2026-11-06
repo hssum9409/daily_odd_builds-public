@@ -1,7 +1,39 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {isWriteUrl,safeDcImage,preservedDocument,validateDocument,validateGeneratedDocument,writingSource,renderDocument,buildRequest} from '../extension/core.js';
-import {readResponseStream} from '../extension/network.js';
+import {readResponseStream,resolveInference,withInferenceOptions} from '../extension/network.js';
+
+test('Inference presets use account-visible models and Auto prefers Terra, then Luna, with Medium and Fast', () => {
+  const models = ['gpt-6.1-sol', 'gpt-6-luna', 'gpt-6.1-terra'].map(id => ({id}));
+  for (const [preset, model, effort, fast] of [
+    ['free', 'gpt-6-luna', 'low', false],
+    ['plus', 'gpt-6.1-terra', 'high', false],
+    ['pro', 'gpt-6.1-sol', 'high', true],
+    ['auto', 'gpt-6.1-terra', 'medium', true]
+  ]) {
+    const choice = resolveInference(models, {chatgptPreset: preset});
+    assert.deepEqual([choice.model.id, choice.effort, choice.fast], [model, effort, fast]);
+  }
+  const withoutTerra = resolveInference(models.slice(0, 2));
+  assert.deepEqual([withoutTerra.model.id, withoutTerra.effort, withoutTerra.fast], ['gpt-6-luna', 'medium', true]);
+  const manual = resolveInference(models, {chatgptModel: 'gpt-6.1-sol', chatgptEffort: 'low', chatgptFast: false});
+  assert.deepEqual([manual.model.id, manual.effort, manual.fast], ['gpt-6.1-sol', 'low', false]);
+  assert.equal(resolveInference([]).model, undefined);
+});
+
+test('Saved visible model and manual options override presets and serialize to Responses', () => {
+  const models = [{id: 'gpt-6.1-sol'}, {id: 'other-model'}];
+  const prefs = {chatgptPreset: 'pro', chatgptModel: 'other-model', chatgptEffort: 'medium', chatgptFast: false};
+  const choice = resolveInference(models, prefs);
+  assert.deepEqual(withInferenceOptions({model: choice.model.id}, choice), {
+    model: 'other-model', reasoning: {effort: 'medium'}, service_tier: 'default'
+  });
+  const fallback = resolveInference(models.slice(0, 1), {chatgptPreset: 'pro', chatgptModel: prefs.chatgptModel});
+  assert.deepEqual(withInferenceOptions({model: fallback.model.id}, fallback), {
+    model: 'gpt-6.1-sol', reasoning: {effort: 'high'}, service_tier: 'fast'
+  });
+  assert.deepEqual(withInferenceOptions({}, resolveInference(models.slice(1))), {service_tier: 'default'});
+});
 
 test('Only exact PC write routes and galleries are accepted',()=>{
   for(const prefix of ['','mgallery/','mini/'])assert.equal(isWriteUrl(`https://gall.dcinside.com/${prefix}board/write/?id=test_1`),true);

@@ -1,12 +1,13 @@
 import {MODES,STYLES,isWriteUrl,safeDcImage,preservedDocument,validateDocument,validateGeneratedDocument,renderDocument,documentToText,buildRequest,escapeHtml} from './core.js';
 import {callEditor} from './editor.js';
 import {PanelConnection} from './auth.js';
-import {listModels,generateDocument} from './network.js';
+import {listModels,generateDocument,INFERENCE_PREF_KEYS,resolveInference,withInferenceOptions} from './network.js';
 import {draftStorage,preparePhoto,assertPhotoCount,base64,analysisImage} from './photos.js';
 
 const $=id=>document.getElementById(id),connection=new PanelConnection();
 const fields=['source','title','style','template','reference','instructions','preset','compress','save-draft','analyze'];
 let mode='preserve',photos=[],documentDraft=null,targetSnapshot=null,targetId=null,abortGeneration=null,busy=false,saveTimer,templates=[],saving=Promise.resolve(),ready=false;
+let accountModels = [], inferencePreferences = {};
 const report=(message,type='')=>{$('message').textContent=message;$('message').className=type;$('message').hidden=false;};
 const handle=fn=>async(...args)=>{try{await fn(...args);}catch(e){report(e.name==='AbortError'?'작업을 취소했습니다.':e.message,'error');}};
 function workspace(view='write'){$('welcome').hidden=true;$('settings').hidden=true;$('workspace').hidden=false;setView(view);}
@@ -58,9 +59,11 @@ async function generate(override){
     else{
       await connection.restore();
       if(!connection.account)throw Error('AI로 글을 다듬으려면 오른쪽 위 계정 버튼에서 ChatGPT를 연결해 주세요.');
-      if(!$('model').value)throw Error('ChatGPT 연결 화면에서 사용할 모델을 선택해 주세요.');
+      const inference = resolveInference(accountModels, inferencePreferences);
+      if (!inference.model) throw Error('설정에서 사용할 모델을 선택해 주세요.');
       const photoInput=await Promise.all(photos.map(async p=>({...p,analysisUrl:$('analyze').checked&&p.blob?await analysisImage(p.blob):null})));
-      const request=buildRequest({source:override?.source ?? $('source').value,title:$('title').value,mode:override?'polish':mode,style:$('style').value,template:[$('preset').value,$('template').value].filter(Boolean).join('\n'),reference:$('reference').value,instructions:[$('instructions').value,override?.instructions].filter(Boolean).join('\n'),photos:photoInput,analyzeImages:$('analyze').checked},$('model').value);
+      const draftRequest=buildRequest({source:override?.source ?? $('source').value,title:$('title').value,mode:override?'polish':mode,style:$('style').value,template:[$('preset').value,$('template').value].filter(Boolean).join('\n'),reference:$('reference').value,instructions:[$('instructions').value,override?.instructions].filter(Boolean).join('\n'),photos:photoInput,analyzeImages:$('analyze').checked},inference.model.id);
+      const request = withInferenceOptions(draftRequest, inference);
       abortGeneration=new AbortController();const timeout=setTimeout(()=>abortGeneration?.abort(),180000);$('cancel-generation').hidden=false;report('초안을 작성하고 있습니다…');
       try{
         const output=await generateDocument(connection,request,abortGeneration.signal,()=>{});
@@ -101,10 +104,42 @@ async function apply(){
     targetSnapshot=next;for(const photo of photos){const ref=next.photoRefs?.[photo.id];if(ref)photo.uploadRef={tempno:ref.tempno,tabId:targetId};}$('target-status').textContent=`${next.gallery} · 첨부사진 ${next.images.length}장 · 기본은 기존 글 뒤에 추가합니다.`;$('undo').hidden=false;report(`편집기에 적용했습니다. 새 사진 ${next.uploaded}장. 게시 버튼은 직접 눌러 주세요.`,'success');await saveDraft();
   }finally{setBusy(false);}
 }
+function renderInferenceSettings() {
+  const choice = resolveInference(accountModels, inferencePreferences);
+  const modelOptions = () => accountModels.map(model => new Option(model.name, model.id));
+  $('model').replaceChildren(...(choice.model ? modelOptions() : [new Option('모델 선택', '')]));
+  $('model').value = choice.model?.id || '';
+  $('settings-model').replaceChildren(new Option(choice.recommended ? `자동 · ${choice.recommended.name}` : 'ChatGPT 연결 후 선택', ''), ...modelOptions());
+  $('settings-model').value = choice.savedModel?.id || '';
+  $('settings-preset').value = choice.preset;
+  const effort = $('settings-effort');
+  const recommendedEffort = [...effort.options].find(option => option.value === choice.recommendedEffort);
+  effort.options[0].textContent = `자동 · ${recommendedEffort.textContent}`;
+  effort.value = choice.effortChoice;
+  $('settings-fast').options[0].textContent = `자동 · ${choice.recommendedFast ? '켬' : '끔'}`;
+  $('settings-fast').value = typeof inferencePreferences.chatgptFast === 'boolean' ? (choice.fast ? 'on' : 'off') : 'auto';
+  for (const id of ['model', 'settings-model', 'settings-effort', 'settings-fast']) $(id).disabled = !choice.model;
+}
+async function saveInferencePreference(change) {
+  await chrome.storage.local.set(change);
+  inferencePreferences = {...inferencePreferences, ...change};
+  renderInferenceSettings();
+}
 async function syncConnection(){
   await connection.restore();const account=connection.account;$('connected').hidden=!account;$('connect').hidden=!!account;$('connect').disabled=connection.pending;$('cancel-login').hidden=!connection.pending;
-  if(account){$('account-name').textContent=account.name;if(!account.canGenerate){report('계정은 연결됐지만 ChatGPT 사용량 이용 권한은 승인되지 않았습니다.','error');return;}const models=await listModels(connection),{chatgptModel}=await chrome.storage.local.get('chatgptModel');const selected=$('model').value || chatgptModel;$('model').replaceChildren(...models.map(m=>new Option(m.name,m.id)));if(models.some(m=>m.id===selected))$('model').value=selected;report('ChatGPT가 연결됐습니다. 작성 화면에서 AI 초안을 만들 수 있습니다.','success');}
-  else{$('model').replaceChildren(new Option('모델 선택',''));abortGeneration?.abort();const {oauthError}=await chrome.storage.session.get('oauthError');if(oauthError)report(oauthError,'error');}
+  if (account) $('account-name').textContent = account.name;
+  try {
+    accountModels = account?.canGenerate ? await listModels(connection) : [];
+  } catch (error) {
+    accountModels = [];
+    throw error;
+  } finally {
+    inferencePreferences = await chrome.storage.local.get(INFERENCE_PREF_KEYS);
+    renderInferenceSettings();
+  }
+  if (account?.canGenerate) report('ChatGPT가 연결됐습니다. 작성 화면에서 AI 초안을 만들 수 있습니다.','success');
+  else if (account) report('계정은 연결됐지만 ChatGPT 사용량 이용 권한은 승인되지 않았습니다.','error');
+  else{abortGeneration?.abort();const {oauthError}=await chrome.storage.session.get('oauthError');if(oauthError)report(oauthError,'error');}
 }
 let syncing=Promise.resolve();
 function syncAccount(){syncing=syncing.catch(()=>{}).then(syncConnection);return syncing;}
@@ -125,7 +160,14 @@ for(const id of fields)$(id).addEventListener(id==='source'||id==='title'||['tem
 for(const b of document.querySelectorAll('[data-mode]'))b.onclick=()=>{if(busy)return;selectMode(b.dataset.mode);};
 $('connect').onclick=handle(beginLogin);$('cancel-login').onclick=handle(async()=>{await connection.cancel();$('cancel-login').hidden=true;report('로그인을 취소했습니다.');});
 $('disconnect').onclick=handle(async()=>{$('disconnect').disabled=true;abortGeneration?.abort();try{const result=await connection.disconnect();await syncAccount();report(result.revoked?'이 확장의 ChatGPT 연결을 해제했습니다.':'이 기기의 연결은 해제했습니다. 서버 연결 해제는 확인하지 못했습니다. ChatGPT 설정에서 앱 연결을 해제할 수 있습니다.');}finally{$('disconnect').disabled=false;}});
-$('model').onchange=handle(()=>chrome.storage.local.set({chatgptModel:$('model').value}));
+$('model').onchange = handle(() => saveInferencePreference({chatgptModel: $('model').value}));
+$('settings-model').onchange = handle(() => saveInferencePreference({chatgptModel: $('settings-model').value}));
+$('settings-preset').onchange = handle(() => saveInferencePreference({chatgptPreset: $('settings-preset').value}));
+$('settings-effort').onchange = handle(() => saveInferencePreference({chatgptEffort: $('settings-effort').value}));
+$('settings-fast').onchange = handle(() => {
+  const value = $('settings-fast').value;
+  return saveInferencePreference({chatgptFast: value === 'auto' ? null : value === 'on'});
+});
 $('account-toggle').onclick=()=>{$('welcome').hidden=!$('welcome').hidden;$('workspace').hidden=!$('welcome').hidden;$('settings').hidden=true;};
 $('settings-toggle').onclick=()=>{$('settings').hidden=!$('settings').hidden;$('workspace').hidden=!$('settings').hidden;$('welcome').hidden=true;};
 $('close-settings').onclick=()=>workspace();$('prepare-first').onclick=()=>workspace();

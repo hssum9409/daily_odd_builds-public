@@ -5,13 +5,13 @@
 <p align="center">내 글을, 디시 글로.<br>글과 사진을 넣고 원하는 방식으로 정리하세요.</p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day016-dc-writer-v0.1.7"><img alt="버전 0.1.7" src="https://img.shields.io/badge/version-0.1.7-0658f7"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day016-dc-writer-v0.1.9"><img alt="버전 0.1.9" src="https://img.shields.io/badge/version-0.1.9-0658f7"></a>
   <img alt="Windows Chrome 검증" src="https://img.shields.io/badge/Windows_Chrome-tested-0658f7">
   <img alt="ZIP preview" src="https://img.shields.io/badge/status-preview-dc9f62">
   <a href="LICENSE"><img alt="공개 소스 MIT" src="https://img.shields.io/badge/source-MIT-148447"></a>
 </p>
 
-<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day016-dc-writer-v0.1.7/dc-writer-0.1.7.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="extension/">소스 코드</a> · <a href="docs/INSTALLATION.md">설치·업데이트 안내</a> · <a href="docs/DATA.md">데이터 처리</a></p>
+<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day016-dc-writer-v0.1.9/dc-writer-0.1.9.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="extension/">소스 코드</a> · <a href="docs/INSTALLATION.md">설치·업데이트 안내</a> · <a href="docs/DATA.md">데이터 처리</a></p>
 
 ![디시 글쓰기 도우미 — 글과 사진을 디시 게시글로 정리하는 소개 일러스트](docs/images/hero.webp)
 
@@ -21,19 +21,21 @@
 
 소재는 모았는데 글로 엮기 귀찮을 때 쓰는 Chrome 확장입니다. 원문 그대로 가져가거나, 구조만 정리하거나, 표현을 다듬거나, 소재로 새 글을 작성할 수 있습니다. 게시 버튼은 직접 누르세요.
 
-Daily Odd Builds **Day 016 · 2026-10-27**. **0.1.7 ZIP preview와 릴리즈 소스를 공개**하며 이후 같은 Day에서 업데이트합니다. Day 날짜는 포털 기록일이며 첫 공개일은 2026-11-05입니다. Chrome 웹 스토어에는 제출하지 않았습니다.
+Daily Odd Builds **Day 016 · 2026-10-27**. **0.1.9 ZIP preview와 릴리즈 소스를 공개**하며 이후 같은 Day에서 업데이트합니다. Day 날짜는 포털 기록일이며 첫 공개일은 2026-11-05입니다. Chrome 웹 스토어에는 제출하지 않았습니다.
 
 ## 빠른 시작
 
 1. 위 ZIP을 내려받아 계속 보관할 폴더에 **전부 압축 해제**합니다.
 2. Chrome의 `chrome://extensions`에서 **개발자 모드 → 압축해제된 확장 프로그램 로드**를 선택하고 `manifest.json`이 있는 폴더를 지정합니다. 공개 소스는 `extension/` 폴더를 선택합니다.
 3. 디시 PC 글쓰기 화면을 열고 확장 아이콘을 누릅니다. **먼저 글과 사진 준비하기**에서 소재와 사진을 넣습니다.
-4. **원문 유지**는 로그인 없이 미리볼 수 있습니다. AI 작성은 **ChatGPT로 계속하기**에서 로그인·사용 권한 동의를 마친 뒤 계정에서 제공하는 모델을 고릅니다.
+4. **원문 유지**는 로그인 없이 미리볼 수 있습니다. AI 작성은 **ChatGPT로 계속하기**에서 로그인·사용 권한 동의를 마친 뒤 자동 추천 모델로 시작할 수 있습니다.
 5. 작성 방식과 레퍼런스·지침·양식을 정하고 **초안 만들기**를 누릅니다. 미리보기에서 내용과 사진 순서를 확인합니다.
 6. 대상 글쓰기 탭을 확인하고 **디시 편집기에 넣기**를 누릅니다. 기본은 기존 본문 뒤에 추가합니다. 교체는 별도 확인을 받습니다.
 7. 디시 편집기에서 최종 확인한 뒤 사용자가 게시합니다.
 
 별도 로컬 도우미·API 키·외부 이미지 호스팅은 필요 없습니다. AI 이용에는 인터넷과 계정의 사용 권한·한도가 적용됩니다. [설치와 문제 해결](docs/INSTALLATION.md)
+
+설정의 **자동 추천**은 계정 목록에서 GPT‑6.1 Terra를 먼저, 없으면 GPT‑6 Luna를 선택합니다. 두 모델의 기본값은 **Medium · Fast 켬**입니다. 직접 저장한 모델·추론 수준·Fast 설정이 우선합니다. AI 작성과 Fast 이용 가능 여부는 계정 권한에 따릅니다.
 
 ## 어떤 걸 할 수 있나요?
 
@@ -76,7 +78,7 @@ AI 실행 시 소재·제목·레퍼런스·지침·사진 설명이 OpenAI로 �
 
 로그인 연결은 같은 Chrome 프로필의 확장 전용 저장소에 암호화합니다. 초안·사진도 자동 저장 설정에 따라 기기에 남습니다. 연결 해제와 초안·사진 삭제는 각각 따로 제공합니다. [데이터 처리와 권한](docs/DATA.md)
 
-Windows Chrome에서 실계정 로그인·모델 호출·디시 편집기 적용을 사용자와 확인한 이력이 있습니다. 현재 0.1.7은 격리 Chrome에서 합성 OAuth·모델·편집기 응답으로 검증했습니다. 사진 기본 업로더의 실제 임시 업로드 이력은 있으나 게시 완료와 모든 갤러리·계정 조합을 검증한 것은 아닙니다. [검증·릴리즈 기록](docs/RELEASE.md)
+Windows Chrome에서 실계정 로그인·모델 호출·디시 편집기 적용을 사용자와 확인한 이력이 있습니다. 현재 0.1.9는 격리 Chrome에서 합성 OAuth·모델·편집기 응답으로 검증했습니다. 사진 기본 업로더의 실제 임시 업로드 이력은 있으나 게시 완료와 모든 갤러리·계정 조합을 검증한 것은 아닙니다. 새 Fast 설정의 실계정 이용 가능 여부는 미검증입니다. [검증·릴리즈 기록](docs/RELEASE.md)
 
 PC 일반·마이너·미니 갤러리 글쓰기 화면을 대상으로 합니다. 모바일 Chrome, macOS·Linux 실기기, 스토어 설치는 미검증입니다. OpenAI 로그인 절차나 디시 편집기 구조가 바뀌면 영향을 받을 수 있습니다. 모델의 표현·사실 판단도 틀릴 수 있으므로 게시 전에 직접 확인하세요.
 
@@ -94,7 +96,7 @@ PC 일반·마이너·미니 갤러리 글쓰기 화면을 대상으로 합니�
 
 ## 소스와 업데이트
 
-`extension/`, `tests/`, `tools/`와 개발 안내를 **0.1.7 릴리즈 소스 스냅샷**으로 공개합니다. 자체 작성 코드는 [MIT](LICENSE), 포함된 ChatGPT 인증 모듈은 고정된 버전의 MIT 코드를 사용합니다. [개발 안내](docs/DEVELOPMENT.md) · [인증 모듈](docs/AUTH-MODULE.md) · [제3자 고지](docs/THIRD-PARTY-NOTICES.txt)
+`extension/`, `tests/`, `tools/`와 개발 안내를 **0.1.9 릴리즈 소스 스냅샷**으로 공개합니다. 자체 작성 코드는 [MIT](LICENSE), 포함된 ChatGPT 인증 모듈은 고정된 버전의 MIT 코드를 사용합니다. [개발 안내](docs/DEVELOPMENT.md) · [인증 모듈](docs/AUTH-MODULE.md) · [제3자 고지](docs/THIRD-PARTY-NOTICES.txt)
 
 업데이트는 같은 설치 폴더에 새 ZIP 내용을 교체하고 기존 확장을 새로고침합니다. 이후 기능 개선도 Day 016의 버전 업데이트로 제공합니다. 개발 Git 이력·인증정보·브라우저 프로필·운영 로그는 공개하지 않습니다. 소개 이미지는 소스 코드의 MIT 적용 대상에서 제외합니다.
 

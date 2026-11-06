@@ -20,7 +20,39 @@
       <div id="connected" hidden><p id="account-name"></p><label class="model-label">사용할 모델<select id="model"><option value="">모델 선택</option></select></label><button id="disconnect" class="text-button">연결 해제</button><p class="hint">연결을 이 Chrome 프로필에 암호화해 저장합니다. 갱신 유효기간이 약 10일 남으면, 패널이 닫혀 있어도 Chrome 창이 열린 동안 자동 갱신합니다. 30일간 갱신하지 못하면 다시 로그인해야 합니다.</p></div>
       <ol class="steps"><li><span>1</span><div><strong>재료 넣기</strong><p>글과 사진을 모으세요</p></div></li><li><span>2</span><div><strong>글 다듬기</strong><p>원하는 방식과 스타일로</p></div></li><li><span>3</span><div><strong>디시에 넣기</strong><p>확인한 뒤 편집기에 적용</p></div></li></ol>
     </section>
-    <section id="settings" class="settings" hidden><h2>설정</h2><label class="check"><input type="checkbox" id="compress" checked>새 사진을 가볍게 줄이기</label><p class="hint">PNG·JPG만 긴 변 1,600px 이하로 조정합니다. GIF·WebP는 원본을 유지합니다.</p><label class="check"><input type="checkbox" id="save-draft" checked>이 기기에 초안과 사진 자동 저장</label><p class="hint">사진은 ‘디시 편집기에 넣기’를 누를 때 업로드합니다.</p><button id="clear-draft" class="secondary">저장한 초안과 사진 삭제</button><button id="close-settings" class="text-button">작성으로 돌아가기</button></section>
+    <section id="settings" class="settings" hidden>
+      <h2>설정</h2>
+      <label class="small-label" for="settings-preset">ChatGPT 기본 조합</label>
+      <select id="settings-preset" aria-describedby="settings-preset-hint">
+        <option value="auto">자동 추천</option>
+        <option value="free">Free</option>
+        <option value="plus">Plus</option>
+        <option value="pro">Pro</option>
+      </select>
+      <p class="hint" id="settings-preset-hint">자동 추천은 계정 목록에서 Terra를 우선하고, 없으면 GPT‑6 Luna를 고릅니다. 두 모델 모두 추론 Medium, Fast 켬을 추천합니다. 직접 고른 항목이 우선합니다.</p>
+      <label class="small-label" for="settings-model">모델</label>
+      <select id="settings-model" disabled><option value="">ChatGPT 연결 후 선택</option></select>
+      <label class="small-label" for="settings-effort">추론 수준</label>
+      <select id="settings-effort" disabled>
+        <option value="auto">자동</option>
+        <option value="default">모델 기본값</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+      <label class="small-label" for="settings-fast">Fast</label>
+      <select id="settings-fast" disabled>
+        <option value="auto">자동 · 끔</option>
+        <option value="off">끔</option>
+        <option value="on">켬</option>
+      </select>
+      <label class="check"><input type="checkbox" id="compress" checked>새 사진을 가볍게 줄이기</label>
+      <p class="hint">PNG·JPG만 긴 변 1,600px 이하로 조정합니다. GIF·WebP는 원본을 유지합니다.</p>
+      <label class="check"><input type="checkbox" id="save-draft" checked>이 기기에 초안과 사진 자동 저장</label>
+      <p class="hint">사진은 ‘디시 편집기에 넣기’를 누를 때 업로드합니다.</p>
+      <button id="clear-draft" class="secondary">저장한 초안과 사진 삭제</button>
+      <button id="close-settings" class="text-button">작성으로 돌아가기</button>
+    </section>
     <main id="workspace" hidden>
       <nav class="tabs" aria-label="글쓰기 단계"><button id="write-tab" class="active" aria-current="page">작성</button><button id="preview-tab">미리보기</button></nav>
       <section id="write-view" class="view">

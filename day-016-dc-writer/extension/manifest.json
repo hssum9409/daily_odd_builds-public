@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "디시 글쓰기 도우미 · 개발판",
   "description": "글과 사진으로 초안을 준비하고 디시인사이드 기본 편집기에 적용합니다. 게시 버튼은 직접 누르세요.",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "minimum_chrome_version": "116",
   "permissions": [
     "sidePanel",
