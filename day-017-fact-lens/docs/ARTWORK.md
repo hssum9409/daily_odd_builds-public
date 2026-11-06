@@ -9,7 +9,8 @@
 | images/feature-flow.webp | 핵심 논점 선정·근거 확인·원문 이동 설명 |
 | images/ui-claims.webp | 실제 확장 UI, 합성 자료와 모의 응답의 결과 카드 |
 | images/ui-summary.webp | 같은 영어 원문을 영어·일본어·중국어로 요약한 실제 UI 3화면 가로 배치, 합성 자료·모의 응답 |
-| images/ui-settings.webp | 실제 확장 UI, 모의 계정 상태의 설정 |
+| images/ui-settings.webp | 실제 확장 UI, 이전 버전의 일반 설정 · 모의 계정 |
+| images/ui-reading-0.1.23.webp | Windows Chrome에서 촬영한 0.1.23 읽기 설정 · 모의 계정 |
 
 스크린샷은 로컬 Chrome의 격리된 프로필에서 촬영했습니다. 타인의 기사·댓글·인증 정보는 포함하지 않습니다. 게시한 WebP는 원본 PNG를 보관한 상태에서 용도별로 축소·압축했습니다. 포털 공유 이미지는 대표 일러스트에서 비율을 유지해 만든 1200×630 WebP입니다.
 

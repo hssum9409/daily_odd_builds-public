@@ -1,0 +1,126 @@
+@font-face {
+  font-family: "Fact Lens Noto Sans";
+  src: url("fonts/NotoSans.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fact Lens Noto Sans KR";
+  src: url("fonts/NotoSansKR.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fact Lens Noto Sans JP";
+  src: url("fonts/NotoSansJP.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fact Lens Noto Sans SC";
+  src: url("fonts/NotoSansSC.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --reading-size: 16px;
+  --reading-leading: 1.75;
+  --reading-gap: 12px;
+  --reading-padding: 14px;
+  --reading-paragraph-gap: .65em;
+}
+:root[data-reading-size="14"] { --reading-size: 14px; }
+:root[data-reading-size="18"] { --reading-size: 18px; }
+:root[data-reading-size="20"] { --reading-size: 20px; }
+:root[data-reading-density="compact"] {
+  --reading-leading: 1.55;
+  --reading-gap: 8px;
+  --reading-padding: 10px;
+  --reading-paragraph-gap: .4em;
+}
+:root[data-reading-density="relaxed"] {
+  --reading-leading: 1.95;
+  --reading-gap: 17px;
+  --reading-padding: 17px;
+  --reading-paragraph-gap: .9em;
+}
+
+.reading-surface, .reading-surface [lang] {
+  --reading-noto: "Fact Lens Noto Sans KR";
+  --reading-system: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+  --reading-serif: Batang, AppleMyungjo, "Noto Serif CJK KR";
+  font-family: var(--reading-noto), var(--reading-system);
+}
+:is(.reading-surface, .reading-surface [lang]):lang(en) {
+  --reading-noto: "Fact Lens Noto Sans";
+  --reading-system: system-ui, sans-serif;
+  --reading-serif: Georgia, "Times New Roman";
+}
+:is(.reading-surface, .reading-surface [lang]):lang(ja) {
+  --reading-noto: "Fact Lens Noto Sans JP";
+  --reading-system: "Yu Gothic UI", "Hiragino Sans", Meiryo, system-ui, sans-serif;
+  --reading-serif: "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif CJK JP";
+  line-break: strict;
+}
+:is(.reading-surface, .reading-surface [lang]):lang(zh) {
+  --reading-noto: "Fact Lens Noto Sans SC";
+  --reading-system: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  --reading-serif: SimSun, "Songti SC", "Noto Serif CJK SC";
+  line-break: strict;
+}
+.reading-surface [lang]:lang(ko), #reading-preview:lang(ko) { word-break: keep-all; }
+:root[data-reading-font="system"] :is(.reading-surface, .reading-surface [lang]) {
+  font-family: var(--reading-system);
+}
+:root[data-reading-font="serif"] :is(.reading-surface, .reading-surface [lang]) {
+  font-family: var(--reading-serif), var(--reading-noto), serif;
+}
+
+.reading-surface {
+  font-size: var(--reading-size);
+  line-height: var(--reading-leading);
+  overflow-wrap: anywhere;
+}
+.reading-surface :is(.claim, .summary-item, .summary-overview, .page-overview),
+#reading-preview {
+  padding: var(--reading-padding);
+  margin-block: var(--reading-gap) 0;
+}
+.reading-surface :is(.claim h3, .summary-item h3),
+#reading-preview h3 {
+  font-size: calc(var(--reading-size) * 1.125);
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}
+.reading-surface :is(.explanation, .summary-overview, #overview-text, .claim-reason, .claim-summary, .evidence, .summary-item > p, .aspect-result > p),
+#reading-preview p {
+  font-size: var(--reading-size);
+  line-height: var(--reading-leading);
+}
+.reading-surface :is(.claim-reason, .summary-item > p, .aspect-result > p, .evidence),
+#reading-preview p {
+  margin-top: var(--reading-paragraph-gap);
+}
+.reading-surface :is(.original-quote, .image-transcript, .caveat, .claim-section > summary, .source-heading, .badge, .aspect-result .badge) {
+  font-size: calc(var(--reading-size) * .875);
+  line-height: var(--reading-leading);
+}
+.reading-surface :is(.claim-number, .source-domain, .summary-originals, .stat, .filter) {
+  font-size: max(12px, calc(var(--reading-size) * .8));
+}
+.reading-surface :is(.original-quote, .source a, .image-transcript:not([lang])) {
+  font-family: system-ui, sans-serif;
+}
+.reading-surface .claim-move {
+  top: var(--reading-padding);
+  right: var(--reading-padding);
+}
+
+.reading-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.reading-preview { margin-top: 18px; }
+.reading-preview-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+#reading-preview { background: #f7f9fc; }
+#reading-preview p:last-child { margin-bottom: 0; }

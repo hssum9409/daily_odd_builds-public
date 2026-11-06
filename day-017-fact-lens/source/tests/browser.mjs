@@ -100,9 +100,11 @@ function sse(output){
  return events.map(event=>`data: ${JSON.stringify(event)}\n\n`).join('');
 }
 function providerReply(output){return transportMode==='json'?{json:{status:'completed',output}}:{contentType:transportMode==='sse-plain'?'text/plain':'text/event-stream',body:sse(output)};}
+const qaModels = ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.1-sol'].map(slug => ({ slug, display_name: slug, visibility: 'list' }));
+let expectedEffort = 'high';
 await context.route('https://api.openai.com/**',async route=>{
  const url=new URL(route.request().url());
- if(url.pathname==='/v1/models')return route.fulfill({json:{models:[{slug:'gpt-6.1-sol',display_name:'6.1 sol · QA provider',visibility:'list'}]}});
+ if(url.pathname==='/v1/models')return route.fulfill({json:{models:qaModels}});
  if(url.pathname==='/v1/responses'){
   if(responseGate)await responseGate;
   responseCalls++;
@@ -111,6 +113,7 @@ await context.route('https://api.openai.com/**',async route=>{
   assert.ok(!JSON.stringify(data.input).includes('AD_PROMO_MARKER'));
   assert.equal(data.store,false);assert.equal(data.stream,true);assert.ok(Array.isArray(data.input));assert.equal(data.service_tier,expectedTier);
   assert.equal(data.model,'gpt-6.1-sol');assert.equal(data.text.format.strict,true);assert.ok(data.instructions.includes('ONE valid JSON object'));assert.ok(data.instructions.includes(JSON.stringify(data.text.format.schema)));
+  assert.deepEqual(data.reasoning, { effort: expectedEffort });
   if(data.text.format.name==='page_analysis')assert.ok(data.instructions.includes(`MAXIMUM is ${expectedMaximum} major claims`));
   if(requestInput(data).pageTitle===scopeTitle || scopeExamples.some(e=>e.parent===requestInput(data).claim)){
    const input=requestInput(data);let value;
@@ -222,11 +225,35 @@ try{
  await panel.getByText(/qa@example.test · 요금제 사용 연결됨/).waitFor();
  await started.authPage.close();
  await panel.locator('#model option[value="gpt-6.1-sol"]').waitFor({state:'attached'});
+ const modelPicker = panel.locator('#model'), presetPicker = panel.locator('#model-preset'), effortPicker = panel.locator('#reasoning-effort');
+ const autoModel = modelPicker.locator('option[value=""]'), autoEffort = effortPicker.locator('option[value="auto"]');
+ assert.equal(await autoModel.textContent(), '자동 · gpt-6.1-terra');
+ assert.equal(await autoEffort.textContent(), '자동 · 보통');
+ assert.equal(await panel.locator('#fast-mode').isChecked(),true);
+ await presetPicker.selectOption('free');
+ assert.equal(await autoModel.textContent(), '자동 · gpt-6-luna');
+ assert.equal(await autoEffort.textContent(), '자동 · 보통');
+ await presetPicker.selectOption('plus');
+ assert.equal(await autoModel.textContent(), '자동 · gpt-6.1-terra');
+ assert.equal(await autoEffort.textContent(), '자동 · 보통');
+ await modelPicker.selectOption('gpt-6.1-sol');
+ await effortPicker.selectOption('low');
+ await panel.waitForFunction(async () => {
+   const saved = await chrome.storage.local.get(['modelPreset', 'selectedModel', 'reasoningEffort']);
+   return saved.modelPreset === 'plus' && saved.selectedModel === 'gpt-6.1-sol' && saved.reasoningEffort === 'low';
+ });
+ const article=await context.newPage();await article.goto('http://example.test/article?private=query#fragment');
+ await article.bringToFront();
+ await panel.reload();
+ await panel.locator('#page-title').filter({hasText:'달과 지구'}).waitFor();
+ await panel.locator('#settings').click();
+ await panel.locator('#model option[value="gpt-6.1-sol"]').waitFor({state:'attached'});
+ assert.equal(await modelPicker.inputValue(), 'gpt-6.1-sol');
+ assert.equal(await presetPicker.inputValue(), 'plus');
+ assert.equal(await effortPicker.inputValue(), 'low');
+ expectedEffort = 'low';
  await panel.locator('#reload-models').click();await panel.waitForTimeout(250);assert.equal(refreshCalls,1);
  console.log('PASS mock OAuth code exchange, JWKS signature/identity, rotating refresh and model list');
- const article=await context.newPage();await article.goto('http://example.test/article?private=query#fragment');
- await article.bringToFront();await panel.evaluate(()=>document.getElementById('read-page').click());
- await panel.locator('#page-title').filter({hasText:'달과 지구'}).waitFor({timeout:5000}).catch(async error=>{console.log('Article UI:',await panel.locator('#message').innerText());throw error;});
  const text=await panel.locator('#article-text').inputValue();assert.ok(text.includes('달은 지구'));assert.ok(!/SECRET|광고 메뉴/.test(text));
  assert.equal(await panel.locator('#fast-mode').isChecked(),true);
  assert.equal(await panel.locator('#settings-general #output-language').count(),1);assert.equal(await panel.locator('#settings-general #fast-mode').count(),1);
@@ -239,7 +266,24 @@ try{
  const creatorLinks=await panel.locator('#settings-creator a').evaluateAll(nodes=>nodes.map(a=>({url:a.href,target:a.target,rel:a.rel})));
  assert.deepEqual(creatorLinks.map(a=>a.url),['https://github.com/hssum9409','https://github.com/hssum9409/daily_odd_builds-public/issues','https://daily-odd-builds-portal.web.app/']);assert.ok(creatorLinks.every(a=>a.target==='_blank'&&a.rel.includes('noopener')));
  await panel.setViewportSize({width:320,height:1000});assert.equal(await panel.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await panel.locator('#settings-panel').screenshot({path:path.join(uiEvidence,'settings-creator-320.png')});
- await panel.locator('#settings-tab-creator').press('ArrowLeft');assert.equal(await panel.locator('#settings-tab-general').getAttribute('aria-selected'),'true');
+ await panel.locator('#settings-tab-creator').press('ArrowLeft');
+ assert.equal(await panel.locator('#settings-tab-reading').getAttribute('aria-selected'),'true');
+ const readingPreview=panel.locator('#reading-preview');
+ assert.equal(await readingPreview.getAttribute('lang'),'ko');
+ await panel.locator('#reading-font').selectOption('serif');
+ await panel.locator('#reading-size').selectOption('20');
+ await panel.locator('#reading-density').selectOption('relaxed');
+ const previewStyle=await readingPreview.locator('p').first().evaluate(node=>{
+  const style=getComputedStyle(node);return {size:style.fontSize,leading:style.lineHeight,font:style.fontFamily};
+ });
+ assert.equal(previewStyle.size,'20px');assert.equal(previewStyle.leading,'39px');assert.match(previewStyle.font,/Batang/);
+ assert.equal(await panel.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ await panel.locator('#settings-reading').screenshot({path:path.join(uiEvidence,'reading-settings-320.png')});
+ await panel.locator('#reading-reset').click();
+ assert.equal(await panel.locator('#reading-font').inputValue(),'noto');
+ assert.equal(await panel.locator('#reading-size').inputValue(),'16');
+ assert.equal(await panel.locator('#reading-density').inputValue(),'balanced');
+ await panel.locator('#settings-tab-reading').press('ArrowLeft');assert.equal(await panel.locator('#settings-tab-general').getAttribute('aria-selected'),'true');
  await panel.screenshot({path:path.join(uiEvidence,'settings-general-320.png'),fullPage:true});
  await panel.locator('#settings-tab-general').press('End');assert.equal(await panel.locator('#settings-tab-creator').getAttribute('aria-selected'),'true');await panel.locator('#settings-tab-creator').press('Home');
  assert.equal(await panel.locator('#article-text').inputValue(),originalDraft);await panel.setViewportSize({width:440,height:1000});
@@ -255,6 +299,10 @@ try{
  responseGate=undefined;resumeFirst();
  await panel.getByText('검증을 완료했습니다.',{exact:false}).waitFor();assert.equal(await panel.locator('.action-spinner').count(),0);assert.equal(await panel.locator('#check').getAttribute('aria-busy'),'false');
  assert.equal(responseCalls,3);assert.equal(await panel.locator('.claim').count(),2);assert.equal(await panel.locator('.source a').count(),2);
+ await panel.locator('#settings').click();
+ await effortPicker.selectOption('auto');
+ expectedEffort = 'high';
+ await panel.locator('#close-settings').click();
  assert.equal(peakChecks,2);assert.ok(await panel.locator('.explanation strong').count()>0);assert.ok(await panel.locator('.evidence strong').count()>0);
  assert.equal(await panel.locator('.claim-section[open]').count(),0);assert.equal(await panel.locator('#page-overview').getAttribute('open'),null);
  assert.equal(await panel.locator('.claim-reason').count(),2);assert.equal(await panel.locator('.claim-reason').first().isVisible(),true);assert.ok((await panel.locator('.claim-reason').first().textContent()).includes('공전 궤도'));assert.ok((await panel.locator('.claim-reason').nth(1).textContent()).includes('태양빛을 반사'));
@@ -267,7 +315,7 @@ try{
 
  assert.equal(await panel.locator('#overview-text').isVisible(),false);assert.equal(await panel.locator('.original-quote').first().isVisible(),false);assert.equal(await panel.locator('.explanation').first().isVisible(),false);
  assert.equal(await panel.locator('#input-options').isVisible(),false);assert.equal(await panel.locator('#page-domain').isVisible(),false);assert.equal(await panel.locator('#check').isVisible(),true);assert.equal(await panel.locator('#summarize').isVisible(),true);
- await panel.locator('.claim-move').first().click();assert.ok((await article.evaluate(()=>getSelection().toString())).includes('달은 지구'));assert.equal(await panel.locator('.claim-evidence').first().getAttribute('open'),null);
+ await panel.locator('.claim-move').first().click();await article.waitForFunction(()=>getSelection()?.toString().includes('달은 지구'));assert.equal(await panel.locator('.claim-evidence').first().getAttribute('open'),null);
  // Clear the selection in the ARTICLE tab; it must not affect card selection in the panel.
  const firstExpand=panel.locator('.claim-head').first();
  assert.equal(await firstExpand.getAttribute('aria-expanded'),'false');assert.equal(await firstExpand.getAttribute('aria-controls'),await panel.locator('.claim-evidence').first().getAttribute('id'));
@@ -380,6 +428,22 @@ try{
  forceFast400=false;multimodalMode=false;excludeExtras=false;contextMode=false;expectedTier='priority';
  await panel.locator('#settings').click();await panel.locator('#reload-models').click();assert.equal(await panel.locator('#max-claims').inputValue(),'8');await panel.locator('#max-claims').fill('4');await panel.locator('#max-claims').press('Tab');await panel.waitForFunction(async()=> (await chrome.storage.local.get('maxClaims')).maxClaims===4);await panel.locator('#max-claims').fill('20');await panel.locator('#max-claims').press('Tab');await panel.waitForFunction(async()=> (await chrome.storage.local.get('maxClaims')).maxClaims===20);expectedMaximum=20;await panel.locator('#edit-input').click();
  await article.goto('https://another.test/foreign');await article.bringToFront();await panel.evaluate(()=>document.getElementById('read-page').click());await panel.locator('#page-title').filter({hasText:foreignTitle}).waitFor();
+ const fontProtocol=await context.newCDPSession(panel);
+ await fontProtocol.send('DOM.enable');await fontProtocol.send('CSS.enable');
+ async function assertLocalFont(selector, language){
+  const locale=language==='zh'?'zh-Hans':language;
+  assert.equal(await panel.locator(selector).getAttribute('lang'),locale);
+  const family=await panel.locator(selector).evaluate(async node=>{
+   const style=getComputedStyle(node);await document.fonts.load(`400 16px ${style.fontFamily}`,node.textContent);
+   return style.fontFamily;
+  });
+  const suffix={ko:' KR',en:'',ja:' JP',zh:' SC'}[language];
+  assert.ok(family.startsWith(`"Fact Lens Noto Sans${suffix}"`),family);
+  const {root}=await fontProtocol.send('DOM.getDocument');
+  const {nodeId}=await fontProtocol.send('DOM.querySelector',{nodeId:root.nodeId,selector});
+  const {fonts}=await fontProtocol.send('CSS.getPlatformFontsForNode',{nodeId});
+  assert.ok(fonts.some(font=>font.isCustomFont&&font.glyphCount>0),JSON.stringify(fonts));
+ }
  for(const language of ['ko','en','ja','zh']){
   languageMode=language;
   if(!(await panel.locator('#output-language').isVisible()))await panel.locator('#settings').click();
@@ -390,14 +454,33 @@ try{
   if(language==='ko'){await panel.locator('.page-context').screenshot({path:path.join(uiEvidence,'summary-running-440.png')});responseGate=undefined;resumeSummary();}
   await panel.getByText('요약정리를 완료했습니다.',{exact:false}).waitFor();assert.equal(await panel.locator('.action-spinner').count(),0);assert.equal(await panel.locator('#summarize').getAttribute('aria-busy'),'false');assert.equal(await panel.locator('#results').isVisible(),false);assert.equal(await panel.locator('#summary-results').isVisible(),true);assert.equal(await panel.locator('#input-options').isVisible(),false);
   assert.ok((await panel.locator('#summary-overview').textContent()).includes(translated[language][0]));assert.equal(await panel.locator('.summary-originals').getAttribute('open'),null);
+  await assertLocalFont('#summary-overview',language);
   assert.equal(await panel.locator('#check').isVisible(),true);assert.equal(await panel.locator('#summarize').isVisible(),true);
   await article.bringToFront();await panel.evaluate(()=>document.getElementById('check').click());await panel.getByText('검증을 완료했습니다.',{exact:false}).waitFor();
   assert.equal(await panel.locator('#summary-results').isVisible(),false);assert.equal(await panel.locator('.claim h3').textContent(),translated[language][0]);assert.ok((await panel.locator('.claim-reason').textContent()).includes(translated[language][2]));
+  await assertLocalFont('.claim h3',language);
  }
+ await fontProtocol.detach();
  const newEvidence=process.env.FACT_LENS_EVIDENCE || path.join(os.tmpdir(),'fact-lens-evidence');await mkdir(newEvidence,{recursive:true});
+ await panel.locator('#settings').click();await panel.locator('#settings-tab-reading').click();
+ await panel.locator('#reading-font').selectOption('system');
+ await panel.locator('#reading-size').selectOption('18');
+ await panel.locator('#reading-density').selectOption('compact');
+ assert.equal(await panel.locator('#reading-preview').getAttribute('lang'),'zh-Hans');
+ assert.match(await panel.locator('.claim h3').evaluate(node=>getComputedStyle(node).fontFamily),/Microsoft YaHei/);
+ await panel.waitForFunction(async()=>{
+  const {readingStyle}=await chrome.storage.local.get('readingStyle');
+  return readingStyle?.font==='system'&&readingStyle?.size==='18'&&readingStyle?.density==='compact';
+ });
+ await panel.locator('#close-settings').click();
  await panel.setViewportSize({width:320,height:1000});assert.equal(await panel.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await panel.screenshot({path:path.join(newEvidence,'language-check-320.png'),fullPage:true});
  await article.bringToFront();await panel.reload();await panel.locator('#page-title').filter({hasText:foreignTitle}).waitFor();assert.equal(await panel.locator('#output-language').inputValue(),'zh');assert.equal(await panel.locator('#max-claims').inputValue(),'20');
+ assert.equal(await panel.locator('#reading-font').inputValue(),'system');
+ assert.equal(await panel.locator('#reading-size').inputValue(),'18');
+ assert.equal(await panel.locator('#reading-density').inputValue(),'compact');
  await panel.evaluate(()=>document.getElementById('summarize').click());await panel.getByText('요약정리를 완료했습니다.',{exact:false}).waitFor();await panel.screenshot({path:path.join(newEvidence,'language-summary-320.png'),fullPage:true});
+ assert.equal(await panel.locator('#summary-overview').evaluate(node=>getComputedStyle(node).fontSize),'18px');
+ console.log('PASS bundled fonts render in four output languages, spacing and font choices apply live, and reading settings survive reload');
  const previousSummary=await panel.locator('#summary-overview').textContent();
  await article.evaluate(()=>document.querySelector('article p').append(' Additional content loaded without navigation.'));
  await panel.locator('#page-update').waitFor();assert.equal(await panel.locator('#summary-overview').textContent(),previousSummary);assert.equal(await panel.locator('#input-options').isVisible(),false);

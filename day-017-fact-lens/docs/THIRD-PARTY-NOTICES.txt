@@ -297,3 +297,6 @@ Full Apache-2.0 license text for @mozilla/readability follows:
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+0.1.23 includes Noto Sans, Noto Sans KR, Noto Sans JP, and Noto Sans SC under SIL OFL 1.1.
+See ../source/extension/fonts/ for the original copyright notices and license texts.

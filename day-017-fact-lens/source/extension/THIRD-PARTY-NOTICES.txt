@@ -299,3 +299,8 @@ Full Apache-2.0 license text for @mozilla/readability follows:
    limitations under the License.
 
 ChatGPT auth 0.1.0 — Copyright (c) 2026 Daily Odd Builds contributors — MIT. See CHATGPT-AUTH-LICENSE.txt.
+
+Noto Sans, Noto Sans KR, Noto Sans JP, and Noto Sans SC — SIL Open Font License 1.1.
+The original copyright notices and license texts are in fonts/*-OFL.txt.
+Source: https://github.com/google/fonts/tree/38411257417e616c5d4daa1b9e91a3dbcebe1c2e/ofl
+The source variable TrueType fonts were compressed into WOFF2 for local browser use.

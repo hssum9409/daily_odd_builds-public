@@ -1,4 +1,4 @@
-import { maxClaims } from '../shared/preferences.mjs';
+import { maxClaims, reasoningEffort } from '../shared/preferences.mjs';
 import { languageInstruction, outputLanguage, resultText } from '../shared/language.mjs';
 import { summarySchema, validateSummary } from '../shared/summary.mjs';
 import { filterPromotionalComments } from '../shared/comment-filter.mjs';
@@ -28,6 +28,9 @@ async function rememberDiagnostic(value) {
 }
 export async function requestStructured(model, instructions, input, schema, search, signal, phase = search ? '주장 검증' : '주장 추출', options = {}) {
  const capability = wireCapabilities.get(model) || {};
+ const requestedEffort = reasoningEffort(options.effort);
+ let wireEffort = requestedEffort;
+ const maxWireAttempts = requestedEffort ? 5 : 4;
  let useSchema = capability.schema !== false;
  // Priority and fast are documented aliases. The server remains authoritative.
  let standardFallback = options.fast !== false && capability.fastRejected === true;
@@ -40,13 +43,15 @@ export async function requestStructured(model, instructions, input, schema, sear
   const contract = outputContract(schema);
   const retry = attempt && evidenceRetry ? '\nThe previous web search did not produce traceable independent sources. Perform a NEW external web search with broader and alternative keywords, including original-language names/date/context, and return actual search source URLs. Never limit research to the input page or its links.\n' + validationFeedback : attempt ? '\nYour previous attempt did not satisfy the JSON output contract or source mapping. Generate the result again from the ORIGINAL INPUT. Include every required sourceId in coverage and keep all aspect ids correctly linked. Return only the JSON object; do not discuss this retry. Do not add facts or unsearched URLs to fill required fields.\n' + validationFeedback : '';
   let received, baseDiagnostic;
-  for (let wireAttempt = 0; wireAttempt < 4; wireAttempt++) {
+  for (let wireAttempt = 0; wireAttempt < maxWireAttempts; wireAttempt++) {
    signal?.throwIfAborted(); httpAttempts++;
    baseDiagnostic = { phase, model: model.slice(0, 100), attempt: attempt + 1, httpAttempt: httpAttempts, requestedTier: options.fast === false ? 'default' : 'fast', wireTier: wireTier || 'omitted', requestFormat: useSchema ? 'json_schema' : 'prompt_json', compatibility: [...compatibility] };
+   if (requestedEffort) Object.assign(baseDiagnostic, { requestedEffort, wireEffort: wireEffort || 'omitted' });
    const requestSignal = AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(150000)]);
    try {
     const response = await fetch(`${API}/responses`, { method: 'POST', headers: { Authorization: `Bearer ${await token()}`, 'Content-Type': 'application/json', Accept: 'text/event-stream, application/json' },
       body: JSON.stringify({ model, ...(wireTier ? { service_tier: wireTier } : {}), instructions: `${instructions}\n\n${contract}${retry}\n${languageInstruction(options.language)}`, input: [{ role: 'user', content: options.images?.length ? [{ type: 'input_text', text: input }, ...options.images.map(image => ({ type: 'input_image', image_url: image.dataUrl, detail: 'high' }))] : input }], store: false, stream: true,
+        ...(wireEffort ? { reasoning: { effort: wireEffort } } : {}),
         ...(useSchema ? { text: { format: { type: 'json_schema', name: schema === visionSchema ? 'page_images' : schema === summarySchema ? 'article_summary' : search ? 'fact_verdict' : schema.properties?.claims && schema.properties?.coverage ? 'page_analysis' : 'article_claims', strict: true, schema } } } : {}),
         ...(search ? { tools: [{ type: 'web_search' }], tool_choice: 'required', include: ['web_search_call.action.sources'] } : {}),
       }), signal: requestSignal, cache: 'no-store', credentials: 'omit' });
@@ -54,7 +59,8 @@ export async function requestStructured(model, instructions, input, schema, sear
    } catch (error) {
     if (signal?.aborted) throw error;
     const info = error.diagnostic;
-    if (wireAttempt < 3 && info?.httpStatus === 400) {
+    if (wireAttempt < maxWireAttempts - 1 && info?.httpStatus === 400) {
+      if (wireEffort && info.errorCategory === 'effort_rejected') { wireEffort = undefined; compatibility.push('effort_omitted'); options.onEffortFallback?.(); continue; }
       if (info.errorCategory === 'tier_rejected' && !standardFallback && options.fast !== false && wireTier === 'priority' && info.tierReason === 'unsupported_value') { wireTier = 'fast'; compatibility.push('fast_alias'); continue; }
       const fastRejection = info.errorCategory === 'tier_rejected' || (info.errorCategory === 'unspecified' && info.errorShape !== 'unknown' && !info.parameter);
       if (fastRejection && options.fast !== false && !standardFallback) { standardFallback = true; wireTier = 'default'; compatibility.push('standard_fallback'); options.onFallback?.('standard_fallback'); continue; }
@@ -135,11 +141,18 @@ async function preparePage(article, model, signal, options, warnings, effectiveT
   const preExcludedCount = (article.excludedPromotionalCount || 0) + filteredComments.excludedCount;
   return { article, imageAnalysis, imageRetries, preExcludedCount };
 }
+function effortFallback(options, warnings) {
+  return () => {
+    const warning = '요청한 추론 수준이 거절된 단계는 서버 기본값으로 재요청했습니다.';
+    if (!warnings.includes(warning)) warnings.push(warning);
+    options.onEffortFallback?.();
+  };
+}
 export async function checkArticle(article, model, signal, onProgress, options = {}) {
   const warnings = [...(article.warnings || [])], imageAnalysis = [], effectiveTiers = [];
   let fastFallback = false;
   const onFallback = options.onFallback;
-  options = { ...options, onFallback: reason => {
+  options = { ...options, onEffortFallback: effortFallback(options, warnings), onFallback: reason => {
     fastFallback = true;
     const warning = 'Fast를 포함한 요청이 거절되어 일반 처리로 재요청했습니다. 서버의 실제 처리 등급은 결과 하단에서 확인하세요.';
     if (!warnings.includes(warning)) warnings.push(warning);
@@ -213,7 +226,7 @@ export async function summarizeArticle(article, model, signal, options = {}) {
   const warnings = [...(article.warnings || [])], effectiveTiers = [];
   let fastFallback = false;
   const passed = options.onFallback;
-  options = { ...options, onFallback: reason => { fastFallback = true; if (!warnings.includes('Fast 요청이 거절되어 일반 처리로 요약했습니다.')) warnings.push('Fast 요청이 거절되어 일반 처리로 요약했습니다.'); passed?.(reason); } };
+  options = { ...options, onEffortFallback: effortFallback(options, warnings), onFallback: reason => { fastFallback = true; if (!warnings.includes('Fast 요청이 거절되어 일반 처리로 요약했습니다.')) warnings.push('Fast 요청이 거절되어 일반 처리로 요약했습니다.'); passed?.(reason); } };
   const prepared = await preparePage(article, model, signal, options, warnings, effectiveTiers);
   const blocks = sourceBlocks(prepared.article);
   options.onPhase?.('본문 전체의 흐름과 핵심 내용을 요약하고 있습니다.');

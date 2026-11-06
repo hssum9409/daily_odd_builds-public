@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { readModelResponse } from '../shared/model-response.mjs';
 import { requestStructured, checkArticle } from '../extension/provider.js';
 import { extractionSchema } from '../shared/structured.mjs';
+import { recommendedEffort, recommendedModel } from '../shared/preferences.mjs';
 const completed = () => Response.json({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: '{"claims":[]}' }] }] });
 const signal = () => new AbortController().signal;
 function setup(handler) {
@@ -12,6 +13,37 @@ function setup(handler) {
   globalThis.fetch = async (_url, options) => { const body = JSON.parse(options.body); requests.push(body); return handler(body, requests.length); };
   return { requests, diagnostics };
 }
+test('recommendations use the account catalog and fall back to an available model', () => {
+  const ids = ['other', 'gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.1-sol'];
+  const catalog = ids.map(id => ({ id }));
+  for (const [preset, id, effort] of [
+    ['auto', 'gpt-6.1-terra', 'medium'], ['free', 'gpt-6-luna', 'medium'], ['plus', 'gpt-6.1-terra', 'medium'], ['pro', 'gpt-6.1-sol', 'high'],
+  ]) {
+    const model = recommendedModel(catalog, preset);
+    assert.equal(model.id, id);
+    assert.equal(recommendedEffort(model.id), effort);
+  }
+  assert.equal(recommendedModel(catalog.filter(model => model.id !== 'gpt-6.1-terra'), 'auto').id, 'gpt-6-luna');
+  assert.equal(recommendedModel(catalog.filter(model => model.id !== 'gpt-6.1-terra' && model.id !== 'gpt-6-luna'), 'auto').id, 'gpt-6.1-sol');
+  assert.equal(recommendedModel(catalog.slice(0, 1), 'plus').id, 'other');
+  assert.equal(recommendedEffort('other'), undefined);
+});
+
+test('a rejected effort falls back independently of Fast, model, and web search', async () => {
+  const { requests, diagnostics } = setup(body => body.reasoning
+    ? Response.json({ detail: [{ loc: ['body', 'reasoning', 'effort'], msg: 'Unsupported value' }] }, { status: 400 })
+    : completed());
+  let fallback = 0;
+  await requestStructured('qa-effort', 'Check', '{}', extractionSchema, true, signal(), '주장 검증',
+    { effort: 'high', onEffortFallback: () => fallback++ });
+  assert.equal(fallback, 1);
+  const { reasoning, ...withoutEffort } = requests[0];
+  assert.deepEqual(reasoning, { effort: 'high' });
+  assert.deepEqual(requests[1], withoutEffort);
+  assert.equal(requests[1].service_tier, 'priority');
+  assert.deepEqual(requests[1].tools, [{ type: 'web_search' }]);
+  assert.equal(diagnostics.at(-1).lastRequestDiagnostic.wireEffort, 'omitted');
+});
 test('detail-string and validation-array HTTP 400 bodies identify tier/schema/input without exposing descriptors or echoed inputs', async () => {
   for (const [body, category, shape, parameter] of [
     [{ detail: 'Unsupported value for service_tier: fast. PRIVATE_QA_TEXT' }, 'tier_rejected', 'detail_string', undefined],

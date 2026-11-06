@@ -1,5 +1,5 @@
 {
-  "version": "0.1.22",
+  "version": "0.1.23",
   "description": "Committed release source files, without private development history or operator evidence.",
   "files": [
     {
@@ -8,7 +8,7 @@
     },
     {
       "path": "extension/THIRD-PARTY-NOTICES.txt",
-      "sha256": "3fec7a45ab92824db8567a26654873fd43bf583d1c9afbb5abb8a8e290d75e8f"
+      "sha256": "55abcba247b386ce61b1b0725b6a06f00af259de4ca34d92147ace64378711ef"
     },
     {
       "path": "extension/auth-result.html",
@@ -47,6 +47,38 @@
       "sha256": "8598de65ae17933a04577eb23a2334542a8fbbc26db6129c62d764d0b4cece88"
     },
     {
+      "path": "extension/fonts/NotoSans-OFL.txt",
+      "sha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a"
+    },
+    {
+      "path": "extension/fonts/NotoSans.woff2",
+      "sha256": "31243d23d5f0383f862f49ff825d0a06a4c17531141b52ee055350273f52b02a"
+    },
+    {
+      "path": "extension/fonts/NotoSansJP-OFL.txt",
+      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
+    },
+    {
+      "path": "extension/fonts/NotoSansJP.woff2",
+      "sha256": "6fd94964d1990baa2a392cea7a036683d2b80b9dfd590cb3918e8dab98d8e188"
+    },
+    {
+      "path": "extension/fonts/NotoSansKR-OFL.txt",
+      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
+    },
+    {
+      "path": "extension/fonts/NotoSansKR.woff2",
+      "sha256": "f484190a87503ac2af2cf9771ec35122128453fe0cd92f4368117562d99547e6"
+    },
+    {
+      "path": "extension/fonts/NotoSansSC-OFL.txt",
+      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
+    },
+    {
+      "path": "extension/fonts/NotoSansSC.woff2",
+      "sha256": "aef8c34277afad81ecd0227138a830263c0caea65b7aea66d1195395f097b55a"
+    },
+    {
       "path": "extension/icons.js",
       "sha256": "1f91e1272adccba9e2db94b05511f5f174459d7884aa3cd44837b6f37daa4b4d"
     },
@@ -80,7 +112,7 @@
     },
     {
       "path": "extension/manifest.json",
-      "sha256": "c8a2d2ee72200a4c44672570f1f21567d3391ebd52c8c7a0030eee2c34af4b61"
+      "sha256": "90060c92fd8e7916fd8a88dbe51196d2e9c5733670b8e13ae988e2d5f145aa8e"
     },
     {
       "path": "extension/panel.css",
@@ -88,7 +120,11 @@
     },
     {
       "path": "extension/provider.js",
-      "sha256": "4481443f2f904d21cd5b02473030e6cded934800bb1548ff2048ee2fe4925f60"
+      "sha256": "51c431bfb44a4b5cb2d26a35f67b28da180ed5a7fd253d321a58ddf147c642ad"
+    },
+    {
+      "path": "extension/reading.css",
+      "sha256": "4f09e566a1cd469e20533ca893f22ea125ee3d4ce32c223ae5ef4bc9f0a0d81d"
     },
     {
       "path": "extension/renewal.js",
@@ -96,11 +132,11 @@
     },
     {
       "path": "extension/sidepanel.html",
-      "sha256": "40b76babfa6a70aa66cf97525db2b145c399d086cd6844cbd9db57b3589be53c"
+      "sha256": "6cfaa78b374ac2c400bc7748848885baf9eb49e4efe5e1e19df7c78b20593a9a"
     },
     {
       "path": "extension/sidepanel.js",
-      "sha256": "16d7a69019fec1770eaa437e36f4023b78b4eb04f61433b95b2f16608d5c048d"
+      "sha256": "4b3a5b095088feff7e3f642f407fc9aaf6b1bd92f454821ca5c48fe16248cb1a"
     },
     {
       "path": "extension/vendor/chatgpt-auth/LICENSE.txt",
@@ -128,11 +164,11 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "8349e4b80a9bd344ec877447b880a7343fd98349bf886b05d0cd86f11eccbd2d"
+      "sha256": "9f1721d56f06b338a998a25fa7e993b53ab5d8f2e339eda39487a77aa7d0e370"
     },
     {
       "path": "package.json",
-      "sha256": "48fd6d53e9a5d9b7265016811a3dd607e9b5d20a7543559fccfeda146189d296"
+      "sha256": "1a46d4405d79df02fce8034c8d21858ceb071e201755a7fd975fda9ae1e02c31"
     },
     {
       "path": "reporting-server/.gitignore",
@@ -176,7 +212,7 @@
     },
     {
       "path": "scripts/build.mjs",
-      "sha256": "8383ffa78b415cf70f91e1b0e481487b30f83f257b48d1bd5f7ade5ae8c273f2"
+      "sha256": "cc33634c59ded4d5f2c9a3921811f9430fed5ee61b4361072a2426ce44caa835"
     },
     {
       "path": "scripts/check.mjs",
@@ -220,7 +256,7 @@
     },
     {
       "path": "shared/model-response.mjs",
-      "sha256": "597b7d7734ff8a626744534e577a6ee3ca71b12a335a02389d08f31226937b04"
+      "sha256": "0ad312429155e849e74d31abf147dbe6301d83ed1a298616aea23a19e03ea3b0"
     },
     {
       "path": "shared/page-access.mjs",
@@ -236,7 +272,7 @@
     },
     {
       "path": "shared/preferences.mjs",
-      "sha256": "1ca9313dad58d826ad11b9be700d0f3dff482e987a6a6841fc0fcd3eb265871d"
+      "sha256": "bae4f85a4c3ed543e28c10f001c96dc97eb57c4ecd265130ad1557b02238b08c"
     },
     {
       "path": "shared/rendered-article.mjs",
@@ -276,7 +312,7 @@
     },
     {
       "path": "tests/browser.mjs",
-      "sha256": "9d3010b331dd666f2d6399162f3bc6ed2ff770c0078e8ca6e1c73ced679e9de0"
+      "sha256": "295acdd671c91201fa0d6c9676f8a519258392458faf7d40b16ef092cbb6bc65"
     },
     {
       "path": "tests/claim-scope.test.mjs",
@@ -340,7 +376,7 @@
     },
     {
       "path": "tests/request-compat.test.mjs",
-      "sha256": "0f483b342179f59f84416bcc023e42df1306ef52a01ce51247385694c86ee85f"
+      "sha256": "1d02b25a4078415c82e731e968209b87016f6f3b51bbddeda219c7fb4ce3ea31"
     },
     {
       "path": "tests/session.test.mjs",

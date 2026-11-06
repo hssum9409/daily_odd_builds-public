@@ -1,6 +1,6 @@
 import { prepareDiagnosticReport, submitDiagnosticReport } from './diagnostics.js';
 import { dcinsideImage } from '../shared/dcinside.mjs';
-import { maxClaims } from '../shared/preferences.mjs';
+import { maxClaims, modelPreset, recommendedModel, reasoningEffort, recommendedEffort } from '../shared/preferences.mjs';
 import { parseEditedSupplement } from '../shared/comment-filter.mjs';
 import { models, checkArticle, summarizeArticle } from './provider.js';
 import { safeUrl } from '../shared/report.mjs';
@@ -16,7 +16,14 @@ const $ = id => document.getElementById(id);
 const labels = { all: '전체', supported: '사실', refuted: '오류', mixed: '맥락', insufficient: '근거 부족' };
 const statusIcon = value => value === 'supported' ? 'check' : value === 'refuted' ? 'cross' : 'question';
 let article, contextPreview = '', supplementPreview = '', sourceTabId, sourceHref, report, filter = 'all', controller, busy = false, auth = {}, openSections = new Set(), lastDiagnostic, compact = false, reading = false, detecting = false, stale = false, starting = false;
+let availableModels = [], selectedModel = '';
+const effortLabels = { low: '낮음', medium: '보통', high: '높음' };
 function el(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; }
+function localized(node, language = report?.language) {
+  const code = outputLanguage(language);
+  node.lang = code === 'zh' ? 'zh-Hans' : code;
+  return node;
+}
 function message(text = '') { $('message').textContent = text; $('message').hidden = !text; if (!auth.sharing) { $('gate-status').textContent = text; $('gate-status').hidden = !text; } }
 let diagnosticPayload, diagnosticSending = false;
 function diagnosticState(value) {
@@ -26,7 +33,7 @@ function diagnosticState(value) {
 function notice(text = '') { $('notice').replaceChildren(icon('info'), document.createTextNode(text)); $('notice').hidden = !text; }
 function busyState(value, mode) {
   busy = value;
-  for (const id of ['check', 'summarize', 'refresh-page', 'output-language', 'read-page', 'model', 'max-claims', 'article-text', 'article-title', 'article-context', 'supplement-text', 'include-comments', 'include-images', 'fast-mode', 'login']) $(id).disabled = value;
+  for (const id of ['check', 'summarize', 'refresh-page', 'output-language', 'read-page', 'model', 'model-preset', 'reasoning-effort', 'reload-models', 'max-claims', 'article-text', 'article-title', 'article-context', 'supplement-text', 'include-comments', 'include-images', 'fast-mode', 'login']) $(id).disabled = value;
   for (const node of document.querySelectorAll('#image-preview input')) node.disabled = value;
   $('stop').hidden = !value;
   for (const [id, runMode, label, symbol] of [['check', 'check', '팩트체크', 'search'], ['summarize', 'summary', '요약정리', 'document']]) {
@@ -54,17 +61,40 @@ async function refreshAuth() {
   $('login').hidden = auth.pending || (auth.connected && auth.sharing);
   $('logout').hidden = !auth.connected;
   $('cancel-login').hidden = !auth.pending;
+  if (!auth.sharing && availableModels.length) {
+    availableModels = [];
+    $('model').replaceChildren(el('option', '', '로그인 후 선택'));
+    $('model').firstElementChild.value = '';
+    updateEffortLabel();
+  }
   if (auth.error) message(auth.error);
+}
+function currentModel() {
+  return $('model').value || recommendedModel(availableModels, $('model-preset').value)?.id;
+}
+function updateEffortLabel() {
+  const level = recommendedEffort(currentModel());
+  $('reasoning-effort').options[0].textContent = `자동 · ${effortLabels[level] || '서버 기본값'}`;
+}
+function showModels() {
+  const recommended = recommendedModel(availableModels, $('model-preset').value);
+  const auto = el('option', '', `자동 · ${recommended.name}`);
+  auto.value = '';
+  $('model').replaceChildren(auto, ...availableModels.map(model => {
+    const option = el('option', '', model.name);
+    option.value = model.id;
+    return option;
+  }));
+  if (availableModels.some(model => model.id === selectedModel)) $('model').value = selectedModel;
+  updateEffortLabel();
 }
 async function loadModels() {
   if (!auth.sharing) return;
-  const chosen = $('model').value;
   const available = await models(AbortSignal.timeout(25000));
+  if (!auth.sharing) return;
   if (!available.length) throw new Error('이 계정에서 사용할 수 있는 모델이 없습니다.');
-  $('model').replaceChildren(...available.map(model => { const option = el('option', '', model.name); option.value = model.id; return option; }));
-  const { selectedModel } = await chrome.storage.local.get('selectedModel');
-  const saved = chosen || selectedModel;
-  if (available.some(model => model.id === saved)) $('model').value = saved;
+  availableModels = available;
+  showModels();
 }
 async function readPage() {
   if (busy || reading || !auth.sharing) return;
@@ -118,24 +148,25 @@ function renderReport() {
   $('claim-count').textContent = `주요 주장 ${report.claims.length}개`;
   $('comment-filter-status').hidden = !report.excludedPromotionalCount; $('comment-filter-status').textContent = report.excludedPromotionalCount ? `홍보성 댓글 등 ${report.excludedPromotionalCount}개 자동 제외` : '';
   $('page-overview').hidden = !report.overview;
-  $('overview-text').replaceChildren(); appendEmphasis($('overview-text'), report.overview || '');
+  $('overview-text').replaceChildren(); appendEmphasis(localized($('overview-text')), report.overview || '');
   $('coverage-info').textContent = report.coverage?.length ? `원문 ${report.coverage.length}개 구간의 전체 맥락을 읽고 핵심 논점 ${report.claims.length}개를 선정해 검증했습니다. 모든 세부 사실의 전수 검증은 아닙니다.${report.article.truncated ? ' 원문 전체가 아닌 전송 범위의 분석입니다.' : ''}` : '';
   $('report-warnings').textContent = (report.warnings || []).join('\n'); $('report-warnings').hidden = !report.warnings?.length;
   $('image-analysis').replaceChildren(...(report.imageAnalysis || []).map(image => {
     const node = el('details', 'image-analysis'); node.append(el('summary', '', `${image.id} · 이미지 인식 내용 확인`));
     if (image.transcription) node.append(el('p', 'small', '이미지 글자 (OCR)'), el('p', 'image-transcript', image.transcription));
-    if (image.description) node.append(el('p', 'small', '시각적 내용 (AI 해석)'), el('p', 'image-transcript', image.description));
-    node.append(el('p', 'caveat', image.uncertainty || '이미지 인식은 원본의 진위나 특정 사건을 입증하지 않습니다.'));
+    if (image.description) node.append(el('p', 'small', '시각적 내용 (AI 해석)'), localized(el('p', 'image-transcript', image.description)));
+    node.append(localized(el('p', 'caveat', image.uncertainty || '이미지 인식은 원본의 진위나 특정 사건을 입증하지 않습니다.'), image.uncertainty ? report.language : 'ko'));
     const button = el('button', 'text-button', '원본 이미지로 이동·강조'); button.onclick = () => revealQuote('', { kind: 'image_visual', imageId: image.id, locationId: image.locationId, label: '이미지' }).catch(error => message(error.message)); node.append(button); return node;
   }));
   const done = report.claims.filter(claim => !['checking', 'pending'].includes(claim.verdict)).length;
   $('progress').textContent = busy ? `검증 ${done}/${report.claims.length} · 최대 3개씩 병렬 검증 중` : report.partial ? '중지된 검증 · 완료된 항목만 참고하세요.' : !report.claims.length ? '이 페이지에서 독립적으로 검증 가능한 주장을 찾지 못했습니다.' : '';
   $('summary').replaceChildren();
   const summaryKeys = ['supported', 'refuted', ...(report.claims.some(claim => claim.verdict === 'mixed') ? ['mixed'] : []), 'insufficient'];
-  for (const value of summaryKeys) { const node = el('div', `stat ${value}`); node.append(round(value), document.createTextNode(`${report.language && report.language !== 'ko' ? resultText(report.language, value) : labels[value]} ${report.claims.filter(claim => claim.verdict === value).length}`)); $('summary').append(node); }
+  for (const value of summaryKeys) { const node = localized(el('div', `stat ${value}`)); node.append(round(value), document.createTextNode(`${report.language && report.language !== 'ko' ? resultText(report.language, value) : labels[value]} ${report.claims.filter(claim => claim.verdict === value).length}`)); $('summary').append(node); }
   $('filters').replaceChildren();
   for (const value of ['all', ...summaryKeys]) {
     const button = el('button', `filter${value === filter ? ' active' : ''}`, value === 'all' ? '전체' : report.language && report.language !== 'ko' ? resultText(report.language, value) : labels[value]); button.type = 'button'; button.setAttribute('aria-pressed', String(value === filter));
+    if (value !== 'all') localized(button);
     button.onclick = () => { filter = value; renderReport(); }; $('filters').append(button);
   }
   const visible = report.claims.filter(claim => filter === 'all' || claim.verdict === filter);
@@ -155,13 +186,15 @@ function claimSection(claim, kind, label) {
 function claimNode(claim, index) {
   const card = el('article', 'claim');
   const originLabels = [...new Set((claim.aspects || [claim]).map(aspect => aspect.origin?.label).filter(Boolean))];
-  const heading = el('div', 'claim-head'); heading.append(el('span', 'claim-number', `주요 주장 ${index + 1}${originLabels.length ? ` · ${originLabels.join(' · ')}` : ''}`), el('h3', '', claim.claim));
+  const heading = el('div', 'claim-head'); heading.append(el('span', 'claim-number', `주요 주장 ${index + 1}${originLabels.length ? ` · ${originLabels.join(' · ')}` : ''}`), localized(el('h3', '', claim.claim)));
   const status = resultText(report.language, claim.verdict) || (claim.verdict === 'checking' ? '출처 확인 중' : '검증 대기');
-  const badge = el('span', `badge ${claim.verdict}`); badge.append(round(claim.verdict), document.createTextNode(status)); heading.append(badge); card.append(heading);
+  const badge = localized(el('span', `badge ${claim.verdict}`), resultText(report.language, claim.verdict) ? report.language : 'ko'); badge.append(round(claim.verdict), document.createTextNode(status)); heading.append(badge); card.append(heading);
   const reason = claim.reason || (claim.error ? '요청 오류로 근거를 확인하지 못했습니다.' : ['pending', 'checking'].includes(claim.verdict) ? '근거를 확인하고 있습니다.' : '독립적인 근거를 확인하지 못했습니다.');
-  card.append(appendEmphasis(el('p', 'claim-reason'), `핵심 근거: ${reason}`));
+  const reasonLine = el('p', 'claim-reason', '핵심 근거: ');
+  reasonLine.append(appendEmphasis(localized(el('span'), claim.reason ? report.language : 'ko'), reason));
+  card.append(reasonLine);
   let context;
-  if (claim.context) { context = claimSection(claim, 'context', '글의 맥락'); context.append(el('p', 'claim-summary', claim.context)); }
+  if (claim.context) { context = claimSection(claim, 'context', '글의 맥락'); context.append(localized(el('p', 'claim-summary', claim.context))); }
   const references = [...new Map((claim.aspects || [claim]).map(aspect => [`${aspect.origin?.kind}:${aspect.quote}`, aspect])).values()];
   const originals = claimSection(claim, 'originals', `원문 · ${references.length}곳`);
   for (const aspect of references) {
@@ -189,13 +222,13 @@ function claimNode(claim, index) {
   heading.onkeydown = event => { if (event.target === heading && ['Enter', ' '].includes(event.key)) { event.preventDefault(); toggle(); } };
   card.onclick = event => { if (event.target.closest('button,a,summary,input,select,textarea,.claim-context,.claim-originals,.aspect-results') || window.getSelection()?.toString()) return; toggle(); };
   evidence.addEventListener('toggle', sync); sync();
-  evidence.append(appendEmphasis(el('p', 'explanation'), claim.explanation || '독립적인 웹 출처와 대조할 예정입니다.'));
+  evidence.append(appendEmphasis(localized(el('p', 'explanation'), claim.explanation ? report.language : 'ko'), claim.explanation || '독립적인 웹 출처와 대조할 예정입니다.'));
   if (claim.error) evidence.append(el('p', 'caveat', claim.error));
   if (claim.aspects?.length > 1) {
     const aspects = claimSection(claim, 'aspects', `함께 검증한 세부 내용 ${claim.aspects.length}개`); aspects.classList.add('aspect-results');
     for (const aspect of claim.aspects) {
-      const node = el('div', 'aspect-result'); node.append(el('p', '', aspect.claim), el('span', `badge ${aspect.verdict}`, resultText(report.language, aspect.verdict) || '확인 중'));
-      if (aspect.explanation) node.append(appendEmphasis(el('p', 'small'), aspect.explanation));
+      const node = el('div', 'aspect-result'); node.append(localized(el('p', '', aspect.claim)), localized(el('span', `badge ${aspect.verdict}`, resultText(report.language, aspect.verdict) || '확인 중')));
+      if (aspect.explanation) node.append(appendEmphasis(localized(el('p', 'small')), aspect.explanation));
       aspects.append(node);
     }
     aspects.open = evidence.open; evidence.append(aspects);
@@ -206,11 +239,19 @@ function claimNode(claim, index) {
       const url = safeUrl(source.url); if (!url) continue;
       const row = el('div', 'source'); const link = el('a', '', source.title); link.href = url; link.target = '_blank'; link.rel = 'noreferrer noopener'; link.append(icon('external'));
       row.append(link, el('span', 'source-domain', domain(url)));
-      if (!report.demo) row.append(appendEmphasis(el('p', 'evidence'), `${({ supports: '주장을 지지', contradicts: '주장과 배치', context: '맥락 보충' })[source.relation]} · ${source.evidence}`));
+      if (!report.demo) {
+        const line = el('p', 'evidence', `${({ supports: '주장을 지지', contradicts: '주장과 배치', context: '맥락 보충' })[source.relation]} · `);
+        line.append(appendEmphasis(localized(el('span')), source.evidence));
+        row.append(line);
+      }
       evidence.append(row);
     }
   }
-  if (claim.caveat) evidence.append(appendEmphasis(el('p', 'caveat'), `확인 한계: ${claim.caveat}`));
+  if (claim.caveat) {
+    const line = el('p', 'caveat', '확인 한계: ');
+    line.append(appendEmphasis(localized(el('span')), claim.caveat));
+    evidence.append(line);
+  }
   card.append(evidence); if (context) card.append(context); card.append(originals); return card;
 }
 async function revealQuote(quote, origin) {
@@ -276,10 +317,10 @@ async function detectPageChange() {
 function renderSummary() {
   $('results').hidden = true; $('summary-results').hidden = false;
   $('summary-count').textContent = `${report.sections?.length || 0}개 항목`;
-  $('summary-overview').replaceChildren(); appendEmphasis($('summary-overview'), report.overview || (report.partial ? '요약을 완료하지 못했습니다. 다시 시도해 주세요.' : ''));
+  $('summary-overview').replaceChildren(); appendEmphasis(localized($('summary-overview'), report.overview ? report.language : 'ko'), report.overview || (report.partial ? '요약을 완료하지 못했습니다. 다시 시도해 주세요.' : ''));
   $('summary-warnings').textContent = (report.warnings || []).join('\n'); $('summary-warnings').hidden = !report.warnings?.length;
   $('summary-sections').replaceChildren(...(report.sections || []).map(section => {
-    const card = el('article', 'summary-item'); card.append(el('h3', '', section.heading), appendEmphasis(el('p'), section.summary));
+    const card = el('article', 'summary-item'); card.append(localized(el('h3', '', section.heading)), appendEmphasis(localized(el('p')), section.summary));
     const originals = el('details', 'summary-originals'); originals.append(el('summary', '', '원문 확인'));
     for (const block of section.originals) {
       const quote = el('button', 'original-quote', `${block.label}: ${block.text}`);
@@ -306,7 +347,7 @@ async function startCheck(mode = 'check') {
   if (!article) await readPage();
   await refreshAuth();
   if (!auth.sharing) { $('settings-panel').hidden = false; return message('Continue with ChatGPT로 로그인하고 요금제 사용을 승인해 주세요.'); }
-  if (!$('model').value) await loadModels();
+  if (!availableModels.length) await loadModels();
   const text = $('article-text').value.trim();
   if (text.length > 120000) throw new Error('본문이 120,000자를 초과합니다. 일부를 자동으로 잘라 분석하지 않았습니다. 미리보기에서 검증 범위를 직접 정해 주세요.');
   const contextText = $('article-context').value.trim();
@@ -321,8 +362,15 @@ async function startCheck(mode = 'check') {
   const warnings = [];
   if ($('include-comments').checked && article.supplementTruncated) warnings.push('댓글·캡션이 수집 범위를 초과해 일부만 포함됐습니다. 미리보기의 전송 범위를 기준으로 분석했습니다.');
   if ($('include-images').checked && article.imagesTruncated) warnings.push('이미지 후보는 최대 6개입니다. 이 중 선택한 이미지만 분석했습니다.');
-  const selected = { ...article, title: $('article-title').value.trim().slice(0, 500), context, supplementary, text, warnings, excludedPromotionalCount: $('include-comments').checked ? article.excludedPromotionalCount || 0 : 0 }; const model = $('model').value;
+  const selected = { ...article, title: $('article-title').value.trim().slice(0, 500), context, supplementary, text, warnings, excludedPromotionalCount: $('include-comments').checked ? article.excludedPromotionalCount || 0 : 0 };
+  const model = currentModel();
+  if (!model) throw new Error('이 계정에서 사용할 수 있는 모델이 없습니다.');
   const fast = $('fast-mode').checked, language = outputLanguage($('output-language').value);
+  const effortSetting = $('reasoning-effort').value;
+  const effort = effortSetting === 'auto' ? recommendedEffort(model) : reasoningEffort(effortSetting);
+  const requestOptions = { fast, effort, language, maxClaims: maxClaims($('max-claims').value), onPhase: message,
+    onFallback: () => message('Fast 요청이 거절되어 일반 처리로 복구하고 있습니다.'),
+    onEffortFallback: () => message('추론 수준 설정이 거절되어 서버 기본값으로 재요청하고 있습니다.') };
   controller = new AbortController(); setCompact(true); $('settings-panel').hidden = true; busyState(true, mode); message(mode === 'summary' ? '제목·페이지 맥락과 본문을 요약하고 있습니다.' : '제목·페이지 맥락과 본문에서 주장을 추출하고 있습니다.'); notice(); filter = 'all'; openSections.clear(); $('page-overview').open = false;
   diagnosticState(undefined);
   report = { article: { title: selected.title, url: selected.url, capturedAt: selected.capturedAt, truncated: selected.truncated }, mode, language, claims: [], model, fast, partial: true };
@@ -330,13 +378,13 @@ async function startCheck(mode = 'check') {
   try {
     if (selectedImages.length) { message('선택한 이미지를 준비하고 있습니다.'); const images = await prepareImages(selectedImages, controller.signal); selected.loadedImages = images.loaded; selected.warnings.push(...images.warnings); }
     if (mode === 'summary') {
-      report = await summarizeArticle(selected, model, controller.signal, { fast, language, maxClaims: maxClaims($('max-claims').value), onPhase: text => message(text), onFallback: () => message('Fast 요청이 거절되어 일반 처리로 복구하고 있습니다.') });
+      report = await summarizeArticle(selected, model, controller.signal, requestOptions);
       message('요약정리를 완료했습니다. 원문의 주장을 정리한 내용이며 사실 검증 결과가 아닙니다.');
       return;
     }
     report = await checkArticle(selected, model, controller.signal, claims => {
       report.claims = claims; message(); renderReport();
-    }, { fast, language, maxClaims: maxClaims($('max-claims').value), onPhase: text => message(text), onFallback: () => message('Fast 요청이 거절되어 일반 처리로 복구하고 있습니다.'), onAnalysis: analysis => Object.assign(report, analysis) });
+    }, { ...requestOptions, onAnalysis: analysis => Object.assign(report, analysis) });
     diagnosticState(report.claims.findLast(claim => claim.diagnostic)?.diagnostic);
     message(report.claims.some(claim => claim.error) ? '일부 항목은 요청 오류로 검증하지 못했습니다. 해당 항목의 안내를 확인하세요.' : report.warnings?.length ? '검증을 완료했습니다. 분석 범위와 처리 안내를 함께 확인하세요.' : '검증을 완료했습니다. 요약 판정과 함께 각 출처를 확인하세요.');
   } catch (error) {
@@ -352,20 +400,23 @@ function wire(id, handler) { $(id).onclick = () => Promise.resolve().then(handle
 $('gate-icon').append(icon('lens')); $('brand-icon').append(icon('lens')); $('settings').append(icon('settings')); busyState(false);
 $('creator-version').textContent = `팩트렌즈 · v${chrome.runtime.getManifest().version}`;
 wire('settings', () => { $('settings-panel').hidden = !$('settings-panel').hidden; });
+const settingsTabs = ['general', 'reading', 'creator'];
 function selectSettingsTab(name, focus = false) {
-  for (const tab of ['general', 'creator']) {
+  for (const tab of settingsTabs) {
     const active = name === tab, button = $(`settings-tab-${tab}`);
     button.setAttribute('aria-selected', String(active)); button.tabIndex = active ? 0 : -1;
     $(`settings-${tab}`).hidden = !active;
     if (active && focus) button.focus();
   }
 }
-for (const name of ['general', 'creator']) {
+for (const [index, name] of settingsTabs.entries()) {
   wire(`settings-tab-${name}`, () => selectSettingsTab(name));
   $(`settings-tab-${name}`).onkeydown = event => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    selectSettingsTab(event.key === 'Home' ? 'general' : event.key === 'End' ? 'creator' : name === 'general' ? 'creator' : 'general', true);
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? settingsTabs.length - 1
+      : (index + (event.key === 'ArrowRight' ? 1 : -1) + settingsTabs.length) % settingsTabs.length;
+    selectSettingsTab(settingsTabs[next], true);
   };
 }
 wire('close-settings', () => { $('settings-panel').hidden = true; $('settings').focus(); });
@@ -376,7 +427,7 @@ wire('gate-login', async () => { await rpc('auth.login'); await refreshAuth(); }
 wire('gate-cancel', async () => { await rpc('auth.cancel'); await refreshAuth(); });
 wire('login', async () => { await rpc('auth.login'); await refreshAuth(); });
 wire('cancel-login', async () => { await rpc('auth.cancel'); await refreshAuth(); });
-wire('logout', async () => { controller?.abort(); const result = await rpc('auth.logout'); $('model').replaceChildren(el('option', '', '로그인 후 선택')); await refreshAuth(); message(result.revoked ? '연결을 해제했습니다. 저장된 인증 토큰을 지웠습니다.' : '기기에 저장된 인증 토큰을 지웠습니다. 서버의 연결 해제는 확인하지 못했습니다. ChatGPT 설정에서 앱 연결을 확인해 주세요.'); });
+wire('logout', async () => { controller?.abort(); const result = await rpc('auth.logout'); await refreshAuth(); message(result.revoked ? '연결을 해제했습니다. 저장된 인증 토큰을 지웠습니다.' : '기기에 저장된 인증 토큰을 지웠습니다. 서버의 연결 해제는 확인하지 못했습니다. ChatGPT 설정에서 앱 연결을 확인해 주세요.'); });
 wire('reload-models', loadModels); wire('stop', () => controller?.abort());
 wire('recent-diagnostic', async () => { const saved=await chrome.storage.session.get(['lastFailedRequestDiagnostic','lastRequestDiagnostic']); const value=saved.lastFailedRequestDiagnostic || (saved.lastRequestDiagnostic?.code!=='ok' ? saved.lastRequestDiagnostic : undefined); if(!value)return message('현재 Chrome 세션에 저장된 오류 진단이 없습니다.'); diagnosticState(value); $('report-diagnostic').click(); });
 wire('report-diagnostic', () => {
@@ -408,8 +459,55 @@ wire('export', () => {
 wire('summary-copy', async () => { if (report?.mode !== 'summary') return; await navigator.clipboard.writeText([`팩트렌즈 · 원문 요약 (사실 검증 아님) · ${report.article.title}`, report.article.url, report.overview, ...report.sections.map(section => `${section.heading}\n${section.summary}\n${section.originals.map(block => `${block.label}: ${block.text}`).join('\n')}`)].join('\n\n')); message('요약을 복사했습니다.'); });
 wire('summary-export', () => $('export').click());
 $('max-claims').onchange = () => { $('max-claims').value = maxClaims($('max-claims').value); void chrome.storage.local.set({ maxClaims: Number($('max-claims').value) }); };
-$('output-language').onchange = () => void chrome.storage.local.set({ outputLanguage: outputLanguage($('output-language').value) });
-$('model').onchange = () => void chrome.storage.local.set({ selectedModel: $('model').value });
+const readingDefaults = { font: 'noto', size: '16', density: 'balanced' };
+const readingSamples = {
+  ko: ['근거를 읽는 법', '주장과 **핵심 근거**를 함께 보면 무엇이 확인됐는지 빠르게 파악할 수 있습니다.', '자세한 설명에서는 출처와 원문을 확인할 수 있습니다.'],
+  en: ['Reading the evidence', 'Read the claim alongside its **key evidence** to see what the sources establish.', 'Open the details to review the sources and the original text.'],
+  ja: ['根拠の読み方', '主張と**重要な根拠**を一緒に読むと、何が確認できたかがわかります。', '詳細を開くと、出典と原文を確認できます。'],
+  zh: ['如何阅读证据', '结合主张与**关键证据**，可以快速了解哪些内容得到了核实。', '展开详情即可查看来源和原文。'],
+};
+function updateReadingPreview() {
+  const language = outputLanguage($('output-language').value);
+  const [title, body, detail] = readingSamples[language];
+  localized($('reading-preview'), language);
+  localized($('reading-preview-language'), language).textContent = LANGUAGES[language];
+  $('reading-preview-title').textContent = title;
+  $('reading-preview-body').replaceChildren();
+  appendEmphasis($('reading-preview-body'), body);
+  $('reading-preview-detail').textContent = detail;
+}
+function applyReadingStyle(saved) {
+  const readingStyle = {};
+  for (const [key, fallback] of Object.entries(readingDefaults)) {
+    const select = $(`reading-${key}`);
+    const value = [...select.options].some(option => option.value === saved?.[key]) ? saved[key] : fallback;
+    select.value = value;
+    document.documentElement.setAttribute(`data-reading-${key}`, value);
+    readingStyle[key] = value;
+  }
+  return readingStyle;
+}
+for (const key of Object.keys(readingDefaults)) {
+  $(`reading-${key}`).onchange = () => {
+    const values = Object.fromEntries(Object.keys(readingDefaults).map(name => [name, $(`reading-${name}`).value]));
+    void chrome.storage.local.set({ readingStyle: applyReadingStyle(values) });
+  };
+}
+wire('reading-reset', () => chrome.storage.local.set({ readingStyle: applyReadingStyle(readingDefaults) }));
+$('output-language').onchange = () => {
+  updateReadingPreview();
+  void chrome.storage.local.set({ outputLanguage: outputLanguage($('output-language').value) });
+};
+$('model').onchange = () => {
+  selectedModel = $('model').value;
+  void chrome.storage.local.set({ selectedModel });
+  updateEffortLabel();
+};
+$('model-preset').onchange = () => {
+  void chrome.storage.local.set({ modelPreset: $('model-preset').value });
+  if (availableModels.length) showModels();
+};
+$('reasoning-effort').onchange = () => void chrome.storage.local.set({ reasoningEffort: $('reasoning-effort').value });
 $('fast-mode').onchange = () => void chrome.storage.local.set({ fastMode: $('fast-mode').checked });
 $('article-text').oninput = () => { $('text-count').textContent = `· ${$('article-text').value.length.toLocaleString()}자`; };
 chrome.storage.onChanged.addListener(async (changes, area) => {
@@ -425,9 +523,14 @@ chrome.runtime.onMessage.addListener(event => {
   void refreshAuth().then(() => { if (auth.sharing && !wasConnected) return loadModels().then(readPage); }).catch(error => message(error.message));
 });
 window.addEventListener('pagehide', () => controller?.abort());
-const { fastMode, outputLanguage: savedLanguage, maxClaims: savedMaximum } = await chrome.storage.local.get(['fastMode', 'outputLanguage', 'maxClaims']);
+const { fastMode, outputLanguage: savedLanguage, maxClaims: savedMaximum, selectedModel: savedModel, modelPreset: savedPreset, reasoningEffort: savedEffort, readingStyle } = await chrome.storage.local.get(['fastMode', 'outputLanguage', 'maxClaims', 'selectedModel', 'modelPreset', 'reasoningEffort', 'readingStyle']);
+selectedModel = savedModel || '';
+$('model-preset').value = modelPreset(savedPreset);
+$('reasoning-effort').value = savedEffort === 'default' ? 'default' : reasoningEffort(savedEffort) || 'auto';
 $('max-claims').value = maxClaims(savedMaximum);
 $('output-language').value = outputLanguage(savedLanguage);
+applyReadingStyle(readingStyle);
+updateReadingPreview();
 $('fast-mode').checked = fastMode !== false;
 await refreshAuth().catch(error => message(error.message));
 if (auth.sharing) { await loadModels().catch(error => message(error.message)); await readPage().catch(error => message(error.message)); }
