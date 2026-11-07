@@ -1,3 +1,9 @@
+# 설치 안내
+
+[Chrome 웹 스토어에서 팩트렌즈를 설치](https://chromewebstore.google.com/detail/mfiomjajfkfkdbchdfegfofklpplpmcc)하세요. 업데이트는 Chrome이 관리합니다. [설치·업데이트 안내](INSTALLATION.md)
+
+아래는 각 버전의 개발·검증 기록입니다.
+
 # 0.1.23 · 글꼴과 자동 모델 추천
 
 2026-11-07. 읽기 설정에서 글꼴·본문 크기·간격을 조절하고 바로 미리 볼 수 있습니다. 한국어·영어·일본어·중국어 간체에 맞는 Noto Sans WOFF2와 SIL OFL 고지를 설치본에 포함합니다.
@@ -28,7 +34,7 @@ Windows Chrome 156의 실제 확장 로딩·UI 자동 검사는 격리 프로필
 
 오류 서버는 로컬 Firestore 에뮬레이터에서 동시 접수·중복·제한·TTL·허용 필드 검사를 통과했습니다. 기존 배포에서 실제 Chrome의 합성 리포트 접수와 저장도 확인했으며 QA 문서는 제거했습니다. 이 검사는 팩트체크 모델 호출 성공을 의미하지 않습니다.
 
-GitHub Actions를 사용하지 않습니다. 빌드·검사·ZIP 생성은 로컬에서 수행하며 배포 파일은 GitHub Releases에 직접 올립니다. 런타임은 ZIP 안의 `manifest.json` 폴더를 Chrome 개발자 모드로 로드합니다. 자동 업데이트는 없습니다.
+GitHub Actions를 사용하지 않습니다. 빌드·검사·ZIP 생성은 로컬에서 수행하며 배포 파일은 GitHub Releases에 직접 올립니다. 당시 ZIP 배포본은 수동으로 업데이트하는 방식이었습니다.
 
 ## 미검증·한계
 

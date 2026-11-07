@@ -7,13 +7,13 @@
 <p align="center">읽던 글, 근거까지.<br>페이지 옆에서 팩트체크하고 요약하세요.</p>
 
 <p align="center">
-  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.23"><img alt="버전 0.1.23" src="https://img.shields.io/badge/version-0.1.23-2955df"></a>
+  <a href="https://github.com/hssum9409/daily_odd_builds-public/releases/tag/day017-fact-lens-v0.1.23"><img alt="소스 버전 0.1.23" src="https://img.shields.io/badge/version-0.1.23-2955df?label=source"></a>
   <img alt="Windows Chrome 검증" src="https://img.shields.io/badge/Windows_Chrome-tested-2955df">
-  <img alt="ZIP 수동 설치" src="https://img.shields.io/badge/install-ZIP-343c50">
+  <a href="https://chromewebstore.google.com/detail/mfiomjajfkfkdbchdfegfofklpplpmcc"><img alt="Chrome 웹 스토어에서 설치" src="https://img.shields.io/badge/Chrome_Web_Store-install-148447"></a>
   <a href="source/"><img alt="소스 공개 · MIT" src="https://img.shields.io/badge/source-MIT-148447"></a>
 </p>
 
-<p align="center"><b><a href="https://github.com/hssum9409/daily_odd_builds-public/releases/download/day017-fact-lens-v0.1.23/fact-lens-0.1.23.zip">Chrome 확장 ZIP 다운로드 →</a></b> · <a href="source/">소스 코드</a> · <a href="docs/INSTALLATION.md">설치·업데이트 안내</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/fact-lens">개인정보취급방침</a></p>
+<p align="center"><b><a href="https://chromewebstore.google.com/detail/mfiomjajfkfkdbchdfegfofklpplpmcc">Chrome 웹 스토어에서 설치 →</a></b> · <a href="source/">소스 코드</a> · <a href="docs/INSTALLATION.md">설치·업데이트 안내</a> · <a href="https://daily-odd-builds-portal.web.app/privacy/fact-lens">개인정보취급방침</a></p>
 
 ![팩트렌즈 — 페이지와 오른쪽 사이드패널을 표현한 대표 일러스트](docs/images/hero.webp)
 
@@ -23,17 +23,17 @@
 
 읽던 기사나 게시글을 다른 창에 복사하지 않아도 됩니다. Chrome 사이드패널에서 팩트체크 또는 요약정리를 선택하세요. ChatGPT 계정으로 연결하며 별도의 로컬 서버나 API 키를 준비할 필요가 없습니다.
 
-Daily Odd Builds **Day 017 · 2026-10-28**. 첫 ZIP 공개는 2026-11-01이며, Chrome 웹 스토어 대신 **파일을 내려받아 직접 설치**하는 방식으로 배포합니다.
+Daily Odd Builds **Day 017 · 2026-10-28**. **Chrome 웹 스토어에서 설치**할 수 있습니다.
 
 ## 설치
 
-1. 위의 **Chrome 확장 ZIP**을 내려받아 계속 보관할 폴더에 압축을 풉니다.
-2. Chrome 주소창에 `chrome://extensions`를 입력하고 오른쪽 위 **개발자 모드**를 켭니다.
-3. **압축해제된 확장 프로그램을 로드합니다**를 누르고, `manifest.json`이 바로 들어 있는 폴더를 선택합니다. ZIP 파일 자체를 선택하지 않습니다.
-4. Chrome 도구 모음의 확장 메뉴에서 **팩트렌즈**를 고정하고, 확인할 페이지에서 아이콘을 누릅니다. 모든 사이트 접근 권한을 허용해 주세요.
-5. **ChatGPT로 로그인**을 누르고 열린 공식 로그인 화면에서 연결합니다. 추천 모델과 전송할 내용을 확인한 뒤 **팩트체크** 또는 **요약정리**를 누릅니다.
+1. [Chrome 웹 스토어의 팩트렌즈 페이지](https://chromewebstore.google.com/detail/mfiomjajfkfkdbchdfegfofklpplpmcc)에서 **Chrome에 추가 → 확장 프로그램 추가**를 누릅니다.
+2. Chrome 도구 모음의 확장 메뉴에서 **팩트렌즈**를 고정합니다.
+3. 확인할 기사나 게시글을 열고 팩트렌즈 아이콘을 누릅니다.
+4. **ChatGPT로 로그인**을 누르고 열린 공식 화면에서 로그인·동의를 완료합니다.
+5. 전송할 내용을 확인한 뒤 **팩트체크** 또는 **요약정리**를 누릅니다.
 
-폴더를 지우거나 옮기면 확장이 작동하지 않을 수 있습니다. 업데이트도 같은 폴더에 파일을 교체하고 확장을 새로고침합니다. [자세한 설치·로그인·업데이트 안내](docs/INSTALLATION.md)
+스토어 설치본은 Chrome이 업데이트를 관리합니다. 기존 개발판에서 옮겨 설치하면 ChatGPT 연결과 설정을 다시 적용해 주세요. [설치·업데이트 안내](docs/INSTALLATION.md)
 
 ## 페이지 옆에서 하는 일
 
@@ -71,7 +71,7 @@ Daily Odd Builds **Day 017 · 2026-10-28**. 첫 ZIP 공개는 2026-11-01이며, 
 
 검증이 필요하면 **팩트체크**, 먼저 글을 정리하고 싶으면 **요약정리**를 누릅니다. 진행 중인 기능의 버튼에만 진행 표시가 나타납니다. 페이지가 바뀌면 **페이지 내용 반영하기**를 눌러 새 내용을 읽습니다.
 
-**설정 → 일반**에서 언어, 최대 주장 수, 모델, 추론 수준과 Fast를 바꿀 수 있습니다. 자동 추천은 계정에 GPT-6.1 Terra가 있으면 Terra를, 없으면 GPT-6 Luna를 우선 선택합니다. 두 모델 모두 Medium과 Fast 켬이 기본이며, 직접 저장한 선택이 우선합니다. 설정 맨 아래의 작은 **개인정보취급방침** 링크로 공개 방침을 열 수 있습니다. Fast는 기본으로 켜져 있으며 계정·모델 지원에 따라 일반 처리로 복구하고 결과에 알립니다. 원문 인용은 원래 언어로 유지합니다.
+**설정 → 일반**에서 언어, 최대 주장 수, 모델과 Fast를 바꿀 수 있습니다. 추론 수준도 조절할 수 있으며, 자동 추천은 계정에 GPT-6.1 Terra가 있으면 Terra를, 없으면 GPT-6 Luna를 우선 선택합니다. 두 모델 모두 Medium과 Fast 켬이 기본이며, 직접 저장한 선택이 우선합니다. 설정 맨 아래의 작은 **개인정보취급방침** 링크로 공개 방침을 열 수 있습니다. Fast는 기본으로 켜져 있으며 계정·모델 지원에 따라 일반 처리로 복구하고 결과에 알립니다. 원문 인용은 원래 언어로 유지합니다.
 
 **설정 → 읽기**에서 글꼴, 본문 크기, 줄·문단·카드 간격을 조절합니다. 설정은 미리보기와 결과에 바로 반영됩니다. 내장 글꼴을 고르면 한국어·영어·일본어·중국어 간체에 맞는 Noto Sans를 기기에서 읽습니다.
 
@@ -95,7 +95,7 @@ ChatGPT 로그인은 OpenAI의 화면에서 진행합니다. 로그인 정보는
 
 Windows의 **Chrome 156**에서 로컬 빌드 확장의 UI·페이지 추출·모의 로그인 및 모델 응답 처리를 검증했습니다. 사용자 확인으로 실제 계정의 Fast 처리와 gpt-6.1-terra의 정상 완료가 확인된 이력이 있습니다. 0.1.23의 모델 추천과 읽기 설정은 모의 계정으로 검증했습니다. [검증 범위와 릴리즈 기록](docs/RELEASE.md)
 
-Chrome 120 이상을 대상으로 합니다. macOS·Linux, 다른 Chromium 브라우저, 모든 사이트와 모델 조합은 미검증입니다. Chrome 내부 페이지·PDF·접근이 막힌 콘텐츠는 지원하지 않습니다. 로그인·사이트 구조·이미지 보안 정책에 따라 일부 내용을 읽지 못할 수 있으며, 이미지 인식도 오류가 있을 수 있습니다. 계정의 모델·이미지·웹 검색 권한과 사용 한도가 적용됩니다. 자동 업데이트는 제공하지 않습니다.
+Chrome 120 이상을 대상으로 합니다. macOS·Linux, 다른 Chromium 브라우저, 모든 사이트와 모델 조합은 미검증입니다. Chrome 내부 페이지·PDF·접근이 막힌 콘텐츠는 지원하지 않습니다. 로그인·사이트 구조·이미지 보안 정책에 따라 일부 내용을 읽지 못할 수 있으며, 이미지 인식도 오류가 있을 수 있습니다. 계정의 모델·이미지·웹 검색 권한과 사용 한도가 적용됩니다. 스토어 설치본은 Chrome이 업데이트를 관리합니다.
 
 ## 소개 이미지
 
@@ -116,7 +116,7 @@ Chrome 120 이상을 대상으로 합니다. macOS·Linux, 다른 Chromium 브�
 
 ## 공개 범위
 
-[확장·오류 리포트 서버 소스와 빌드·테스트 코드](source/)를 0.1.23 스냅샷으로 공개합니다. 자체 작성 소스는 [MIT 라이선스](source/LICENSE)이며 빌드 방법은 [개발 안내](source/README.md)에 있습니다. 설치용 실행 ZIP도 계속 제공합니다.
+[확장·오류 리포트 서버 소스와 빌드·테스트 코드](source/)를 0.1.23 스냅샷으로 공개합니다. 자체 작성 소스는 [MIT 라이선스](source/LICENSE)이며 빌드 방법은 [개발 안내](source/README.md)에 있습니다. 일반 사용자는 Chrome 웹 스토어에서 설치하면 됩니다.
 
 비공개 개발 저장소의 이력, 사용자 데이터·운영 로그와 인증정보는 포함하지 않습니다. 소개·홍보 이미지에는 소스 라이선스를 자동 적용하지 않습니다. 포함된 오픈소스의 권리와 고지는 [THIRD-PARTY-NOTICES.txt](docs/THIRD-PARTY-NOTICES.txt)를 따릅니다.
 

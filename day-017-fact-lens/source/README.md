@@ -1,6 +1,6 @@
 # 팩트렌즈 0.1.23 소스
 
-Chrome 사이드패널 확장과 선택형 오류 리포트 서버의 릴리즈 소스 스냅샷입니다. [제품 소개·설치용 ZIP](../README.md) · [MIT 라이선스](LICENSE) · [제3자 고지](extension/THIRD-PARTY-NOTICES.txt)
+Chrome 사이드패널 확장과 선택형 오류 리포트 서버의 릴리즈 소스 스냅샷입니다. [Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/mfiomjajfkfkdbchdfegfofklpplpmcc) · [제품 소개·설치 안내](../README.md) · [MIT 라이선스](LICENSE) · [제3자 고지](extension/THIRD-PARTY-NOTICES.txt)
 
 ## 빌드와 설치
 
