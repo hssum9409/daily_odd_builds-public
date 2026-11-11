@@ -147,3 +147,11 @@ Chrome 웹 스토어 설치 · Windows Chrome 검증 · 확장·오류 서버 �
 
 [공통 모듈 목록](packages/) · [ChatGPT 로그인 0.1.0](packages/chatgpt-auth/) · MIT · 모듈별 버전 고정 및 로컬 검증. 제품 간 로그인 정보는 공유하지 않습니다.
 <!-- shared-packages:end -->
+
+<!-- day019:start -->
+## Day 019 — ChatOnDC · CoDC
+
+디시 갤러리를 보면서 Chrome 사이드패널에서 나누는 갤러리 채팅과 개인·단체 대화입니다. Chrome 웹스토어 등록 준비 중이며, 개발 소스는 비공개입니다.
+
+[제품 소개](day-019-chatondc/README.md) · [포털 상세](https://daily-odd-builds-portal.web.app/detail?id=day-2026-10-30) · [개인정보처리방침](https://daily-odd-builds-portal.web.app/privacy/chatondc)
+<!-- day019:end -->
